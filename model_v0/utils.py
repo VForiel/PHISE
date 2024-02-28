@@ -4,48 +4,121 @@ import matplotlib.pyplot as plt
 
 def optimize(kn0, beam, verbose = False):
 
-    delta = 1
-    null_depth_evol = []
-
     shifts = np.zeros(14)
+    shifts_evol = [np.copy(shifts)]
 
+    # Phase 1: redirect light to the bright output
+    if verbose: print("+"*10, " Phase 1 ", "+"*10)
+    delta = 1
+    bright_evol = []
     while delta > 1e-20:
         delta /= 1.5
-
         if verbose: print("\n==========\n")
+        p = [1,2,3,4,5,7] # shifters that contribute to redirecting light to the bright output
+        for i in p:
+            i = i-1 # convert human ndex to computer index
 
-        for i in range(len(shifts)):
+            change = np.zeros(len(shifts))
+            change[i] = delta
 
             if verbose: 
                 print("---")
                 print(f"Initial shift_powers : {shifts}")
                 print(f"Delta : {delta:.2e}, applied on P{i+1}")
 
-            old_bright, old_darks, _ = kn0(beam)
+            old_bright,_,_ = kn0(beam, shifts)
+            pos_bright,_,_ = kn0(beam, shifts + change)
+            neg_bright,_,_ = kn0(beam, shifts - change)
+
+            # Metric: |bright|^2
+            old_bright = np.abs(old_bright)**2
+            pos_bright = np.abs(pos_bright)**2
+            neg_bright = np.abs(neg_bright)**2
+
+            if verbose : print(f"Old bright : {old_bright:.2e}, Pos bright : {pos_bright:.2e}, Neg bright : {neg_bright:.2e}")
+
+            # If negative shift is better, we apply it
+            if  pos_bright > old_bright and pos_bright > old_bright:
+                if verbose: print(f"-> Pos ({pos_bright:.2e})")
+                shifts += change
+                bright_evol.append(pos_bright)
+
+            # If positive shift is better, we apply it
+            elif neg_bright > old_bright and neg_bright > old_bright:
+                if verbose: print(f"-> Neg ({neg_bright:.2e})")
+                shifts -= change
+                bright_evol.append(neg_bright)
+
+            # If old parameters are better, we do nothing
+            else:
+                if verbose: print(f"-> Old ({old_bright:.2e})")
+                bright_evol.append(old_bright)
+
+            shifts_evol.append(np.copy(shifts))
+
+    # Phase 2: optimize dark pairs symmetry
+    if verbose: print("+"*10, " Phase 2 ", "+"*10)
+    delta = 1
+    dark_symmetry_evol = []
+    while delta > 1e-20:
+        delta /= 1.5
+        if verbose: print("\n==========\n")
+        p = [6,8,9,10,11,12,13,14] # shifters that contribute to the symmetry of the dark outputs
+        for i in p:
+            i = i-1 # convert human ndex to computer index
 
             change = np.zeros(len(shifts))
             change[i] = delta
-            
-            pos_bright, pos_darks, _ = kn0(beam, shifts + change)
-            neg_bright, neg_darks, _ = kn0(beam, shifts - change)
 
-            old_null_mean = np.sum(np.abs(old_darks)) / len(old_darks) / np.abs(old_bright)
-            pos_null_mean = np.sum(np.abs(pos_darks)) / len(pos_darks) / np.abs(pos_bright)
-            neg_null_mean = np.sum(np.abs(neg_darks)) / len(neg_darks) / np.abs(neg_bright)
+            if verbose: 
+                print("---")
+                print(f"Initial shift_powers : {shifts}")
+                print(f"Delta : {delta:.2e}, applied on P{i+1}")
 
-            null_depth_evol.append(old_null_mean)
+            _,old_darks,_ = kn0(beam, shifts)
+            _,pos_darks,_ = kn0(beam, shifts + change)
+            _,neg_darks,_ = kn0(beam, shifts - change)
 
-            if verbose: print(f"Old ({old_null_mean:.2e}), Pos ({pos_null_mean:.2e}), Neg ({neg_null_mean:.2e})")
-            if pos_null_mean < old_null_mean and pos_null_mean < neg_null_mean:
-                if verbose: print(f"-> Pos ({pos_null_mean:.2e})")
+            # Metric: |I1 - I2| + |I3 - I4| + |I5 - I6|
+            # With In the intensity of the dark output n
+            old_metric = np.abs(
+                np.abs(old_darks[0])**2 - np.abs(old_darks[1])**2 +
+                np.abs(old_darks[2])**2 - np.abs(old_darks[3])**2 +
+                np.abs(old_darks[4])**2 - np.abs(old_darks[5])**2
+            )
+            pos_metric = np.abs(
+                np.abs(pos_darks[0])**2 - np.abs(pos_darks[1])**2 +
+                np.abs(pos_darks[2])**2 - np.abs(pos_darks[3])**2 +
+                np.abs(pos_darks[4])**2 - np.abs(pos_darks[5])**2
+            )
+            neg_metric = np.abs(
+                np.abs(neg_darks[0])**2 - np.abs(neg_darks[1])**2 +
+                np.abs(neg_darks[2])**2 - np.abs(neg_darks[3])**2 +
+                np.abs(neg_darks[4])**2 - np.abs(neg_darks[5])**2
+            )
+
+            if verbose : print(f"Old metric : {old_metric:.2e}, Pos metric : {pos_metric:.2e}, Neg metric : {neg_metric:.2e}")
+
+            # If negative shift is better, we apply it
+            if  pos_metric < old_metric and pos_metric < old_metric:
+                if verbose: print(f"-> Pos ({pos_metric:.2e})")
                 shifts += change
-            elif neg_null_mean < old_null_mean and neg_null_mean < pos_null_mean:
-                if verbose: print(f"-> Neg ({neg_null_mean:.2e})")
-                shifts -= change
-            else:
-                if verbose: print(f"-> Old ({old_null_mean:.2e})")
+                dark_symmetry_evol.append(pos_metric)
 
-    return null_depth_evol, shifts
+            # If positive shift is better, we apply it
+            elif neg_metric < old_metric and neg_metric < old_metric:
+                if verbose: print(f"-> Neg ({neg_metric:.2e})")
+                shifts -= change
+                dark_symmetry_evol.append(neg_metric)
+
+            # If old parameters are better, we do nothing
+            else:
+                if verbose: print(f"-> Old ({old_metric:.2e})")
+                dark_symmetry_evol.append(old_metric)
+
+            shifts_evol.append(np.copy(shifts))
+
+    return shifts, bright_evol, dark_symmetry_evol, np.array(shifts_evol)
 
 def bruteforce():
 
@@ -73,8 +146,6 @@ def scan(kn, beams, scan_on=(1,2), initial_parameters=None, optimized_parameters
     beams : A list of 2D arrays, each representing a beam.
     optimized_parameters : A list of 14 floats, the optimized parameters.
     plot_intermediate_states : A boolean, whether to plot the intermediate"""
-    
-    scan_on = (1,2) # Select 2 values from 1 to 14
 
     # Scan shift power parameter space
     scan = np.linspace(-1, 1, 101, endpoint=True)
