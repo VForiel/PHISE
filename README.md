@@ -16,8 +16,6 @@ Supervised by: Frantz Martinache, David Mary & Rodolphe Krawczyk
   - [Milestone 3 : Supervised AI training](#milestone-3--supervised-ai-training)
   - [Milestone 4 : Unsupervised AI training](#milestone-4--unsupervised-ai-training)
   - [Milestone 5 : Test on the lab](#milestone-5--test-on-the-lab)
-- [💡 Ideas](#-ideas)
-  - [Possible DoF reduction](#possible-dof-reduction)
 
 # 🔭 Context
 
@@ -80,19 +78,3 @@ Except if the results of the milestone 3 are really satisfying, I think it could
 Once one (or both) of the previous method  gives satisfying results, I plan to test it in the lab to see how it behave in a more realistic conditions.
 
 For the supervised method, there is a possibility to exploti a model that wwas previously trained on the numerical model and train it again on the lab data. This pre-training method is often used to reduce the amount of needed "real" data to train the model by using the numerical data to give a first intuition to the model. However, if the dataset generation is a fast process, we can still consider to train the model directly on the lab data and compare both results to see if the pre-training method is worth it or not in this highly sensitive system.
-
-# 💡 Ideas
-
-## Possible DoF reduction
-
-As the MMI are insensitive to the global phase of the inputs, we can reduce the degrees of freedom by considering the phase of one of the MMI input channel as the reference. Thus, we don't need to tune the phase associated to this reference channel, so we simply fix the parameter to a given value. As this architecture work with 2x2 MMI, it imply in this architecture that we can reduce the number of degree of freedom by a factor 2.
-
-![](img/dof_reduction.png)
-
-From this graph, we can deduce the phase shifters that will influencate each output:
-- Bright output: $P_2$, $P_4$ and $P_7$
-- Dark output 1 & 2 : $2\times P_2$, $2\times P_4$, $P_7$, $P_8$ and $P_{11}$
-- Dark output 3 & 4 : $2\times P_2$, $2\times P_4$, $P_7$, $P_8$ and $P_{13}$
-- Dark output 5 & 6 : $2\times P_2$, $2\times P_4$, $P_8$ and $P_{14}$
-
-We see that $P_2$, $P_4$ and $P_7$ and $P_8$ impact all (or most of) the outputs so they are strongly correlated. They are thus the ones that will probably be the most challenging to tune.
