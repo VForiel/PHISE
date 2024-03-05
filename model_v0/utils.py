@@ -2,6 +2,10 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 
+
+
+
+
 def bound_phase(phase:np.array) -> np.array:
     """------------------------------------------------------------------------
     Bound the phase between [-1,1] (normalized from [-pi,pi])
@@ -15,6 +19,15 @@ def bound_phase(phase:np.array) -> np.array:
     - Normalized phase bounded in [-1,1]
     ------------------------------------------------------------------------"""
     return (phase + 1) % 2 - 1
+
+
+
+
+
+
+
+
+
 
 def phase_shift(beam:complex, dphase:float) -> complex:
     """------------------------------------------------------------------------
@@ -31,6 +44,15 @@ def phase_shift(beam:complex, dphase:float) -> complex:
     ------------------------------------------------------------------------"""
     return beam * np.exp(1j * dphase * np.pi)
 
+
+
+
+
+
+
+
+
+
 def mach_zehnder(beam:complex, dphase:float) -> complex:
     """------------------------------------------------------------------------
     Partially or totally cancel the light of a beam by
@@ -46,6 +68,14 @@ def mach_zehnder(beam:complex, dphase:float) -> complex:
     - Output beam complex amplitude
     ------------------------------------------------------------------------"""
     return (beam + phase_shift(beam, dphase)) / 2
+
+
+
+
+
+
+
+
 
 
 def nuller4x4(beams:list[complex]) -> tuple[complex, list[complex]]:
@@ -73,6 +103,15 @@ def nuller4x4(beams:list[complex]) -> tuple[complex, list[complex]]:
 
     return outputs[0], outputs[1:]
 
+
+
+
+
+
+
+
+
+
 def nuller_2x2(beams:np.array) -> np.array:
     """------------------------------------------------------------------------
     Simulate a 2 input beam nuller.
@@ -94,6 +133,15 @@ def nuller_2x2(beams:np.array) -> np.array:
     ])
 
     return N @ beams
+
+
+
+
+
+
+
+
+
 
 def splitmix_4x4(beams:list[complex]) -> list[complex]:
     """------------------------------------------------------------------------
@@ -119,6 +167,15 @@ def splitmix_4x4(beams:list[complex]) -> list[complex]:
     ])
 
     return S @ beams
+
+
+
+
+
+
+
+
+
 
 def splitmix_2x2(beams:np.array, theta=np.pi/2) -> np.array:
     """------------------------------------------------------------------------
@@ -150,34 +207,61 @@ def splitmix_2x2(beams:np.array, theta=np.pi/2) -> np.array:
 
 
 
-
-
-
-
-
-
-
-
 def optimize(kn0, beam, verbose = False):
+    """------------------------------------------------------------------------
+    Dichotomically optimize the phase shifters to maximize the bright output and minimize the
+    dark pairs' difference.
 
+    Parameters
+    ----------
+    - `kn0` : An instance of the KernelNuller class.
+    - `beam` : The input beam complex amplitudes.
+    - `verbose` : A boolean, whether to print the optimization steps.
+
+    Returns
+    -------
+    - The optimized phase shifters
+    - The evolution of the bright output during the optimization
+    - The evolution of the dark pairs' difference during the optimization
+    - The evolution of the phase shifters during the optimization
+    ------------------------------------------------------------------------"""
+
+    treshold = 1e-10
+
+    # Shifters that contribute to redirecting light to the bright output
+    p1 = [2,3,4,5,7] # 1,
+    p1 = [1,2,3,4,5,7]
+
+    # Shifters that contribute to the symmetry of the dark outputs
+    p2 = [6,8,11,13,14] # 9,10,12,
+    p2 = [6,8,11,13,14,9,10,12]
+
+
+    # Initial phase shifters set to 0
     shifts = np.zeros(14)
+    # Record the initial state
     shifts_evol = [np.copy(shifts)]
 
-    # Phase 1: redirect light to the bright output
-    if verbose: print("+"*10, " Phase 1 ", "+"*10)
+    #==========================================================================
+    # PHASE 1: Maximise the bright output
+    #==========================================================================
+    if verbose and False: print("+"*10, " Phase 1 ", "+"*10)
+
     delta = 1
     bright_evol = []
-    while delta > 1e-2:
-        delta /= 1.5
-        if verbose: print("\n==========\n")
-        p = [1,2,3,4,5,7] # shifters that contribute to redirecting light to the bright output
-        for i in p:
+    while delta > treshold:
+        if verbose and False: print("\n==========")
+
+        # Reduce the step size
+        delta /= 2
+
+        for i in p1:
             i = i-1 # convert human ndex to computer index
 
             change = np.zeros(len(shifts))
             change[i] = delta
 
-            if verbose: 
+            if verbose and False: 
                 print("---")
                 print(f"Initial shift_powers : {shifts}")
                 print(f"Delta : {delta:.2e}, applied on P{i+1}")
@@ -191,44 +275,58 @@ def optimize(kn0, beam, verbose = False):
             pos_bright = np.abs(pos_bright)**2
             neg_bright = np.abs(neg_bright)**2
 
-            if verbose : print(f"Old bright : {old_bright:.2e}, Pos bright : {pos_bright:.2e}, Neg bright : {neg_bright:.2e}")
+            if verbose and False :
+                print(
+                    f"Old bright : {old_bright:.2e},",
+                    f"Pos bright : {pos_bright:.2e},",
+                    f"Neg bright : {neg_bright:.2e}")
 
             # If negative shift is better, we apply it
             if  pos_bright > old_bright and pos_bright > old_bright:
-                if verbose: print(f"-> Pos ({pos_bright:.2e})")
+                if verbose and False: print(f"-> Pos ({pos_bright:.2e})")
                 shifts += change
                 bright_evol.append(pos_bright)
 
             # If positive shift is better, we apply it
             elif neg_bright > old_bright and neg_bright > old_bright:
-                if verbose: print(f"-> Neg ({neg_bright:.2e})")
+                if verbose and False: print(f"-> Neg ({neg_bright:.2e})")
                 shifts -= change
                 bright_evol.append(neg_bright)
 
             # If old parameters are better, we do nothing
             else:
-                if verbose: print(f"-> Old ({old_bright:.2e})")
+                if verbose and False: print(f"-> Old ({old_bright:.2e})")
                 bright_evol.append(old_bright)
 
             shifts_evol.append(np.copy(shifts))
 
-    # Phase 2: optimize dark pairs symmetry
+    input_shifters = np.copy(shifts[:4])
+
+    #==========================================================================
+    # PHASE 2: Optimize dark pairs symmetry
+    #==========================================================================
     if verbose: print("+"*10, " Phase 2 ", "+"*10)
+
     delta = 1
     dark_symmetry_evol = []
-    while delta > 1e-2:
-        delta /= 1.5
+    
+    # Perturb input phases
+    kn0.noise_input_shifters()
+
+    while delta > treshold:
         if verbose: print("\n==========\n")
-        p = [6,8,9,10,11,12,13,14] # shifters that contribute to the symmetry of the dark outputs
-        for i in p:
+        
+        # Reduce the step size
+        delta /= 2
+
+        for i in p2:
             i = i-1 # convert human ndex to computer index
 
             change = np.zeros(len(shifts))
             change[i] = delta
 
-            if verbose: 
-                print("---")
-                print(f"Initial shift_powers : {shifts}")
+            if verbose:
+                print(f"\nShifts : {" ".join([f'{x:.2e}' for x in shifts])}")
                 print(f"Delta : {delta:.2e}, applied on P{i+1}")
 
             _,old_darks,_ = kn0(beam, shifts)
@@ -253,7 +351,11 @@ def optimize(kn0, beam, verbose = False):
                 np.abs(neg_darks[4])**2 - np.abs(neg_darks[5])**2
             )
 
-            if verbose : print(f"Old metric : {old_metric:.2e}, Pos metric : {pos_metric:.2e}, Neg metric : {neg_metric:.2e}")
+            if verbose :
+                print(
+                    f"Old metric : {old_metric:.2e},",
+                    f"Pos metric : {pos_metric:.2e},",
+                    f"Neg metric : {neg_metric:.2e}")
 
             # If negative shift is better, we apply it
             if  pos_metric < old_metric and pos_metric < old_metric:
@@ -272,11 +374,30 @@ def optimize(kn0, beam, verbose = False):
                 if verbose: print(f"-> Old ({old_metric:.2e})")
                 dark_symmetry_evol.append(old_metric)
 
+            if verbose and len(dark_symmetry_evol) > 2 and dark_symmetry_evol[-1] < dark_symmetry_evol[-2]:
+                print("\n", "^"*30)
+
             shifts_evol.append(np.copy(shifts))
+
+    shifts[:4] = input_shifters
 
     return shifts, bright_evol, dark_symmetry_evol, np.array(shifts_evol)
 
+
+
+
+
+
+
+
+
+
 def bruteforce():
+    """------------------------------------------------------------------------
+    Brute force the parameter space to find the optimal parameters.
+
+    # TODO
+    ------------------------------------------------------------------------"""
 
     step = 0.2
     a = -1
@@ -289,9 +410,18 @@ def bruteforce():
 
         for i in range(14):
             p[i] = a + (b-a) * (x // N**i % N) / N
-            
 
-def scan(kn, beams, scan_on=(1,2), initial_parameters=None, optimized_parameters=None, plot_intermediate_states=False):
+
+
+
+
+
+
+
+
+
+def scan(kn, beams, scan_on=(1,2), initial_parameters=None,
+         optimized_parameters=None, plot_intermediate_states=False):
     """------------------------------------------------------------------------
     Scan the parameter space and plot the null depths for each parameter
     combination.
@@ -301,7 +431,12 @@ def scan(kn, beams, scan_on=(1,2), initial_parameters=None, optimized_parameters
     kn : An instance of the KernelNuller class.
     beams : A list of 2D arrays, each representing a beam.
     optimized_parameters : A list of 14 floats, the optimized parameters.
-    plot_intermediate_states : A boolean, whether to plot the intermediate"""
+    plot_intermediate_states : A boolean, whether to plot the intermediate
+
+    Returns
+    -------
+    None
+    ------------------------------------------------------------------------"""
 
     # Scan shift power parameter space
     scan = np.linspace(-1, 1, 101, endpoint=True)
@@ -341,18 +476,21 @@ def scan(kn, beams, scan_on=(1,2), initial_parameters=None, optimized_parameters
                 bright_map[i,j] = np.abs(bright)**2
 
     if plot_intermediate_states:
+        mi = min(np.min(first_layer_nulls), np.min(second_layer_nulls))
+        ma = max(np.max(first_layer_nulls), np.max(second_layer_nulls))
+
         for k in range(4):
             p = axs_b[0, k]
-            p.set_title(f"N{k//2} - {k%2}")
-            im = p.imshow(first_layer_nulls[k])
+            p.set_title(f"N{k//2+1} - {k%2}")
+            im = p.imshow(first_layer_nulls[k], vmin=mi, vmax=ma)
             p.set_xlabel(f"Parameter {scan_on[1]}")
             p.set_ylabel(f"Parameter {scan_on[0]}")
             plt.colorbar(im)
 
         for k in range(4):
             p = axs_b[1, k]
-            p.set_title(f"N{k//2+2} - {k%2}")
-            im = p.imshow(second_layer_nulls[k])
+            p.set_title(f"N{k//2+3} - {k%2}")
+            im = p.imshow(second_layer_nulls[k], vmin=mi, vmax=ma)
             p.set_xlabel(f"Parameter {scan_on[1]}")
             p.set_ylabel(f"Parameter {scan_on[0]}")
             plt.colorbar(im)
@@ -360,7 +498,7 @@ def scan(kn, beams, scan_on=(1,2), initial_parameters=None, optimized_parameters
     for k in range(6):
         p = axs[k%2, k//2]
         p.set_title(f"Dark {k+1}")
-        im = p.imshow(darks_map[k], extent=[-1, 1, -1, 1])
+        im = p.imshow(darks_map[k], extent=[-1, 1, -1, 1], vmin=np.min(darks_map), vmax=np.max(darks_map))
         if optimized_parameters is not None: p.scatter(optimized_parameters[scan_on[1]-1], optimized_parameters[scan_on[0]-1], color='red')
         p.set_xlabel(f"Parameter {scan_on[1]}")
         p.set_ylabel(f"Parameter {scan_on[0]}")
