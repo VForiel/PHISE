@@ -230,11 +230,11 @@ def optimize(kn0, beam, verbose = False):
 
     # Shifters that contribute to redirecting light to the bright output
     p1 = [2,3,4,5,7] # 1,
-    p1 = [1,2,3,4,5,7]
+    # p1 = [1,2,3,4,5,7]
 
     # Shifters that contribute to the symmetry of the dark outputs
     p2 = [6,8,11,13,14] # 9,10,12,
-    p2 = [6,8,11,13,14,9,10,12]
+    # p2 = [6,8,11,13,14,9,10,12]
 
 
     # Initial phase shifters set to 0
@@ -318,6 +318,9 @@ def optimize(kn0, beam, verbose = False):
         
         # Reduce the step size
         delta /= 2
+
+        # Perturb input phases
+        kn0.noise_input_shifters()
 
         for i in p2:
             i = i-1 # convert human ndex to computer index
