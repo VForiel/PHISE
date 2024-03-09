@@ -227,6 +227,7 @@ def optimize(kn0, beam, verbose = False):
     ------------------------------------------------------------------------"""
 
     treshold = 1e-10
+    decay = 1.5 # Decay factor for the step size (delta /= decay)
 
     # Shifters that contribute to redirecting light to the bright output
     p1 = [2,3,4,5,7] # 1,
@@ -253,7 +254,7 @@ def optimize(kn0, beam, verbose = False):
         if verbose and False: print("\n==========")
 
         # Reduce the step size
-        delta /= 2
+        delta /= decay
 
         for i in p1:
             i = i-1 # convert human ndex to computer index
@@ -317,10 +318,10 @@ def optimize(kn0, beam, verbose = False):
         if verbose: print("\n==========\n")
         
         # Reduce the step size
-        delta /= 2
+        delta /= decay
 
         # Perturb input phases
-        kn0.noise_input_shifters()
+        # kn0.noise_input_shifters()
 
         for i in p2:
             i = i-1 # convert human ndex to computer index
