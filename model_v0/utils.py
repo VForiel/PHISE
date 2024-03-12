@@ -226,7 +226,7 @@ def optimize(kn0, beam, verbose = False):
     - The evolution of the phase shifters during the optimization
     ------------------------------------------------------------------------"""
 
-    treshold = 1e-10
+    treshold = 1e-20
 
     # Shifters that contribute to redirecting light to the bright output
     p1 = [2,3,4,5,7] # 1,
@@ -320,7 +320,7 @@ def optimize(kn0, beam, verbose = False):
         delta /= 2
 
         # Perturb input phases
-        kn0.noise_input_shifters()
+        # kn0.noise_input_shifters()
 
         for i in p2:
             i = i-1 # convert human ndex to computer index
