@@ -301,6 +301,8 @@ def optimize(kn0, beam, verbose = False):
 
             shifts_evol.append(np.copy(shifts))
 
+    print(f"{input_shifters[0]}")
+
     input_shifters = np.copy(shifts[:4])
 
     #==========================================================================
