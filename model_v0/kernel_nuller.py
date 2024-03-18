@@ -167,3 +167,90 @@ class KN0:
         dark_channels = np.concatenate([S1_output, S2_output, S3_output])
 
         return bright_channel, dark_channels, {"inputs":beams, "first_nuller_layer":np.concatenate([N1_output,N2_output]),"second_nuller_layer":np.concatenate([N3_output,N4_output])}
+    
+    def optimize(self, beams, verbose=False):
+        """--------------------------------------------------------------------
+        Optimize the phase shifters offsets to maximize the nulling performance
+        
+        Parameters
+        ----------
+        - `beams` : List of input beams complex amplitudes
+        - `verbose` : Boolean, if True, print the optimization process
+
+        Returns
+        -------
+        - List of optimized phase shifters offsets
+        - Dict containing the history of the optimization
+        --------------------------------------------------------------------"""
+
+        shifts = np.zeros(14)
+
+        kernel_shifters = [1,2,3,4,5,7]
+
+        treshold = 1e-20
+        decay = 1.5 # Decay factor for the step size (delta /= decay)
+
+        # Shifters that contribute to redirecting light to the bright output
+        p1 = [2,3,4,5,7] # 1,
+        # p1 = [1,2,3,4,5,7]
+
+        # Shifters that contribute to the symmetry of the dark outputs
+        p2 = [6,8,11,13,14] # 9,10,12,
+        # p2 = [6,8,11,13,14,9,10,12]
+
+        bright_history = []
+        symmetry_history = []
+        shifters_history = []
+
+        # STEP 1 : Optimize the bright channel
+        delta = 1
+        while delta > treshold:        
+            for p in p1:
+                step = np.zeros(14)
+                step[p-1] = delta
+
+                bright_old, _, _ = self(beams, shifts)
+                bright_pos, _, _ = self(beams, shifts+step)
+                bright_neg, _, _ = self(beams, shifts-step)
+
+                bright_history.append(abs(bright_old)**2)
+                shifters_history.append(shifts)
+
+                if abs(bright_pos) > abs(bright_old) and abs(bright_pos) > abs(bright_neg):
+                    shifts += step
+                elif abs(bright_neg) > abs(bright_old) and abs(bright_neg) > abs(bright_pos):
+                    shifts -= step
+
+            delta /= decay
+        
+        # STEP 2 : Optimize the symmetry of the dark channels
+        
+        delta = 1
+        while delta > treshold:
+            for p in p2:
+                step = np.zeros(14)
+                step[p-1] = delta
+
+                _, dark_old, _ = self(beams, shifts)
+                _, dark_pos, _ = self(beams, shifts+step)
+                _, dark_neg, _ = self(beams, shifts-step)
+
+                dark_old = abs(dark_old)**2
+                dark_pos = abs(dark_pos)**2
+                dark_neg = abs(dark_neg)**2
+
+                metric_old = np.abs(dark_old[0] - dark_old[1]) + np.abs(dark_old[2] - dark_old[3]) + np.abs(dark_old[4] - dark_old[5])
+                metric_pos = np.abs(dark_pos[0] - dark_pos[1]) + np.abs(dark_pos[2] - dark_pos[3]) + np.abs(dark_pos[4] - dark_pos[5])
+                metric_neg = np.abs(dark_neg[0] - dark_neg[1]) + np.abs(dark_neg[2] - dark_neg[3]) + np.abs(dark_neg[4] - dark_neg[5])
+
+                symmetry_history.append(metric_old)
+                shifters_history.append(shifts)
+
+                if metric_pos < metric_old and metric_pos < metric_neg:
+                    shifts += step
+                elif metric_neg < metric_old and metric_neg < metric_pos:
+                    shifts -= step
+
+            delta /= decay
+
+        return shifts, {"bright":bright_history, "symmetry":symmetry_history, "shifters":np.array(shifters_history)}
