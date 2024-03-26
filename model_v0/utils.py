@@ -112,37 +112,6 @@ def nuller4x4(beams:list[complex]) -> tuple[complex, list[complex]]:
 
 
 
-def nuller_2x2(beams:np.array) -> np.array:
-    """------------------------------------------------------------------------
-    Simulate a 2 input beam nuller.
-
-    Parameters
-    ----------
-    - `beams` : Array of 2 input beams complex amplitudes
-
-    Returns
-    -------
-    - Array of 2 output beams complex amplitudes
-        - 1st output is the bright channel
-        - 2nd output is the dark channel
-    ------------------------------------------------------------------------"""
-
-    N = 1/np.sqrt(2) * np.array([
-        [1,   1],
-        [1,  -1],
-    ])
-
-    return N @ beams
-
-
-
-
-
-
-
-
-
-
 def splitmix_4x4(beams:list[complex]) -> list[complex]:
     """------------------------------------------------------------------------
     Simulate a 3 input beam split and mix.
@@ -167,37 +136,6 @@ def splitmix_4x4(beams:list[complex]) -> list[complex]:
     ])
 
     return S @ beams
-
-
-
-
-
-
-
-
-
-
-def splitmix_2x2(beams:np.array, theta=np.pi/2) -> np.array:
-    """------------------------------------------------------------------------
-    Simulate a 2 input beam split and mix.
-
-    Parameters
-    ----------
-    - `beams` : Array of 2 input beams complex amplitudes
-    - `theta` : Phase shift between the two output beams
-
-    Returns
-    -------
-    - Array of 2 output beams complex amplitudes
-    ------------------------------------------------------------------------"""
-
-    S = 1/np.sqrt(2) * np.array([
-        [np.exp(1j*theta/2), np.exp(-1j*theta/2)],
-        [np.exp(-1j*theta/2), np.exp(1j*theta/2)]
-    ])
-
-    return S @ beams
-
 
 
 
