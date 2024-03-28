@@ -27,7 +27,7 @@ This system is composed of a fiber injection system, a serie of 2x2 MMI nuller a
 # ⚙️ Current Architecture
 The current architecture of the Kernel-Nuller component is shown in the following figure:
 
-![](img/components.png)
+![](img/scheme.png)
 
 From left to right, we have the following components:
 - $P_n$ are the delayers, they use an electrical power $p_n$ to warm up the fiber core and induce a phase shift  $\phi_{n,\lambda} = f_\lambda(p_n)$ on the input signal.
