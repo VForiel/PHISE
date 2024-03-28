@@ -1,0 +1,84 @@
+\documentclass[12pt]{article}
+\parindent 0mm
+\usepackage{amssymb,amsmath,amsfonts,latexsym,graphicx,amsthm,amstext}
+\usepackage{microtype} % Improve typography
+\usepackage{lmodern}
+\usepackage{longtable}
+\usepackage{color}
+\usepackage{scrhack}
+\usepackage{placeins}
+\usepackage{lipsum}
+\usepackage{lmodern}
+%\usepackage{indentfirst}
+\usepackage{ulem}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage{listings}
+\usepackage{comment}
+\usepackage{empheq}
+\usepackage{mathabx}
+\usepackage{siunitx}
+\usepackage{lscape}
+\usepackage{calc} 
+\usepackage{nopageno} %pour retirer la numerotation des pages
+\usepackage{hyperref} 
+
+\let\OLDthebibliography\thebibliography
+\renewcommand\thebibliography[1]{
+  \OLDthebibliography{#1}
+  \setlength{\parskip}{0pt}
+  \setlength{\itemsep}{0pt plus 0.3ex}
+}
+\usepackage[
+	top=1cm, % Top margin
+	bottom=1cm, % Bottom margin
+	inner=1.6cm, % Inner margin
+	outer=1.6cm, % Outer margin
+]{geometry}
+ 			
+\pagestyle{empty}
+
+\begin{document}
+Journées SF2A 2024
+\hfill
+S05 Atelier ASHRA: Status \& prospects in Optical Interferometry
+
+\smallskip
+\hrule
+
+\bigskip
+
+\begin{center}
+\LARGE \bf Interférométrie de Kernel-Nulling ajustable pour la détection directe d’exoplanètes\rm
+
+\vspace{0.5cm}
+
+\large  \underline{Vincent Foriel}$\,^{1,*}$, \large Frantz Martinache$\,^1$, \large David Mary$\,^1$
+
+\vspace{0.5cm}
+
+\normalsize
+
+$^1$ \textit{Université Côte d’Azur, Observatoire de la Côte d’Azur Nice, CNRS, Laboratoire Lagrange, France}
+
+\vspace{0.3cm}
+$^*$E-mail: {\tt vincent.foriel@oca.eu}
+
+\end{center}
+\vspace{-0.8cm}
+\subsection*{\Large Abstract}
+
+L'interférométrie annulante est une technique prometteuse pour la détection directe d'exoplanète. Cependant, les performances des dispositifs actuels sont limitées par leur sensibilité aux aberrations de phase. Afin de s'affranchir de certaines de ces aberrations, nous proposons une architecture d'interféromètre annulant à quatre télescopes, appelé {\it Kernel-Nuller}\cite{Chingaipe et al. 2022}, incluant un recombineur plaçant les quatre signaux en quadrature de phase. Nous utilisons pour cela  un composant optique intégré contenant 14 retardateurs de phase contrôlés électroniquement, servant à corriger d'éventuelles différences de chemin optique induites par des défauts de fabrication. Nous avons mis au point un algorithme capable de donner les retards à injecter dans le composant pour optimiser les performances du dispositif. Nous avons testé cette technique via des simulations numérique, puis en laboratoire. Nous prévoyons ensuite de profiter du mode {\it Nuller} qui sera prochainement installé sur le VLTI dans le cadre du projet ASGARD pour tester cette architecture dans des conditions d'observation réalistes. La seconde étape de cette étude réside dans l'analyse des distributions d'intensité produites en sortie du {\it Kernel-Nuller}\cite{Chingaipe et al. 2022, Cvetojevic et al. 2022} sur des séries d’observations au travers de tests statistiques et de techniques d’apprentissage machine afin de déceler la présence d'exoplanètes. Nous présentons ici les résultats préliminaires de cette étude.
+
+\textbf{\large Keywords:} Interférométrie, Exoplanètes, Kernel-Nulling, VLTI, ASGARD 
+
+\begin{thebibliography}{60}
+
+\bibitem{Chingaipe et al. 2022} Chingaipe, P. M., Martinache, F. \& Cvetojevic, N. Four-input photonic kernel-nulling for the VLTI. in {\it Optical and Infrared Interferometry and Imaging VIII} vol. \textbf{12183} 448–457 (SPIE, 2022).
+
+\bibitem{Cvetojevic et al. 2022} Cvetojevic, N. et al. 3-beam self-calibrated Kernel nulling photonic interferometer. Preprint at http://arxiv.org/abs/2206.04977 (2022).
+
+\end{thebibliography}
+
+\end{document}
+
