@@ -1,10 +1,10 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.3) (preloaded format=pdflatex 2024.3.29)  29 MAR 2024 09:29
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.3) (preloaded format=pdflatex 2024.3.29)  30 MAR 2024 09:23
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**d:/Tunable-Kernel-Nulling/docs/abstract.tex
-(d:/Tunable-Kernel-Nulling/docs/abstract.tex
+**"d:/Tunable-Kernel-Nulling/docs/Abstract SF2A (2024)/abstract.tex"
+(d:/Tunable-Kernel-Nulling/docs/Abstract SF2A (2024)/abstract.tex
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-03-14>
 (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/base\article.cls
@@ -923,7 +923,12 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             `lmtt' (encoding: OT1).
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
- [1
+
+Underfull \hbox (badness 1158) in paragraph at lines 77--78
+\OT1/lmr/m/n/12 (+20) o-met-ric De-tec-tion of Ex-tra-so-lar Plan-ets". \OT1/lmr/m/it/12 (+20) As-tron-omy & As-tro-physics \OT1/lmr/bx/n/12 (+20) 619 \OT1/lmr/m/n/12 (+20) (2018): A87.
+ []
+
+[1
 
 {C:/Users/vince/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-rm.enc}{C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathit.enc}{C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-rmtt.enc}] (abstract.aux)
  ***********
@@ -934,15 +939,15 @@ Package rerunfilecheck Info: File `abstract.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
  ) 
 Here is how much of TeX's memory you used:
- 19810 strings out of 474424
- 369285 string characters out of 5741739
+ 19812 strings out of 474424
+ 369504 string characters out of 5741739
  1935496 words of memory out of 5000000
  41820 multiletter control sequences out of 15000+600000
- 614635 words of font info for 131 fonts, out of 8000000 for 9000
+ 614722 words of font info for 132 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,5n,80p,1494b,901s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,5n,80p,1519b,901s stack positions out of 10000i,1000n,20000p,200000b,200000s
  <C:\Users\vince\AppData\Local\MiKTeX\fonts/pk/ljfour/public/mathabx/dpi600\matha8.pk> <C:\Users\vince\AppData\Local\MiKTeX\fonts/pk/ljfour/public/mathabx/dpi600\matha10.pk><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx12.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi10.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr10.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr12.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr8.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmri12.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt12.pfb>
-Output written on abstract.pdf (1 page, 147877 bytes).
+Output written on abstract.pdf (1 page, 147871 bytes).
 PDF statistics:
  66 PDF objects out of 1000 (max. 8388607)
  6 named destinations out of 1000 (max. 500000)

@@ -1,6 +1,6 @@
-PWD d:\Tunable-Kernel-Nulling\docs
+PWD d:\Tunable-Kernel-Nulling\docs\Abstract SPIE (2024)
 INPUT C:\Users\vince\AppData\Local\MiKTeX\miktex\data\le\pdftex\pdflatex.fmt
-INPUT d:\Tunable-Kernel-Nulling\docs\abstract.tex
+INPUT d:\Tunable-Kernel-Nulling\docs\Abstract SPIE (2024)\abstract.tex
 OUTPUT abstract.log
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\latex\base\article.cls
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\latex\base\article.cls
