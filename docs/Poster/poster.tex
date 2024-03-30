@@ -9,7 +9,7 @@
 \usepackage{url}  
 \usepackage[hidelinks]{hyperref}
 \usepackage[utf8]{inputenc}
-\usepackage[portuguese]{babel}
+\usepackage[english]{babel}
 \usepackage{graphicx}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%               Configs               %%
@@ -24,7 +24,7 @@
 % Inform the paths to the logo files or leave empty one or both parameters. 
 % There are three options [ T | M | B ] to positioning them.
 
-\setlogos[T]{images/logo}{images/LOGO LAB}
+\setlogos[T]{}{images/logos}
 
 % Choose one of the background options {1 | 2 | 3}. 
 % Actually, one can select any graphic file in backgrounds directory. 
@@ -40,56 +40,90 @@
 \setemailfontesize{42pt}{40pt}
 
 % General info
-\title{\uppercase{Coloque aqui seu texto\\<-observe o plular linha
-}} 
+\title{\uppercase{Direct Detection of Exoplanets using Tunable Kernel-Nulling}}
 
-\author{Primeiro Autor, Segundo Autor e Terceiro Autor} 
+\author{Vincent Foriel, Frantz Martinache, David Mary} 
 
-\department{Escola Politécnica - USP - Engenharia XXXXXXXX}
+\department{Univesité Côte d'Azur, Observatoire de la Côte d'Azur Nice, CNRS, Laboratoire Lagrange, France}
 
-\email{ \text{primeiroautor@usp.br, segundoautor@usp.br, terceiroautor@usp.br} }
+\email{ \text{vincent.foriel@oca.eu, frantz.martinache@oca.eu, david.mary@oca.eu} }
 
 \class{}
 
 \posteryear{2024}
 
-\copyrightholder{2° Congresso do Programa de Pós Graduação em Engenharia Mecânica e Mecatrônica}
+\copyrightholder{SPIE - Yokohama, Japan}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%           End configs               %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \pagestyle{fancy}
+
 \begin{document}
     \begin{poster}
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%             Begin poster            %%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
-    \section{Introdução}
-            \lipsum[3]
+    \section{Abstract}
         
-    \section{Materiais e métodos}%
-        
-        \subsection{Coloque aqui seu modelo}
-        
-        \lipsum[11]
-        
-        \vspace{0.1cm}
-        
+        This thesis proposes an innovative approach, tunable Kernel-Nulling, for high-contrast imaging of exoplanets. Using integrated optics technology with electronically controlled phase shifters, the method asymmetrically modifies the nuller's response, allowing the discrimination of astrophysical signals from diffraction-induced speckles. The device's performance optimization involves machine learning techniques, initially in a controlled setting and later in realistic observing conditions. This approach promises to significantly enhance interferometric high-contrast imaging, providing a powerful solution for achieving deep and robust observations.
+
         \begin{figure}
             \centering
             \captionsetup{type=figure}
             %mude o scale até sua imagem ficar do tamanho certo o scale pode ter valores menores que 
-            \includegraphics[scale=0.8]{images/exemplo.jpg}
-            \caption{Trilha de desgaste topografia}
-            \label{fig:lstm}
+            \includegraphics[scale=1.5]{images/detection_technics.png}
+            \caption{MeDetections per method. By Paul Anthony Wilson - Exoplanet detection techniques}
+            \label{fig:detection_methods}
         \end{figure}
+
         
-        \subsection{Coloque aqui seu \textit{dataset}}
+    \section{Context}%
+        
+        \subsection{Nulling interferometry}
+
+            \begin{figure}
+                \centering
+                \captionsetup{type=figure}
+                \includegraphics[scale=1.5]{images/nuller_scheme.png}
+                \caption{Illustration of the Nulling principle.}
+                \label{fig:nulling_principle}
+            \end{figure}
+        
+            By synchronizing the phase of the star light collected by two (or more!) telescopes, it is possible to cancel the star's light. As the star companion is not on the line of sight, it's phase will not be perfectly synchronized and will not be canceled. This is the principle of nulling interferometry.
+    
+        
+        
+        \subsection{Our architecture}
+
         
             \lipsum[54]
+
+            \begin{figure}
+                \centering
+                \captionsetup{type=figure}
+                \includegraphics[scale=1.75]{images/architecture_scheme.png}
+                \caption{Scheme of our architecture.}
+                \label{fig:architecture_scheme}
+            \end{figure}
+
+            \begin{figure}
+                \centering
+                \captionsetup{type=figure}
+                \includegraphics[scale=0.25]{images/thermo-optic_phase_shifter.png}
+                \caption{Thermo-optic phase shifter.}
+                \label{fig:thermo-optic_phase_shifter}
+            \end{figure}
+
             
+            \citep{defects2j}.
+    
+        \section{Results \& discussion}%
+                
+            \lipsum[4]    
+    
             \vspace{0.5cm}
             %Aaqui começa a tabela
             \begin{table}
@@ -109,34 +143,10 @@
             }
             \end{table}
             \vspace{0.5cm}
-            
-            \lipsum[57]
-            
-            \citep{defects2j}.
     
-            \subsection{Subsection}
-                \lipsum[8]
-    
-        \section{Resultados}%
-                
-            \lipsum[4]    
-    
-            \begin{figure}
-                \centering
-                \captionsetup{type=figure}
-                \includegraphics[scale=1.3]{images/curva stribeck.jpg}
-                \caption{Curva de stribeck \textit{}.}
-                \label{fig:result}
-            \end{figure}
-    
-            \lipsum[5]
             \cite{chollet2015keras}     
     
-        \section{Considerações finais}
-    
-            \lipsum[15]
-    
-        \section{Agradecimento}
+        \section{Acknowledgements}
     
             \lipsum[57]
     

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.3) (preloaded format=pdflatex 2024.3.29)  29 MAR 2024 22:43
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.3) (preloaded format=pdflatex 2024.3.29)  30 MAR 2024 17:40
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -629,12 +629,17 @@ Package: babel 2024/02/07 v24.2 The Babel package
 *
 (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/arabi\bblopts.cfg
 File: bblopts.cfg 2005/09/08 v0.1 add Arabic and Farsi to "declared" options of babel
-) (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/babel-portuges\portuguese.ldf
-Language: portuges 2021/07/09 v1.2t Portuguese support from the babel system
-Package babel Info: Making " an active character on input line 143.
-)) (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/generic/babel/locale/pt\babel-portuguese.tex
-Package babel Info: Importing font and identification data for portuguese
-(babel)             from babel-pt.ini. Reported on input line 11.
+) (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/babel-english\english.ldf
+Language: english 2017/06/06 v3.3r English support from the babel system
+Package babel Info: Hyphen rules for 'canadian' set to \l@english
+(babel)             (\language0). Reported on input line 102.
+Package babel Info: Hyphen rules for 'australian' set to \l@ukenglish
+(babel)             (\language73). Reported on input line 105.
+Package babel Info: Hyphen rules for 'newzealand' set to \l@ukenglish
+(babel)             (\language73). Reported on input line 108.
+)) (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/generic/babel/locale/en\babel-english.tex
+Package babel Info: Importing font and identification data for english
+(babel)             from babel-en.ini. Reported on input line 11.
 )
 LaTeX Font Info:    Trying to load font information for OT1+ppl on input line 63.
  (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ot1ppl.fd
@@ -694,118 +699,106 @@ Package hyperref Info: Link coloring OFF on input line 63.
 \@outlinefile=\write4
 \openout4 = `poster.out'.
 
-LaTeX Font Info:    Trying to load font information for OT1+phv on input line 74.
+<images/detection_technics.png, id=30, 430.7292pt x 323.0469pt>
+File: images/detection_technics.png Graphic file (type png)
+<use images/detection_technics.png>
+Package pdftex.def Info: images/detection_technics.png  used on input line 77.
+(pdftex.def)             Requested size: 646.09222pt x 484.56917pt.
+LaTeX Font Info:    Trying to load font information for OT1+phv on input line 78.
  (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ot1phv.fd
 File: ot1phv.fd 2020/03/25 scalable font definitions for OT1/phv.
 )
-LaTeX Font Info:    Font shape `OT1/phv/b/n' will be
-(Font)              scaled to size 39.89987pt on input line 74.
-<images/exemplo.jpg, id=38, 1310.64656pt x 542.77782pt>
-File: images/exemplo.jpg Graphic file (type jpg)
-<use images/exemplo.jpg>
-Package pdftex.def Info: images/exemplo.jpg  used on input line 84.
-(pdftex.def)             Requested size: 1048.51869pt x 434.22284pt.
 LaTeX Font Info:    Font shape `OT1/phv/m/n' will be
-(Font)              scaled to size 31.3499pt on input line 85.
+(Font)              scaled to size 31.3499pt on input line 78.
 LaTeX Font Info:    Font shape `OT1/phv/b/n' will be
-(Font)              scaled to size 31.3499pt on input line 85.
-LaTeX Font Info:    Font shape `OT1/phv/b/it' in size <42> not available
-(Font)              Font shape `OT1/phv/b/sl' tried instead on input line 89.
-LaTeX Font Info:    Font shape `OT1/phv/b/sl' will be
-(Font)              scaled to size 39.89987pt on input line 89.
+(Font)              scaled to size 31.3499pt on input line 78.
+LaTeX Font Info:    Font shape `OT1/phv/b/n' will be
+(Font)              scaled to size 39.89987pt on input line 85.
+<images/nuller_scheme.png, id=32, 419.31656pt x 500.62032pt>
+File: images/nuller_scheme.png Graphic file (type png)
+<use images/nuller_scheme.png>
+Package pdftex.def Info: images/nuller_scheme.png  used on input line 90.
+(pdftex.def)             Requested size: 628.97328pt x 750.92863pt.
+<images/architecture_scheme.png, id=33, 621.07031pt x 235.63031pt>
+File: images/architecture_scheme.png Graphic file (type png)
+<use images/architecture_scheme.png>
+Package pdftex.def Info: images/architecture_scheme.png  used on input line 107.
+(pdftex.def)             Requested size: 1086.87038pt x 412.35202pt.
+<images/thermo-optic_phase_shifter.png, id=34, 2203.4822pt x 790.45313pt>
+File: images/thermo-optic_phase_shifter.png Graphic file (type png)
+<use images/thermo-optic_phase_shifter.png>
+Package pdftex.def Info: images/thermo-optic_phase_shifter.png  used on input line 115.
+(pdftex.def)             Requested size: 550.8692pt x 197.6128pt.
 LaTeX Font Info:    Font shape `OT1/phv/m/it' in size <33> not available
-(Font)              Font shape `OT1/phv/m/sl' tried instead on input line 98.
+(Font)              Font shape `OT1/phv/m/sl' tried instead on input line 132.
 LaTeX Font Info:    Font shape `OT1/phv/m/sl' will be
-(Font)              scaled to size 31.3499pt on input line 98.
-LaTeX Font Info:    Calculating math sizes for size <33> on input line 109.
-LaTeX Font Info:    Trying to load font information for OML+zplm on input line 109.
+(Font)              scaled to size 31.3499pt on input line 132.
+LaTeX Font Info:    Calculating math sizes for size <33> on input line 143.
+LaTeX Font Info:    Trying to load font information for OML+zplm on input line 143.
  (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\omlzplm.fd
 File: omlzplm.fd 2002/09/08 Fontinst v1.914 font definitions for OML/zplm.
 )
-LaTeX Font Info:    Trying to load font information for OMS+zplm on input line 109.
+LaTeX Font Info:    Trying to load font information for OMS+zplm on input line 143.
  (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\omszplm.fd
 File: omszplm.fd 2002/09/08 Fontinst v1.914 font definitions for OMS/zplm.
 )
-LaTeX Font Info:    Trying to load font information for OMX+zplm on input line 109.
+LaTeX Font Info:    Trying to load font information for OMX+zplm on input line 143.
  (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\omxzplm.fd
 File: omxzplm.fd 2002/09/08 Fontinst v1.914 font definitions for OMX/zplm.
 )
-LaTeX Font Info:    Trying to load font information for OT1+zplm on input line 109.
+LaTeX Font Info:    Trying to load font information for OT1+zplm on input line 143.
  (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ot1zplm.fd
 File: ot1zplm.fd 2002/09/08 Fontinst v1.914 font definitions for OT1/zplm.
-)
-<images/curva stribeck.jpg, id=40, 673.76718pt x 528.47438pt>
-File: images/curva stribeck.jpg Graphic file (type jpg)
-<use images/curva stribeck.jpg>
-Package pdftex.def Info: images/curva stribeck.jpg  used on input line 127.
-(pdftex.def)             Requested size: 875.89725pt x 687.01662pt.
- (poster.bbl
+) (poster.bbl
 LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 6.
  (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ot1pcr.fd
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 ))
-<images/logo.png, id=43, 776.9025pt x 323.2075pt>
-File: images/logo.png Graphic file (type png)
-<use images/logo.png>
-Package pdftex.def Info: images/logo.png  used on input line 150.
-(pdftex.def)             Requested size: 776.90059pt x 323.20671pt.
-LaTeX Font Info:    Calculating math sizes for size <32> on input line 150.
 LaTeX Font Info:    Font shape `OT1/phv/m/n' will be
-(Font)              scaled to size 39.89987pt on input line 150.
+(Font)              scaled to size 39.89987pt on input line 160.
 LaTeX Font Info:    Font shape `OT1/phv/m/n' will be
-(Font)              scaled to size 60.7998pt on input line 150.
+(Font)              scaled to size 60.7998pt on input line 160.
 LaTeX Font Info:    Font shape `OT1/phv/b/n' will be
-(Font)              scaled to size 60.7998pt on input line 150.
+(Font)              scaled to size 60.7998pt on input line 160.
 LaTeX Font Info:    Font shape `OT1/phv/m/n' will be
-(Font)              scaled to size 49.39984pt on input line 150.
-<images/LOGO LAB.jpg, id=45, 874.01532pt x 364.36125pt>
-File: images/LOGO LAB.jpg Graphic file (type jpg)
-<use images/LOGO LAB.jpg>
-Package pdftex.def Info: images/LOGO LAB.jpg  used on input line 150.
-(pdftex.def)             Requested size: 874.0132pt x 364.36035pt.
-
-
-Package fancyhdr Warning: \headheight is too small (464.0pt): 
-(fancyhdr)                Make it at least 475.68344pt, for example:
-(fancyhdr)                \setlength{\headheight}{475.68344pt}.
-(fancyhdr)                You might also make \topmargin smaller to compensate:
-(fancyhdr)                \addtolength{\topmargin}{-11.68344pt}.
-
-LaTeX Font Info:    Trying to load font information for TS1+ppl on input line 150.
-(C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ts1ppl.fd
-File: ts1ppl.fd 2001/06/04 font definitions for TS1/ppl.
-)
-<backgrounds/3.pdf, id=46, 2562.75583pt x 3416.33812pt>
+(Font)              scaled to size 49.39984pt on input line 160.
+<images/logos.png, id=38, 5548.22812pt x 364.36125pt>
+File: images/logos.png Graphic file (type png)
+<use images/logos.png>
+Package pdftex.def Info: images/logos.png  used on input line 160.
+(pdftex.def)             Requested size: 5548.21468pt x 364.36035pt.
+LaTeX Font Info:    Calculating math sizes for size <32> on input line 160.
+<backgrounds/3.pdf, id=39, 2562.75583pt x 3416.33812pt>
 File: backgrounds/3.pdf Graphic file (type pdf)
 <use backgrounds/3.pdf>
-Package pdftex.def Info: backgrounds/3.pdf  used on input line 150.
+Package pdftex.def Info: backgrounds/3.pdf  used on input line 160.
 (pdftex.def)             Requested size: 2562.7496pt x 3416.32983pt.
 File: backgrounds/3.pdf Graphic file (type pdf)
 <use backgrounds/3.pdf>
-Package pdftex.def Info: backgrounds/3.pdf  used on input line 150.
+Package pdftex.def Info: backgrounds/3.pdf  used on input line 160.
 (pdftex.def)             Requested size: 2562.7496pt x 3416.32983pt.
  [1{C:/Users/vince/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8r.enc}
 
- <./backgrounds/3.pdf> <./images/logo.png> <./images/LOGO LAB.jpg> <./images/exemplo.jpg> <./images/curva stribeck.jpg>] (poster.aux)
+ <./backgrounds/3.pdf> <./images/logos.png> <./images/detection_technics.png> <./images/nuller_scheme.png> <./images/architecture_scheme.png> <./images/thermo-optic_phase_shifter.png>] (poster.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-03-14>
  ***********
 Package rerunfilecheck Info: File `poster.out' has not changed.
-(rerunfilecheck)             Checksum: 0823DC2D62FA7117A64E80B78AC19C9A;1073.
+(rerunfilecheck)             Checksum: 790CF9AEA8F828EEB289AC0E2B0BB80B;746.
  ) 
 Here is how much of TeX's memory you used:
- 24325 strings out of 474424
- 458455 string characters out of 5741739
- 1966496 words of memory out of 5000000
- 46208 multiletter control sequences out of 15000+600000
- 591389 words of font info for 100 fonts, out of 8000000 for 9000
+ 24269 strings out of 474424
+ 457879 string characters out of 5741739
+ 1957496 words of memory out of 5000000
+ 46159 multiletter control sequences out of 15000+600000
+ 589076 words of font info for 96 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 132i,19n,135p,515b,1027s stack positions out of 10000i,1000n,20000p,200000b,200000s
-<C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/courier/ucrr8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvb8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvbo8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvr8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvro8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/palatino/uplb8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/palatino/uplr8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/palatino/uplri8a.pfb>
-Output written on poster.pdf (1 page, 1267294 bytes).
+ 132i,19n,135p,731b,1025s stack positions out of 10000i,1000n,20000p,200000b,200000s
+<C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/courier/ucrr8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvb8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvr8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvro8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/palatino/uplb8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/palatino/uplr8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/palatino/uplri8a.pfb>
+Output written on poster.pdf (1 page, 1205251 bytes).
 PDF statistics:
- 115 PDF objects out of 1000 (max. 8388607)
+ 109 PDF objects out of 1000 (max. 8388607)
  16 named destinations out of 1000 (max. 500000)
- 102 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 91 words of extra memory for PDF output out of 10000 (max. 10000000)
 

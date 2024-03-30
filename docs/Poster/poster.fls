@@ -246,13 +246,13 @@ INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\generic\babel\txtbabel.de
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\latex\arabi\bblopts.cfg
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\latex\arabi\bblopts.cfg
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\latex\arabi\bblopts.cfg
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\latex\babel-portuges\portuguese.ldf
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\latex\babel-portuges\portuguese.ldf
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\latex\babel-portuges\portuguese.ldf
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\generic\babel\locale\pt\babel-portuguese.tex
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\generic\babel\locale\pt\babel-portuguese.tex
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\generic\babel\locale\pt\babel-portuguese.tex
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\generic\babel\locale\pt\babel-pt.ini
+INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\latex\babel-english\english.ldf
+INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\latex\babel-english\english.ldf
+INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\latex\babel-english\english.ldf
+INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\generic\babel\locale\en\babel-english.tex
+INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\generic\babel\locale\en\babel-english.tex
+INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\generic\babel\locale\en\babel-english.tex
+INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\generic\babel\locale\en\babel-en.ini
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\latex\psnfss\ot1ppl.fd
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\latex\psnfss\ot1ppl.fd
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\latex\psnfss\ot1ppl.fd
@@ -282,22 +282,42 @@ INPUT .\poster.out
 OUTPUT poster.out
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\palatino\pplr7t.tfm
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\palatino\pplb7t.tfm
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\palatino\pplr7t.tfm
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\palatino\pplb7t.tfm
+INPUT .\images\detection_technics.png
+INPUT .\images\detection_technics.png
+INPUT .\images\detection_technics.png
+INPUT .\images\detection_technics.png
+INPUT .\images\detection_technics.png
+INPUT .\images\detection_technics.png
+INPUT .\images\detection_technics.png
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\latex\psnfss\ot1phv.fd
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\latex\psnfss\ot1phv.fd
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\latex\psnfss\ot1phv.fd
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\helvetic\phvb7t.tfm
-INPUT .\images\exemplo.jpg
-INPUT .\images\exemplo.jpg
-INPUT .\images\exemplo.jpg
-INPUT .\images\exemplo.jpg
-INPUT .\images\exemplo.jpg
-INPUT .\images\exemplo.jpg
-INPUT .\images\exemplo.jpg
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\helvetic\phvr7t.tfm
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\helvetic\phvb7t.tfm
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\helvetic\phvbo7t.tfm
+INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\palatino\pplr7t.tfm
+INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\palatino\pplb7t.tfm
+INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\helvetic\phvb7t.tfm
+INPUT .\images\nuller_scheme.png
+INPUT .\images\nuller_scheme.png
+INPUT .\images\nuller_scheme.png
+INPUT .\images\nuller_scheme.png
+INPUT .\images\nuller_scheme.png
+INPUT .\images\nuller_scheme.png
+INPUT .\images\nuller_scheme.png
+INPUT .\images\architecture_scheme.png
+INPUT .\images\architecture_scheme.png
+INPUT .\images\architecture_scheme.png
+INPUT .\images\architecture_scheme.png
+INPUT .\images\architecture_scheme.png
+INPUT .\images\architecture_scheme.png
+INPUT .\images\architecture_scheme.png
+INPUT .\images\thermo-optic_phase_shifter.png
+INPUT .\images\thermo-optic_phase_shifter.png
+INPUT .\images\thermo-optic_phase_shifter.png
+INPUT .\images\thermo-optic_phase_shifter.png
+INPUT .\images\thermo-optic_phase_shifter.png
+INPUT .\images\thermo-optic_phase_shifter.png
+INPUT .\images\thermo-optic_phase_shifter.png
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\helvetic\phvro7t.tfm
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\palatino\pplr7t.tfm
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\palatino\pplr7t.tfm
@@ -326,13 +346,6 @@ INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zpl
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zplmr7t.tfm
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zplmr7t.tfm
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\palatino\pplb7t.tfm
-INPUT .\images\curva stribeck.jpg
-INPUT .\images\curva stribeck.jpg
-INPUT .\images\curva stribeck.jpg
-INPUT .\images\curva stribeck.jpg
-INPUT .\images\curva stribeck.jpg
-INPUT .\images\curva stribeck.jpg
-INPUT .\images\curva stribeck.jpg
 INPUT .\poster.bbl
 INPUT .\poster.bbl
 INPUT poster.bbl
@@ -342,41 +355,31 @@ INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\latex\psnfss\ot1pcr.fd
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\courier\pcrr7t.tfm
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\palatino\pplri7t.tfm
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\palatino\pplr7t.tfm
-INPUT .\images\logo.png
-INPUT .\images\logo.png
-INPUT .\images\logo.png
-INPUT .\images\logo.png
-INPUT .\images\logo.png
-INPUT .\images\logo.png
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\palatino\pplr7t.tfm
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\palatino\pplr7t.tfm
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zplmr7m.tfm
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zplmr7m.tfm
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zplmr7m.tfm
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zplmr7y.tfm
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zplmr7y.tfm
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zplmr7y.tfm
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zplmr7v.tfm
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zplmr7v.tfm
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zplmr7v.tfm
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zplmr7t.tfm
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zplmr7t.tfm
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zplmr7t.tfm
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\helvetic\phvr7t.tfm
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\palatino\pplr7t.tfm
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\helvetic\phvr7t.tfm
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\helvetic\phvb7t.tfm
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\helvetic\phvr7t.tfm
-INPUT .\images\LOGO LAB.jpg
-INPUT .\images\LOGO LAB.jpg
-INPUT .\images\LOGO LAB.jpg
-INPUT .\images\LOGO LAB.jpg
-INPUT .\images\LOGO LAB.jpg
-INPUT .\images\LOGO LAB.jpg
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\latex\psnfss\ts1ppl.fd
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\latex\psnfss\ts1ppl.fd
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\tex\latex\psnfss\ts1ppl.fd
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\palatino\pplr8c.tfm
+INPUT .\images\logos.png
+INPUT .\images\logos.png
+INPUT .\images\logos.png
+INPUT .\images\logos.png
+INPUT .\images\logos.png
+INPUT .\images\logos.png
+INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\palatino\pplr7t.tfm
+INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\palatino\pplr7t.tfm
+INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zplmr7m.tfm
+INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zplmr7m.tfm
+INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zplmr7m.tfm
+INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zplmr7y.tfm
+INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zplmr7y.tfm
+INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zplmr7y.tfm
+INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zplmr7v.tfm
+INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zplmr7v.tfm
+INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zplmr7v.tfm
+INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zplmr7t.tfm
+INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zplmr7t.tfm
+INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\zplmr7t.tfm
 INPUT .\backgrounds\3.pdf
 INPUT .\backgrounds\3.pdf
 INPUT .\backgrounds\3.pdf
@@ -399,12 +402,10 @@ INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\vf\adobe\palatino\pplr7
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\palatino\pplr8r.tfm
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\vf\adobe\helvetic\phvb7t.vf
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\helvetic\phvb8r.tfm
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\vf\adobe\helvetic\phvb7t.vf
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\helvetic\phvb8r.tfm
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\vf\adobe\helvetic\phvr7t.vf
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\helvetic\phvr8r.tfm
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\vf\adobe\helvetic\phvbo7t.vf
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\helvetic\phvbo8r.tfm
+INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\vf\adobe\helvetic\phvb7t.vf
+INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\helvetic\phvb8r.tfm
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\vf\adobe\helvetic\phvro7t.vf
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\helvetic\phvro8r.tfm
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\vf\adobe\palatino\pplb7t.vf
@@ -415,8 +416,6 @@ INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\vf\adobe\palatino\pplri
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\palatino\pplri8r.tfm
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\vf\adobe\palatino\pplr7t.vf
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\adobe\palatino\pplr8r.tfm
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\vf\adobe\palatino\pplr8c.vf
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\tfm\public\mathpazo\fplmr.tfm
 INPUT poster.aux
 INPUT .\poster.out
 INPUT .\poster.out
@@ -424,8 +423,6 @@ INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\type1\urw\courier\ucrr8
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\type1\urw\courier\ucrr8a.pfb
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\type1\urw\helvetic\uhvb8a.pfb
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\type1\urw\helvetic\uhvb8a.pfb
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\type1\urw\helvetic\uhvbo8a.pfb
-INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\type1\urw\helvetic\uhvbo8a.pfb
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\type1\urw\helvetic\uhvr8a.pfb
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\type1\urw\helvetic\uhvr8a.pfb
 INPUT C:\Users\vince\AppData\Local\Programs\MiKTeX\fonts\type1\urw\helvetic\uhvro8a.pfb
