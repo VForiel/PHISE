@@ -6,3 +6,5 @@ ipywidgets
 sympy
 fitter
 numba
+LRFutils
+gitpython
