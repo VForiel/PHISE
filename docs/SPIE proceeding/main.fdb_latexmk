@@ -1,9 +1,9 @@
 # Fdb version 4
-["pdflatex"] 1712150627.0734 "d:/Tunable-Kernel-Nulling/docs/SPIE proceeding/main.tex" "main.pdf" "main" 1712150628.18134 0
-  "C:/Users/vforiel/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1712150452 80909 eab91d9745dd2edfd62a31d53cd5fe15 ""
+["pdflatex"] 1715674508.24559 "d:/Tunable-Kernel-Nulling/docs/SPIE proceeding/main.tex" "main.pdf" "main" 1715674510.01694 0
+  "C:/Users/vforiel/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1714466961 82507 a9eef8696c92627b87e9975edea03b2a ""
   "C:/Users/vforiel/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm0600.pk" 1712150133 7284 009fbb979f5cdd9869d7926cd7fc07f4 ""
   "C:/Users/vforiel/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm0700.pk" 1712150138 8268 b348059090725c37dac43f2a4ff85008 ""
-  "C:/Users/vforiel/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1711632300 24236950 8dfaa5bc28eee540e78e45f6bca037e1 ""
+  "C:/Users/vforiel/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1714468883 24236950 2e5880450da6899fccf54c05ab874b08 ""
   "C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/tfm/jknappen/ec/tcrm0600.tfm" 993062506 1456 d21918d95ca20f07aa266303b9a0a14c ""
   "C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/tfm/jknappen/ec/tcrm0700.tfm" 993062506 1452 97bdc98984cb373fbcd868e2fa55f5f2 ""
   "C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1233951848 1004 54797486969f23fa377b128694d548df ""
@@ -82,7 +82,7 @@
   "C:/Users/vforiel/AppData/Local/Programs/MiKTeX/tex/latex/etoolbox/etoolbox.sty" 1601897756 46845 3b58f70c6e861a13d927bff09d35ecbc ""
   "C:/Users/vforiel/AppData/Local/Programs/MiKTeX/tex/latex/graphics-cfg/color.cfg" 1465894292 1213 620bba36b25224fa9b7e1ccb4ecb76fd ""
   "C:/Users/vforiel/AppData/Local/Programs/MiKTeX/tex/latex/graphics-cfg/graphics.cfg" 1465894292 1224 978390e9c2234eab29404bc21b268d1e ""
-  "C:/Users/vforiel/AppData/Local/Programs/MiKTeX/tex/latex/graphics-def/pdftex.def" 1663918690 19448 1e988b341dda20961a6b931bcde55519 ""
+  "C:/Users/vforiel/AppData/Local/Programs/MiKTeX/tex/latex/graphics-def/pdftex.def" 1713599642 19440 9da9dcbb27470349a580fca7372d454b ""
   "C:/Users/vforiel/AppData/Local/Programs/MiKTeX/tex/latex/graphics/color.sty" 1665067579 7233 e46ce9241d2b2ca2a78155475fdd557a ""
   "C:/Users/vforiel/AppData/Local/Programs/MiKTeX/tex/latex/graphics/graphics.sty" 1665067579 18387 8f900a490197ebaf93c02ae9476d4b09 ""
   "C:/Users/vforiel/AppData/Local/Programs/MiKTeX/tex/latex/graphics/graphicx.sty" 1665067579 8010 a8d949cbdbc5c983593827c9eec252e1 ""
@@ -103,10 +103,10 @@
   "C:/Users/vforiel/AppData/Local/Programs/MiKTeX/tex/latex/rerunfilecheck/rerunfilecheck.sty" 1657800696 9714 ba3194bd52c8499b3f1e3eb91d409670 ""
   "C:/Users/vforiel/AppData/Local/Programs/MiKTeX/tex/latex/url/url.sty" 1388490452 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
   "MultimediaFigure.jpg" 1712150073 24216 a3061a28251b16b143f93d133efb261f ""
-  "d:/Tunable-Kernel-Nulling/docs/SPIE proceeding/main.tex" 1712150625 20640 662d6b17181039395fcb2358e10fd9d0 ""
-  "main.aux" 1712150627 4546 d25aa7a05c70c18c1092dfbb83a231df "pdflatex"
-  "main.out" 1712150627 2721 65c0cd8be0723f4da63bf954721f8181 "pdflatex"
-  "main.tex" 1712150625 20640 662d6b17181039395fcb2358e10fd9d0 ""
+  "d:/Tunable-Kernel-Nulling/docs/SPIE proceeding/main.tex" 1715674506 20640 662d6b17181039395fcb2358e10fd9d0 ""
+  "main.aux" 1715674509 4546 d25aa7a05c70c18c1092dfbb83a231df "pdflatex"
+  "main.out" 1715674509 2721 65c0cd8be0723f4da63bf954721f8181 "pdflatex"
+  "main.tex" 1715674506 20640 662d6b17181039395fcb2358e10fd9d0 ""
   "mcr3b.eps" 1712150073 14236 1cddcefc542fdbf0602a0933258fc1fc ""
   "spie.cls" 1712150073 12769 00206a99d10bba05851078caee7247c2 ""
   (generated)
