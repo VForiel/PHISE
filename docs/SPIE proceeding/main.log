@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.4.30)  14 MAY 2024 10:15
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.4.30)  16 MAY 2024 08:58
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -310,30 +310,31 @@ LaTeX Font Info:    Trying to load font information for U+msb on input line 26.
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 ) [301
 
-{C:/Users/vforiel/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}] [302]
+{C:/Users/vforiel/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}]
 
-LaTeX Warning: Citation `Lamport94' on page 303 undefined on input line 134.
-
-
-LaTeX Warning: Citation `Alred03' on page 303 undefined on input line 134.
+LaTeX Warning: Citation `Lamport94' on page 302 undefined on input line 69.
 
 
-LaTeX Warning: Citation `Goossens97' on page 303 undefined on input line 134.
+LaTeX Warning: Citation `Alred03' on page 302 undefined on input line 69.
 
 
-LaTeX Warning: Citation `Metropolis53' on page 303 undefined on input line 134.
+LaTeX Warning: Citation `Goossens97' on page 302 undefined on input line 69.
 
 
-LaTeX Warning: Citation `Lamport94' on page 303 undefined on input line 134.
+LaTeX Warning: Citation `Metropolis53' on page 302 undefined on input line 69.
 
 
-LaTeX Warning: Citation `Gull89a' on page 303 undefined on input line 134.
+LaTeX Warning: Citation `Lamport94' on page 302 undefined on input line 69.
 
 
-LaTeX Warning: Citation `Lees-Miller-LaTeX-course-1' on page 303 undefined on input line 134.
+LaTeX Warning: Citation `Gull89a' on page 302 undefined on input line 69.
 
 
-LaTeX Warning: Citation `Lamport94' on page 303 undefined on input line 150.
+LaTeX Warning: Citation `Lees-Miller-LaTeX-course-1' on page 302 undefined on input line 69.
+
+[302]
+
+LaTeX Warning: Citation `Lamport94' on page 303 undefined on input line 85.
 
 [303]
 Package epstopdf Info: Source file: <mcr3b.eps>
@@ -343,20 +344,19 @@ Package epstopdf Info: Source file: <mcr3b.eps>
 (epstopdf)                    date: 2024-04-03 15:15:28
 (epstopdf)                    size: 12068 bytes
 (epstopdf)             Command: <miktex-epstopdf --outfile=mcr3b-eps-converted-to.pdf mcr3b.eps>
-(epstopdf)             \includegraphics on input line 170.
+(epstopdf)             \includegraphics on input line 105.
 Package epstopdf Info: Output file is already uptodate.
-<mcr3b-eps-converted-to.pdf, id=113, 216.81pt x 215.80624pt>
+<mcr3b-eps-converted-to.pdf, id=111, 216.81pt x 215.80624pt>
 File: mcr3b-eps-converted-to.pdf Graphic file (type pdf)
 <use mcr3b-eps-converted-to.pdf>
-Package pdftex.def Info: mcr3b-eps-converted-to.pdf  used on input line 170.
+Package pdftex.def Info: mcr3b-eps-converted-to.pdf  used on input line 105.
 (pdftex.def)             Requested size: 142.92963pt x 142.26378pt.
- [304 <./mcr3b-eps-converted-to.pdf>]
-<MultimediaFigure.jpg, id=123, 234.8775pt x 155.07938pt>
+<MultimediaFigure.jpg, id=113, 234.8775pt x 155.07938pt>
 File: MultimediaFigure.jpg Graphic file (type jpg)
 <use MultimediaFigure.jpg>
-Package pdftex.def Info: MultimediaFigure.jpg  used on input line 188.
+Package pdftex.def Info: MultimediaFigure.jpg  used on input line 123.
 (pdftex.def)             Requested size: 215.46631pt x 142.26378pt.
- [305 <./MultimediaFigure.jpg>] [306] (main.aux)
+ [304 <./mcr3b-eps-converted-to.pdf> <./MultimediaFigure.jpg>] [305] (main.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-03-14>
@@ -369,17 +369,17 @@ Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: 65C0CD8BE0723F4DA63BF954721F8181;2721.
  ) 
 Here is how much of TeX's memory you used:
- 10031 strings out of 474424
- 153905 string characters out of 5740795
- 1948496 words of memory out of 5000000
- 32209 multiletter control sequences out of 15000+600000
+ 10026 strings out of 474424
+ 153853 string characters out of 5740795
+ 1941496 words of memory out of 5000000
+ 32207 multiletter control sequences out of 15000+600000
  568851 words of font info for 78 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,12n,79p,1557b,446s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,12n,79p,1824b,444s stack positions out of 10000i,1000n,20000p,200000b,200000s
  <C:\Users\vforiel\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm0600.pk> <C:\Users\vforiel\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm0700.pk><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx7.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt9.pfb>
-Output written on main.pdf (6 pages, 242585 bytes).
+Output written on main.pdf (5 pages, 236894 bytes).
 PDF statistics:
- 207 PDF objects out of 1000 (max. 8388607)
- 36 named destinations out of 1000 (max. 500000)
+ 202 PDF objects out of 1000 (max. 8388607)
+ 33 named destinations out of 1000 (max. 500000)
  147 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -25,7 +25,7 @@
 \maketitle
 
 \begin{abstract}
-    Nulling interferometry is a promising technique for direct detection of exoplanets. However, the performance of current devices is limited by the sensitivity to phase aberrations. This thesis attempts to overcome those challenges by using a four-telescopes nulling interferometer architecture, called Kernel-Nuller\cite{Martinache et al. 2018}, which includes a recombiner that positions the four signals in phase quadrature. This architecture is based on an integrated optical component containing 14 electronically controlled phase shifters, used to correct optical path differences that would be induced by manufacturing defects. The first part of the study consists in the development of an algorithm providing   the delays to be injected into the component to optimize the performance of that device. This   technique is first evaluated via numerical simulations, then in lab. It is then envisaged to leverage the Nuller mode, soon to be installed on the VLTI as part of the ASGARD project, to test this architecture under real conditions of observation. The next step of this study deals with the analysis of the intensity distributions produced at the output of the Kernel-Nuller\cite{Martinache et al. 2018, Cvetojevic et al. 2022} through a series of observations, against which statistical tests and machine learning techniques are applied to detect the presence of exoplanets. The preliminary results of this study are presented in this presentation.
+    Nulling interferometry is a promising technique for direct detection of exoplanets. However, the performance of current devices is limited by the sensitivity to phase aberrations. This thesis attempts to overcome those challenges by using a four-telescopes nulling interferometer architecture, called Kernel-Nuller\cite{Martinache et al. 2018}, which includes a recombiner that positions the four signals in phase quadrature. This architecture is based on an integrated optical component containing 14 electronically controlled phase shifters, used to correct optical path differences that would be induced by manufacturing defects. The first part of the study consists in the development of an algorithm providing   the delays to be injected into the component to optimize the performance of that device. This   technique is first evaluated via numerical simulations, then in lab. It is then envisaged to leverage the Nuller mode, soon to be installed on the VLTI as part of the ASGARD project, to test this architecture under real conditions of observation. The next step of this study deals with the analysis of the intensity distributions produced at the output of the Kernel-Nuller\cite{Martinache et al. 2018, Cvetojevic et al. 2022} through a series of observations, against which statistical tests and machine learning techniques are applied to detect the presence of exoplanets. The preliminary results of this study are presented in this proceeding.
 \end{abstract}
 
 % Include a list of keywords after the abstract 
@@ -34,72 +34,7 @@
 \section{INTRODUCTION}
 \label{sec:intro}  % \label{} allows reference to this section
 
-Begin the Introduction below the Keywords. The manuscript should not have headers, footers, or page numbers. It should be in a one-column format. References are often noted in the text and cited at the end of the paper.
-
-\begin{table}[ht]
-\caption{Fonts sizes to be used for various parts of the manuscript.  Table captions should be centered above the table.  When the caption is too long to fit on one line, it should be justified to the right and left margins of the body of the text.} 
-\label{tab:fonts}
-\begin{center}       
-\begin{tabular}{|l|l|} %% this creates two columns
-%% |l|l| to left justify each column entry
-%% |c|c| to center each column entry
-%% use of \rule[]{}{} below opens up each row
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Article title & 16 pt., bold, centered  \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Author names and affiliations & 12 pt., normal, centered   \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Keywords & 10 pt., normal, left justified   \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Abstract Title & 11 pt., bold, centered   \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Abstract body text & 10 pt., normal, justified   \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Section heading & 11 pt., bold, centered (all caps)  \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Subsection heading & 11 pt., bold, left justified  \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Sub-subsection heading & 10 pt., bold, left justified  \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Normal text & 10 pt., normal, justified  \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Figure and table captions & \, 9 pt., normal \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Footnote & \, 9 pt., normal \\
-\hline 
-\rule[-1ex]{0pt}{3.5ex}  Reference Heading & 11 pt., bold, centered   \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Reference Listing & 10 pt., normal, justified   \\
-\hline
-\end{tabular}
-\end{center}
-\end{table} 
-
-\begin{table}[ht]
-\caption{Margins and print area specifications.} 
-\label{tab:Paper Margins}
-\begin{center}       
-\begin{tabular}{|l|l|l|} 
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Margin & A4 & Letter  \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Top margin & 2.54 cm & 1.0 in.   \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Bottom margin & 4.94 cm & 1.25 in.  \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Left, right margin & 1.925 cm & .875 in.  \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Printable area & 17.15 x 22.23 cm & 6.75 x 8.75 in.  \\
-\hline 
-\end{tabular}
-\end{center}
-\end{table}
-
-LaTeX margins are related to the document's paper size. The paper size is by default set to USA letter paper. To format a document for A4 paper, the first line of this LaTeX source file should be changed to \verb|\documentclass[a4paper]{spie}|.   
-
-Authors are encouraged to follow the principles of sound technical writing, as described in Refs.~ and , for example.  Many aspects of technical writing are addressed in the {\em AIP Style Manual}, published by the American Institute of Physics.  It is available on line at \url{https://publishing.aip.org/authors}. A spelling checker is helpful for finding misspelled words. 
-
-An author may use this LaTeX source file as a template by substituting his/her own text in each field.  This document is not meant to be a complete guide on how to use LaTeX.  For that, please see the list of references at \url{http://latex-project.org/guides/} and for an online introduction to LaTeX please see . 
+The direct detection of exoplanets is a challenging task due to the high contrast between the star and the planet. Nulling interferometry is a promising technique to overcome this challenge. It consists in combining the light from several telescopes to create destructive interference and cancel the star light, while keeping constructive interference for the planet. However, the performance of current devices is limited by the sensitivity to phase aberrations. This thesis attempts to overcome those challenges by using a four-telescopes nulling interferometer architecture, called Kernel-Nuller\cite{Martinache et al. 2018}, which includes a recombiner that positions the four signals in phase quadrature. This architecture is based on an integrated optical component containing 14 electronically controlled phase shifters, used to correct optical path differences that would be induced by manufacturing defects. The first part of the study consists in the development of an algorithm providing the delays to be injected into the component to optimize the performance of that device. This technique is first evaluated via numerical simulations, then in lab. It is then envisaged to leverage the Nuller mode, soon to be installed on the VLTI as part of the ASGARD project, to test this architecture under real conditions of observation. The next step of this study deals with the analysis of the intensity distributions produced at the output of the Kernel-Nuller\cite{Martinache et al. 2018, Cvetojevic et al. 2022} through a series of observations, against which statistical tests and machine learning techniques are applied to detect the presence of exoplanets. The preliminary results of this study are presented in this proceeding.
 
 \section{FORMATTING OF MANUSCRIPT COMPONENTS}
 
