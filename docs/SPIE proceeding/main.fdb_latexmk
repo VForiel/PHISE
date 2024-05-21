@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1716271837.08298 "d:/Tunable-Kernel-Nulling/docs/SPIE proceeding/main.tex" "main.pdf" "main" 1716271837.90625 0
+["pdflatex"] 1716291529.28242 "d:/Tunable-Kernel-Nulling/docs/SPIE proceeding/main.tex" "main.pdf" "main" 1716291530.02314 0
   "C:/Users/vforiel/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1714466961 82507 a9eef8696c92627b87e9975edea03b2a ""
   "C:/Users/vforiel/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm0600.pk" 1712150133 7284 009fbb979f5cdd9869d7926cd7fc07f4 ""
   "C:/Users/vforiel/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm0700.pk" 1712150138 8268 b348059090725c37dac43f2a4ff85008 ""
@@ -102,13 +102,14 @@
   "C:/Users/vforiel/AppData/Local/Programs/MiKTeX/tex/latex/refcount/refcount.sty" 1576433952 9878 9e94e8fa600d95f9c7731bb21dfb67a4 ""
   "C:/Users/vforiel/AppData/Local/Programs/MiKTeX/tex/latex/rerunfilecheck/rerunfilecheck.sty" 1657800696 9714 ba3194bd52c8499b3f1e3eb91d409670 ""
   "C:/Users/vforiel/AppData/Local/Programs/MiKTeX/tex/latex/url/url.sty" 1388490452 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
-  "MultimediaFigure.jpg" 1712150073 24216 a3061a28251b16b143f93d133efb261f ""
-  "d:/Tunable-Kernel-Nulling/docs/SPIE proceeding/main.tex" 1716271836 18931 7d1085855a995ae6da8bdaf70dc0c346 ""
-  "main.aux" 1716271837 3771 d905313ef92a957a678c7206c87caa07 "pdflatex"
-  "main.out" 1716271837 2721 65c0cd8be0723f4da63bf954721f8181 "pdflatex"
-  "main.tex" 1716271836 18931 7d1085855a995ae6da8bdaf70dc0c346 ""
-  "mcr3b.eps" 1712150073 14236 1cddcefc542fdbf0602a0933258fc1fc ""
-  "spie.cls" 1712150073 12769 00206a99d10bba05851078caee7247c2 ""
+  "MultimediaFigure.jpg" 1716281678 24216 a3061a28251b16b143f93d133efb261f ""
+  "d:/Tunable-Kernel-Nulling/docs/SPIE proceeding/main.tex" 1716291528 19763 9a824167938e66bfae88315d8b657f87 ""
+  "img/kernel_nuller.png" 1716291156 62910 7cb32cc8048b4400e7bed8c5925978da ""
+  "main.aux" 1716291529 3963 b2e626e13b00a279a64b55bf98a91be5 "pdflatex"
+  "main.out" 1716291529 2721 65c0cd8be0723f4da63bf954721f8181 "pdflatex"
+  "main.tex" 1716291528 19763 9a824167938e66bfae88315d8b657f87 ""
+  "mcr3b.eps" 1716281678 14494 1cddcefc542fdbf0602a0933258fc1fc ""
+  "spie.cls" 1716281678 13116 00206a99d10bba05851078caee7247c2 ""
   (generated)
   "main.aux"
   "main.log"

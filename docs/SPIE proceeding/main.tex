@@ -21,20 +21,32 @@
 \pagestyle{empty} % change to \pagestyle{plain} for page numbers   
 \setcounter{page}{301} % Set start page numbering at e.g. 301
  
-\begin{document} 
+\begin{document}
 \maketitle
 
 \begin{abstract}
     Nulling interferometry is a promising technique for direct detection of exoplanets. However, the performance of current devices is limited by the sensitivity to phase aberrations. This thesis attempts to overcome those challenges by using a four-telescopes nulling interferometer architecture, called Kernel-Nuller\cite{Martinache et al. 2018}, which includes a recombiner that positions the four signals in phase quadrature. This architecture is based on an integrated optical component containing 14 electronically controlled phase shifters, used to correct optical path differences that would be induced by manufacturing defects. The first part of the study consists in the development of an algorithm providing   the delays to be injected into the component to optimize the performance of that device. This   technique is first evaluated via numerical simulations, then in lab. It is then envisaged to leverage the Nuller mode, soon to be installed on the VLTI as part of the ASGARD project, to test this architecture under real conditions of observation. The next step of this study deals with the analysis of the intensity distributions produced at the output of the Kernel-Nuller\cite{Martinache et al. 2018, Cvetojevic et al. 2022} through a series of observations, against which statistical tests and machine learning techniques are applied to detect the presence of exoplanets. The preliminary results of this study are presented in this proceeding.
 \end{abstract}
 
-% Include a list of keywords after the abstract 
+% Include a list of keywords after the abstract
 \keywords{Interferometry, Exoplanet, Kernel-Nulling, VLTI, ASGARD}
 
 \section{INTRODUCTION}
 \label{sec:intro}  % \label{} allows reference to this section
 
 The direct detection of exoplanets is a challenging task due to the high contrast between the star and the planet. Nulling interferometry is a promising technique to overcome this challenge. It consists in combining the light from several telescopes to create destructive interference and cancel the star light and keeping the planet signal. However, the performance of current devices is limited by the high sensitivity to phase aberrations. The thesis that is presened here attempts to overcome those challenges by using a four-telescopes nulling interferometer architecture, called Kernel-Nuller\cite{Martinache et al. 2018}, which includes a serie of fourteen thermo-optic phase shifters, used to correct optical path differences that would be induced by manufacturing defects. The first part of the study consists in the development of an algorithm providing the delays to be injected into the component to optimize the performance of that device. This technique is first evaluated via numerical simulations, then in lab. It is then envisaged to leverage the Nuller mode, soon to be installed on the VLTI as part of the ASGARD project, to test this architecture under real conditions of observation. The second step of this study deals with the analysis of the intensity distributions produced at the output of the Kernel-Nuller\cite{Martinache et al. 2018, Cvetojevic et al. 2022} through a series of observations, against which statistical tests and machine learning techniques are applied to detect the presence of exoplanets. The preliminary results of this study are presented in this proceeding.
+
+\begin{figure} [ht]
+    \begin{center}
+    \begin{tabular}{c} %% tabular useful for creating an array of images 
+    \includegraphics[height=5cm]{img/kernel_nuller.png}
+    \end{tabular}
+    \end{center}
+    \caption[kernel_nuller] 
+ %>>>> use \label inside caption to get Fig. number with \ref{}
+    { \label{fig:kernel_nuller} 
+    Scheme of the tunable ernel-nuller architecture. P1-14 are the thermo-optic phase shifters. N1-4 represent the four 2x2 Nuller MMI that reproduce a 4x4 one. R1-3 are the three recombiner that place the signals in phase quadrature. I1-4 are the inputs signals. B is the bright }
+\end{figure} 
 
 \section{FORMATTING OF MANUSCRIPT COMPONENTS}
 
