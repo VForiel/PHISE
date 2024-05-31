@@ -25,171 +25,177 @@
 \maketitle
 
 \begin{abstract}
-    Nulling interferometry is a promising technique for direct detection of exoplanets. However, the performance of current devices is limited by the sensitivity to phase aberrations. This thesis attempts to overcome those challenges by using a four-telescopes nulling interferometer architecture, called Kernel-Nuller\cite{Martinache et al. 2018}, which includes a recombiner that positions the four signals in phase quadrature. This architecture is based on an integrated optical component containing 14 electronically controlled phase shifters, used to correct optical path differences that would be induced by manufacturing defects. The first part of the study consists in the development of an algorithm providing   the delays to be injected into the component to optimize the performance of that device. This   technique is first evaluated via numerical simulations, then in lab. It is then envisaged to leverage the Nuller mode, soon to be installed on the VLTI as part of the ASGARD project, to test this architecture under real conditions of observation. The next step of this study deals with the analysis of the intensity distributions produced at the output of the Kernel-Nuller\cite{Martinache et al. 2018, Cvetojevic et al. 2022} through a series of observations, against which statistical tests and machine learning techniques are applied to detect the presence of exoplanets. The preliminary results of this study are presented in this proceeding.
+
 \end{abstract}
 
 % Include a list of keywords after the abstract
 \keywords{Interferometry, Exoplanet, Kernel-Nulling, VLTI, ASGARD}
 
 \section{INTRODUCTION}
-\label{sec:intro}  % \label{} allows reference to this section
+\label{sec:intro} % \label{} allows reference to this section
 
-The direct detection of exoplanets is a challenging task due to the high contrast between the star and the planet. Nulling interferometry is a promising technique to overcome this challenge. It consists in combining the light from several telescopes to create destructive interference and cancel the star light and keeping the planet signal. However, the performance of current devices is limited by the high sensitivity to phase aberrations. The thesis that is presened here attempts to overcome those challenges by using a four-telescopes nulling interferometer architecture, called Kernel-Nuller\cite{Martinache et al. 2018}, which includes a serie of fourteen thermo-optic phase shifters, used to correct optical path differences that would be induced by manufacturing defects. The first part of the study consists in the development of an algorithm providing the delays to be injected into the component to optimize the performance of that device. This technique is first evaluated via numerical simulations, then in lab. It is then envisaged to leverage the Nuller mode, soon to be installed on the VLTI as part of the ASGARD project, to test this architecture under real conditions of observation. The second step of this study deals with the analysis of the intensity distributions produced at the output of the Kernel-Nuller\cite{Martinache et al. 2018, Cvetojevic et al. 2022} through a series of observations, against which statistical tests and machine learning techniques are applied to detect the presence of exoplanets. The preliminary results of this study are presented in this proceeding.
+The direct detection of exoplanets is very challenging due to the high contrast between the stellar and planetary signals. Nulling interferometry offers a promising solution to this problem. This technique involves directing multiple telescopes at the target star to achieve destructive interference, effectively canceling out the star's light. Due to the angular separation between the star and its companion, the light from the latter reaches the telescopes with different phases, preventing complete destructive interference and allowing for potential constructive interference of the planetary light. However, such system is highly sensitive to phase aberations that limit their performances. Kernel-nulling is an attempt to partially overcome this issue by employing three or more [[[cite N telescope Laugier]]] telescopes to generate twin outputs that can be subtracted to eliminate low-order phase aberrations. This study aims to enhance the performance of such a system by reducing introducting phase aberation control techniques and statistical analysis to improve the detection of exoplanets.
+
+\section{Architecture}
+
+This study employs a 4-telescope Kernel-Nuller architecture, using integrated optical components. The interference is achieved through a series of 2x2 multimode interferometers (MMI) [[[cite paper presenting MMI]]]. There are two types of MMIs in this system. The first type, the nullers, perform constructive interference at the first output and destructive interference at the second output by placing the two signals in phase opposition (see Equation \ref{N} and Figure \ref{fig:nuller_and_recombiner}). The second type, referred to here as "recombiners," places the signals in phase quadrature (see Equation \ref{R} and Figure \ref{fig:nuller_and_recombiner}). These MMIs are separated by thermo-optic phase shifters that allow us to introduce phase shifts at various points in the system. The overall architecture is shown in Figure \ref{fig:kernel_nuller}.
+
+The system has seven outputs: one bright output containing all four signals in phase synchronization, and six "dark" outputs containing combinations of signals in phase quadrature. Interestingly, these dark outputs occur in symmetric pairs (see Figure \ref{fig:phases}), meaning that a disturbance in one output will similarly affect the other output in the pair. This allows to cancel low-order phase aberations by subtracting the two dark outputs in each pair, creating a new observable called "kernels."
 
 \begin{figure} [ht]
     \begin{center}
-    \begin{tabular}{c} %% tabular useful for creating an array of images 
-    \includegraphics[height=5cm]{img/kernel_nuller.png}
+    \begin{tabular}{c}
+    \includegraphics[height=6cm]{img/kernel_nuller.png}
     \end{tabular}
     \end{center}
     \caption[kernel_nuller] 
- %>>>> use \label inside caption to get Fig. number with \ref{}
     { \label{fig:kernel_nuller} 
-    Scheme of the tunable ernel-nuller architecture. P1-14 are the thermo-optic phase shifters. N1-4 represent the four 2x2 Nuller MMI that reproduce a 4x4 one. R1-3 are the three recombiner that place the signals in phase quadrature. I1-4 are the inputs signals. B is the bright }
+    Schematic of the tunable Kernel-Nuller architecture. P1-14 are the thermo-optic phase shifters. N1-4 are the four 2x2 Nuller MMIs, forming a 4x4 arrangement. R1-3 are the three recombiners that place the signals in phase quadrature. I1-4 are the input signals. B is the bright output and D1-6 are the dark outputs.}
 \end{figure} 
 
-\section{FORMATTING OF MANUSCRIPT COMPONENTS}
+\begin{figure} [ht]
+    \begin{center}
+    \begin{tabular}{c}
+    \includegraphics[height=3cm]{img/nuller_and_recombiner.png}
+    \end{tabular}
+    \end{center}
+    \caption[nuller_and_recombiner] 
+    { \label{fig:nuller_and_recombiner} 
+    Schematic of the action of nuller (left) and recombiner (right) MMIs. The signals are represented by arrows in a complex polar plot showing the phase and amplitude of the signal. As we are insensitive to absolute phase, one signal (here the red one) is used as a reference.}
+\end{figure}
 
-This section describes the normal structure of a manuscript and how each part should be handled.  The appropriate vertical spacing between various parts of this document is achieved in LaTeX through the proper use of defined constructs, such as \verb|\section{}|.  In LaTeX, paragraphs are separated by blank lines in the source file. 
-
-At times it may be desired, for formatting reasons, to break a line without starting a new paragraph.  This situation may occur, for example, when formatting the article title, author information, or section headings.  Line breaks are inserted in LaTeX by entering \verb|\\| or \verb|\linebreak| in the LaTeX source file at the desired location.  
-
-\subsection{Title and Author Information}
-\label{sec:title}
-
-The article title appears centered at the top of the first page.  The title font is 16 point, bold.  The rules for capitalizing the title are the same as for sentences; only the first word, proper nouns, and acronyms should be capitalized.  Avoid using acronyms in the title.  Keep in mind that people outside your area of expertise might read your article. At the first occurrence of an acronym, spell it out, followed by the acronym in parentheses, e.g., noise power spectrum (NPS). 
-
-The author list is in 12-pt. regular, centered. Omit titles and degrees such as Dr., Prof., Ph.D., etc. The list of affiliations follows the author list. Each author's affiliation should be clearly noted. Superscripts may be used to identify the correspondence between the authors and their respective affiliations.  Further author information, such as e-mail address, complete postal address, and web-site location, may be provided in a footnote by using \verb|\authorinfo{}|, as demonstrated above.
-
-\subsection{Abstract and Keywords}
-The title and author information is immediately followed by the Abstract. The Abstract should concisely summarize the key findings of the paper.  It should consist of a single paragraph containing no more than 250 words.  The Abstract does not have a section number.  A list of up to eight keywords should immediately follow the Abstract after a blank line.  These keywords will be included in a searchable database at SPIE.
-
-\subsection{Body of Paper}
-The body of the paper consists of numbered sections that present the main findings.  These sections should be organized to best present the material.  See Sec.~\ref{sec:sections} for formatting instructions.
-
-\subsection{Appendices}
-Auxiliary material that is best left out of the main body of the paper, for example, derivations of equations, proofs of theorems, and details of algorithms, may be included in appendices.  Appendices are enumerated with uppercase Latin letters in alphabetic order, and appear just before the Acknowledgments and References. Appendix~\ref{sec:misc} contains more about formatting equations and theorems.
-
-\subsection{Acknowledgments}
-In the Acknowledgments section, appearing just before the References, the authors may credit others for their guidance or help.  Also, funding sources may be stated.  The Acknowledgments section does not have a section number.
-
-\subsection{References}
-SPIE is able to display the references section of your paper in the SPIE Digital Library, complete with links to referenced journal articles, proceedings papers, and books, when available. This added feature will bring more readers to your paper and improve the usefulness of the SPIE Digital Library for all researchers. The References section does not have a section number.  The references are numbered in the order in which they are cited.  Examples of the format to be followed are given at the end of this document.  
-
-The reference list at the end of this document is created using BibTeX, which looks through the file {\ttfamily report.bib} for the entries cited in the LaTeX source file.  The format of the reference list is determined by the bibliography style file {\ttfamily spiebib.bst}, as specified in the \verb|\bibliographystyle{spiebib}| command.  Alternatively, the references may be directly formatted in the LaTeX source file.
-
-For books\cite{Lamport94,Alred03,Goossens97}, the listing includes the list of authors, book title, publisher, city, page or chapter numbers, and year of publication.  A reference to a journal article\cite{Metropolis53} includes the author list, title of the article (in quotes), journal name (in italics, properly abbreviated), volume number (in bold), inclusive page numbers, and year.  By convention\cite{Lamport94}, article titles are capitalized as described in Sec.~\ref{sec:title}.  A reference to a proceedings paper or a chapter in an edited book\cite{Gull89a} includes the author list, title of the article (in quotes), volume or series title (in italics), volume number (in bold), if applicable, inclusive page numbers, publisher, city, and year.  References to an article in the SPIE Proceedings may include the conference name (in italics), as shown in Ref.~. For websites\cite{Lees-Miller-LaTeX-course-1} the listing includes the list of authors, title of the article (in quotes), website name, article date, website address either enclosed in chevron symbols ('\(<\)' and '\(>\)'),  underlined or linked, and the date the website was accessed. 
-
-If you use this formatting, your references will link your manuscript to other research papers that are in the CrossRef system. Exact punctuation is required for the automated linking to be successful. 
-
-Citations to the references are made using superscript numerals, as demonstrated in the above paragraph.  One may also directly refer to a reference within the text, e.g., ``as shown in Ref.~ ...''
-
-\subsection{Footnotes}
-Footnotes\footnote{Footnotes are indicated as superscript symbols to avoid confusion with citations.} may be used to provide auxiliary information that doesn't need to appear in the text, e.g., to explain measurement units.  They should be used sparingly, however.  
-
-Only nine footnote symbols are available in LaTeX. If you have more than nine footnotes, you will need to restart the sequence using the command  \verb|\footnote[1]{Your footnote text goes here.}|. If you don't, LaTeX will provide the error message {\ttfamily Counter too large.}, followed by the offending footnote command.
-
-\section{SECTION FORMATTING}
-\label{sec:sections}
-
-Section headings are centered and formatted completely in uppercase 11-point bold font.  Sections should be numbered sequentially, starting with the first section after the Abstract.  The heading starts with the section number, followed by a period.  In LaTeX, a new section is created with the \verb|\section{}| command, which automatically numbers the sections.
-
-Paragraphs that immediately follow a section heading are leading paragraphs and should not be indented, according to standard publishing style\cite{Lamport94}.  The same goes for leading paragraphs of subsections and sub-subsections.  Subsequent paragraphs are standard paragraphs, with 14-pt.\ (5 mm) indentation.  An extra half-line space should be inserted between paragraphs.  In LaTeX, this spacing is specified by the parameter \verb|\parskip|, which is set in {\ttfamily spie.cls}.  Indentation of the first line of a paragraph may be avoided by starting it with \verb|\noindent|.
- 
-\subsection{Subsection Attributes}
-
-The subsection heading is left justified and set in 11-point, bold font.  Capitalization rules are the same as those for book titles.  The first word of a subsection heading is capitalized.  The remaining words are also capitalized, except for minor words with fewer than four letters, such as articles (a, an, and the), short prepositions (of, at, by, for, in, etc.), and short conjunctions (and, or, as, but, etc.).  Subsection numbers consist of the section number, followed by a period, and the subsection number within that section.  
-
-\subsubsection{Sub-subsection attributes}
-The sub-subsection heading is left justified and its font is 10 point, bold.  Capitalize as for sentences.  The first word of a sub-subsection heading is capitalized.  The rest of the heading is not capitalized, except for acronyms and proper names.  
-
-\section{FIGURES AND TABLES}
-
-Figures are numbered in the order of their first citation.  They should appear in numerical order and on or after the same page as their first reference in the text.  Alternatively, all figures may be placed at the end of the manuscript, that is, after the Reference section.  It is preferable to have figures appear at the top or bottom of the page.  Figures, along with their captions, should be separated from the main text by at least 0.2 in.\ or 5 mm.  
-
-Figure captions are centered below the figure or graph.  Figure captions start with the figure number in 9-point bold font, followed by a period; the text is in 9-point normal font; for example, ``{\footnotesize{Figure 3.}  Original image...}''.  See Fig.~\ref{fig:example} for an example of a figure caption.  When the caption is too long to fit on one line, it should be justified to the right and left margins of the body of the text.  
-
-Tables are handled identically to figures, except that their captions appear above the table. 
-
-   \begin{figure} [ht]
-   \begin{center}
-   \begin{tabular}{c} %% tabular useful for creating an array of images 
-   \includegraphics[height=5cm]{mcr3b.eps}
-   \end{tabular}
-   \end{center}
-   \caption[example] 
-%>>>> use \label inside caption to get Fig. number with \ref{}
-   { \label{fig:example} 
-Figure captions are used to describe the figure and help the reader understand it's significance.  The caption should be centered underneath the figure and set in 9-point font.  It is preferable for figures and tables to be placed at the top or bottom of the page. LaTeX tends to adhere to this standard.}
-   \end{figure} 
-
-\section{MULTIMEDIA FIGURES - VIDEO AND AUDIO FILES}
-
-Video and audio files can be included for publication. See Tab.~\ref{tab:Multimedia-Specifications} for the specifications for the mulitimedia files. Use a screenshot or another .jpg illustration for placement in the text. Use the file name to begin the caption. The text of the caption must end with the text ``http://dx.doi.org/doi.number.goes.here'' which tells the SPIE editor where to insert the hyperlink in the digital version of the manuscript. 
-
-Here is a sample illustration and caption for a multimedia file:
-
-   \begin{figure} [ht]
-   \begin{center}
-   \begin{tabular}{c} 
-   \includegraphics[height=5cm]{MultimediaFigure.jpg}
-	\end{tabular}
-	\end{center}
-   \caption[example] 
-   { \label{fig:video-example} 
-A label of “Video/Audio 1, 2, …” should appear at the beginning of the caption to indicate to which multimedia file it is linked . Include this text at the end of the caption: \url{http://dx.doi.org/doi.number.goes.here}}
-   \end{figure} 
-   
-   \begin{table}[ht]
-\caption{Information on video and audio files that must accompany a manuscript submission.} 
-\label{tab:Multimedia-Specifications}
-\begin{center}       
-\begin{tabular}{|l|l|l|}
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Item & Video & Audio  \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  File name & Video1, video2... & Audio1, audio2...   \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Number of files & 0-10 & 0-10  \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  Size of each file & 5 MB & 5 MB  \\
-\hline
-\rule[-1ex]{0pt}{3.5ex}  File types accepted & .mpeg, .mov (Quicktime), .wmv (Windows Media Player) & .wav, .mp3  \\
-\hline 
-\end{tabular}
-\end{center}
-\end{table}
-
-\appendix    %>>>> this command starts appendixes
-
-\section{MISCELLANEOUS FORMATTING DETAILS}
-\label{sec:misc}
-
-It is often useful to refer back (or forward) to other sections in the article.  Such references are made by section number.  When a section reference starts a sentence, Section is spelled out; otherwise use its abbreviation, for example, ``In Sec.~2 we showed...'' or ``Section~2.1 contained a description...''.  References to figures, tables, and theorems are handled the same way.
-
-\subsection{Formatting Equations}
-Equations may appear in line with the text, if they are simple, short, and not of major importance; e.g., $\beta = b/r$.  Important equations appear on their own line.  Such equations are centered.  For example, ``The expression for the field of view is
-\begin{equation}
-\label{eq:fov}
-2 a = \frac{(b + 1)}{3c} \, ,
+\begin{equation}\label{N}
+    N_n =
+    \begin{pmatrix}
+        1 & 1 \\
+        1 & -1
+    \end{pmatrix}
 \end{equation}
-where $a$ is the ...'' Principal equations are numbered, with the equation number placed within parentheses and right justified.  
 
-Equations are considered to be part of a sentence and should be punctuated accordingly. In the above example, a comma follows the equation because the next line is a subordinate clause.  If the equation ends the sentence, a period should follow the equation.  The line following an equation should not be indented unless it is meant to start a new paragraph.  Indentation after an equation is avoided in LaTeX by not leaving a blank line between the equation and the subsequent text.
+\begin{equation}\label{R}
+    R_n =
+    \begin{pmatrix}
+        e^{i\frac{pi}{4}} & e^{-i\frac{pi}{4}} \\
+        e^{-i\frac{pi}{4}} & e^{i\frac{pi}{4}} \\
+    \end{pmatrix}
+\end{equation}
 
-References to equations include the equation number in parentheses, for example, ``Equation~(\ref{eq:fov}) shows ...'' or ``Combining Eqs.~(2) and (3), we obtain...''  Using a tilde in the LaTeX source file between two characters avoids unwanted line breaks.
+\begin{equation}\label{P}
+    P_n = e^{i\theta_n}
+\end{equation}
 
-\subsection{Formatting Theorems}
+\section{Calibration}
 
-To include theorems in a formal way, the theorem identification should appear in a 10-point, bold font, left justified and followed by a period.  The text of the theorem continues on the same line in normal, 10-point font.  For example, 
+Due to unavoidable manufacturing defects, the system will produce some phase aberrations that we aim to cancel using the active thermo-optic phase shifters. There are fourteen phase shifters in total, and we need to find the optimal values to place the signals in phase quadrature (see Figure \ref{fig:phases}) and optimize system performance. To achieve this, we use a genetic algorithm to explore the parameter space and find these optimal values.
 
-\noindent\textbf{Theorem 1.} For any unbiased estimator...
+\begin{figure} [ht]
+    \begin{center}
+    \begin{tabular}{c}
+    \includegraphics[height=2.5cm]{img/perturbed_phase.png}\\
+    \includegraphics[height=2.5cm]{img/calibrated_phase.png}
+    \end{tabular}
+    \end{center}
+    \caption[phases] 
+    { \label{fig:phases} 
+    RPolar representation of the complex amplitudes obtained at the dark outputs. Each output is a combination of signals from the 4 telescopes, ideally separated by 90°. The first line is what we get without calibrating the system. We observe that phase perturbations of the order of $\lambda / 10$ cause significant performance degradation. However, the convergence algorithm effectively corrects these perturbations, restoring the signals to phase quadrature.}
+\end{figure}
 
-Formal statements of lemmas and algorithms receive a similar treatment.
+During the calibration phase, we consider a single star without phase perturbation at the input. In this case, all the light flux should be directed to the bright output, and all kernels should be perfectly null. We use two metrics to evaluate system performance:
 
-\acknowledgments % equivalent to \section*{ACKNOWLEDGMENTS}       
- 
-This unnumbered section is used to identify those who have aided the authors in understanding or accomplishing the work presented and to acknowledge sources of funding.  
+\begin{equation}
+    M_B = |B|^2
+\end{equation}
+
+\begin{equation}
+    M_K = \Big||D_1|^2 - |D_2|^2\Big|+\Big||D_3|^2 - |D_4|^2\Big|+\Big||D_5|^2 - |D_6|^2\Big|
+\end{equation}
+
+Each phase shifter is associated with a performance metric. Phase shifters $P_1$ to $P_5$ and $P_7$ (see Figure \ref{fig:kernel_nuller}) are associated with the $M_B$ metric as they contribute to redirecting the flux to the bright output. The remaining phase shifters are associated with the $M_K$ metric. The goal of the genetic algorithm is to maximize $M_B$ and minimize $M_K$.
+
+Iteratively, the algorithm adjusts the value of a phase shifter and observes the impact on the associated metric. If the metric improves, the change is kept; otherwise, it is discarded. This process is repeated for each phase shifter in a loop, reducing the modification step size each time. The algorithm stops when the modification step size is below a certain threshold, corresponding to the precision with which we can adjust the phase shifters.
+
+\section{Performances}
+
+The calibration corrects phase errors caused by manufacturing defects but does not address phase errors occurring upstream, such as those induced by the atmosphere. For each observation, we obtain an intensity value for each kernel that is not exactly as expected but distributed around this value, with a dispersion that directly dependent on the phase perturbations (see Figure \ref{fig:distrib}).
+
+\begin{figure} [ht]
+    \begin{center}
+    \begin{tabular}{c}
+    \includegraphics[height=5cm]{img/distrib.png}
+    \end{tabular}
+    \end{center}
+    \caption[distrib] 
+    { \label{fig:distrib} 
+    Intensity distributions obtained on a kernel for both hypotheses (with and without a planet). We see that distributions obtained after the calibration algorithm has converged closely match the distributions expected with an ideal component. To clearly see the distribution shift due to the presence of a planet, the contrast has been set to $10^{-3}$, and the RMS phase perturbation is set to $\lambda / 100$ ($16.5$nm).}
+\end{figure}
+
+We can use these distributions to estimate the presence of a planet. If a planet is present, the intensity distribution will shift compared to the expected distribution without a planet. Statistical tests can then be used to evaluate the presence of a planet. So far, only simple tests have been conducted (see Figure \ref{fig:ROC}), reducing the distribution to a single intensity value using the mean, median, and argmax of the obtained distribution and comparing this intensity to a threshold value.
+
+\begin{figure} [ht]
+    \begin{center}
+    \begin{tabular}{c}
+    \includegraphics[height=5cm]{img/ROC.png}
+    \end{tabular}
+    \end{center}
+    \caption[ROC] 
+    { \label{fig:ROC} 
+    This plot shows the detection performance (Pdet) as a function of the probability of false alarm (Pfa) for different methods. The methods used here consist of reducing the distribution to a single value using the median, mean, and argmax operations and comparing this value to a threshold. The higher the threshold, the more the null hypothesis is favored. The lower the threshold, the more false alarms we encounter.}
+\end{figure}
+
+For a series of observations with the same parallactic angle, simple statistical tests like those studied here are theoretically sufficient to detect planets with a contrast of $10^{-5}$ in the presence of phase perturbations of the order of $\lambda / 100$ in 90\% of cases with a 1\% probability of false alarm. While very encouraging, these results must be confirmed by laboratory tests.
+
+\section{Position caracterization}
+
+The next step is to determine the position of the detected planet. To do this, we perform a series of observations at various parallactic angles. Using the transmission maps of the different kernels (see Figure \ref{fig:transmission_map}), we can determine the expected signal modulation for a planet at a given location. By fitting this function to the obtained data, we can determine the planet's position (Figure \ref{fig:fit}).
+
+\begin{figure} [ht]
+    \begin{center}
+    \begin{tabular}{c}
+    \includegraphics[height=5cm]{img/transmission_map.png}
+    \end{tabular}
+    \end{center}
+    \caption[transmission_map] 
+    { \label{fig:transmission_map} 
+    Depending on the telescope positions, certain angles will result in phase differences that either constructively or destructively interfere. This phenomenon leads to a transmission map, different for each kernel. As kernels are built using the difference in intensity of two dark outputs, this transmission map can go negative. If a planet is positioned in a red zone, the obtained distribution (Figure \ref{fig:distrib}) will shift towards positive values, and if it is in a blue zone, it will shift towards negative values.}
+\end{figure}
+
+\begin{figure} [ht]
+    \begin{center}
+    \begin{tabular}{c}
+    \includegraphics[height=5cm]{img/fit.png}
+    \end{tabular}
+    \end{center}
+    \caption[fit] 
+    {\label{fig:fit} 
+    To determine the position of the planet, we fit the signal modulation function to the obtained data. This fitting process is conducted for each kernel individually, referred as the "specific fit". After performing the specific fits, we average the resulting positions to derive a new position estimate. We then plot the modulation for this averaged position, referred to as the "global fit".}
+\end{figure}
+
+The modulation function's complexity makes it difficult for the fitting algorithm to converge unless it is initially given an approximate but close position and contrast to the expected true parameters. Unfortunately, we lack this information. One approach is to perform the fit by using each point in the sky as an initial parameter and identifying when the fit properly converges using a correlation indicator.
+
+An alternative solution is to generate a sky map highlighting the regions that could potentially have contributed to the observed data. This method involves weighting each rotated transmission map by the data obtained for that specific parallactic angle, then summing all the weighted maps (Figure \ref{fig:contribution_zone}).
+
+\begin{figure} [ht]
+    \begin{center}
+    \begin{tabular}{c}
+    \includegraphics[height=3.5cm]{img/contribution_zone.png}
+    \end{tabular}
+    \end{center}
+    \caption[contribution_zone] 
+    {\label{fig:contribution_zone} 
+    Each of the first three plots represents the sum of the contribution maps oriented at a specific parallactic angle, weighted by the data obtained for that angle. The final plot represents the product of the first three plots.}
+\end{figure}
+
+\section{Discussion \& Prospects}
+
+Simulation results are highly encouraging, showing detection performance comparable to current techniques and indicating the potential for even greater contrast by leveraging angular diversity. However, these results must be validated through laboratory tests.
+
+Several factors could reduce these performances, such as amplitude aberrations, the chromatic nature of light, or the presence of multiple objects around the star. Adding these constraints to the simulation model and conducting an in-depth study on possible statistical tests will help to better define the actual limitations of such a system.
+
+\acknowledgments
+
+Thanks to Romain Laugier for his wise advice, to Nick Cvetojevic for his introduction to the topic of photonics and to Margaux Abello for her presentation recommendations. This thesis is made possible by the PHOTONICS project of the PEPR ORIGINS and Thales Alenia Space
+
+
 
 \begin{thebibliography}{60}
 
@@ -204,4 +210,4 @@ This unnumbered section is used to identify those who have aided the authors in 
 % \bibliography{report} % bibliography data in report.bib
 % \bibliographystyle{spiebib} % makes bibtex use spiebib.bst
 
-\end{document} 
+\end{document}
