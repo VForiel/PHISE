@@ -1,6 +1,6 @@
 # Fdb version 4
-["pdflatex"] 1717143410.47738 "d:/Tunable-Kernel-Nulling/docs/SPIE proceeding/main.tex" "main.pdf" "main" 1717143411.90853 0
-  "C:/Users/vince/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1716884714 80909 eab91d9745dd2edfd62a31d53cd5fe15 ""
+["pdflatex"] 1717405874.79648 "d:/Tunable-Kernel-Nulling/docs/SPIE proceeding/main.tex" "main.pdf" "main" 1717405876.34163 0
+  "C:/Users/vince/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1717405850 80909 eab91d9745dd2edfd62a31d53cd5fe15 ""
   "C:/Users/vince/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm0900.pk" 1717071289 10472 257c97899a6ca10cf173a0c8e7430797 ""
   "C:/Users/vince/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1716827110 24225046 52306294870e603d7dd53b3bcb4ffc85 ""
   "C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/tfm/jknappen/ec/tcrm0900.tfm" 993062508 1444 b1efc6b76338296f8076c1701e4660f3 ""
@@ -81,6 +81,7 @@
   "C:/Users/vince/AppData/Local/Programs/MiKTeX/tex/latex/cite/cite.sty" 1425353482 26218 19edeff8cdc2bcb704e8051dc55eb5a7 ""
   "C:/Users/vince/AppData/Local/Programs/MiKTeX/tex/latex/epstopdf-pkg/epstopdf-base.sty" 1623003186 13886 d1306dcf79a944f6988e688c1785f9ce ""
   "C:/Users/vince/AppData/Local/Programs/MiKTeX/tex/latex/etoolbox/etoolbox.sty" 1601897756 46845 3b58f70c6e861a13d927bff09d35ecbc ""
+  "C:/Users/vince/AppData/Local/Programs/MiKTeX/tex/latex/float/float.sty" 1469023953 6916 16d2656a1984957e674b149555f1ea1d ""
   "C:/Users/vince/AppData/Local/Programs/MiKTeX/tex/latex/graphics-cfg/color.cfg" 1465894292 1213 620bba36b25224fa9b7e1ccb4ecb76fd ""
   "C:/Users/vince/AppData/Local/Programs/MiKTeX/tex/latex/graphics-cfg/graphics.cfg" 1465894292 1224 978390e9c2234eab29404bc21b268d1e ""
   "C:/Users/vince/AppData/Local/Programs/MiKTeX/tex/latex/graphics-def/pdftex.def" 1663918690 19448 1e988b341dda20961a6b931bcde55519 ""
@@ -104,7 +105,7 @@
   "C:/Users/vince/AppData/Local/Programs/MiKTeX/tex/latex/refcount/refcount.sty" 1576433952 9878 9e94e8fa600d95f9c7731bb21dfb67a4 ""
   "C:/Users/vince/AppData/Local/Programs/MiKTeX/tex/latex/rerunfilecheck/rerunfilecheck.sty" 1657800696 9714 ba3194bd52c8499b3f1e3eb91d409670 ""
   "C:/Users/vince/AppData/Local/Programs/MiKTeX/tex/latex/url/url.sty" 1388490452 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
-  "d:/Tunable-Kernel-Nulling/docs/SPIE proceeding/main.tex" 1717143409 15167 4bc2116321f62b4e8b5a56396bc509f3 ""
+  "d:/Tunable-Kernel-Nulling/docs/SPIE proceeding/main.tex" 1717405872 17506 b04734e5971b8499e456909f21a149a0 ""
   "img/ROC.png" 1717078878 54082 0dfe141fec2424545ddaab9893fd1fdf ""
   "img/calibrated_phase.png" 1717070670 127987 2c66a014921820ed54ae7e88873c77b5 ""
   "img/contribution_zone.png" 1717142229 140443 c85c068750a4cf55edf5d1840624ff53 ""
@@ -114,9 +115,9 @@
   "img/nuller_and_recombiner.png" 1716986563 41329 6dc7208f4e3a9d2ef810778b60a9ac6f ""
   "img/perturbed_phase.png" 1717070661 152278 7dbc0386fd5b75543fa9178dfe286673 ""
   "img/transmission_map.png" 1717083496 110357 b9e1d6852ef6cd74af4000e8501c5b64 ""
-  "main.aux" 1717143411 2621 6dac09a0abcc872e8bb95bdb87c09a18 "pdflatex"
-  "main.out" 1717143411 735 bfe9df50223a36b186e9932ff2f0cd2e "pdflatex"
-  "main.tex" 1717143409 15167 4bc2116321f62b4e8b5a56396bc509f3 ""
+  "main.aux" 1717405876 2984 82dde95cd763768ad13c7523eee0a414 "pdflatex"
+  "main.out" 1717405876 735 bfe9df50223a36b186e9932ff2f0cd2e "pdflatex"
+  "main.tex" 1717405872 17506 b04734e5971b8499e456909f21a149a0 ""
   "spie.cls" 1714927631 13116 00206a99d10bba05851078caee7247c2 ""
   (generated)
   "main.aux"

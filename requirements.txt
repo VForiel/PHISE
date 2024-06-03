@@ -8,3 +8,4 @@ fitter
 numba
 LRFutils
 gitpython
+nbformat
