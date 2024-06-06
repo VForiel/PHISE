@@ -9,3 +9,4 @@ numba
 LRFutils
 gitpython
 nbformat
+tensorflow
