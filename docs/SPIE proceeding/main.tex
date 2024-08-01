@@ -16,7 +16,7 @@
 \author[a]{David Mary}
 \affil[a]{Université Côte d’Azur, Observatoire de la Côte d’Azur Nice, CNRS, Laboratoire Lagrange, Nice, France}
 
-\authorinfo{Further author information:\\Vincent Foriel - E-mail: vincent.foriel@oca.eu\\  Frantz Martinache - E-mail: frantz.martinache@oca.eu\\ Daid Mary - E-mail: david.mary@oca.eu}
+\authorinfo{Further author information:\\Vincent Foriel - E-mail: vincent.foriel@oca.eu\\  Frantz Martinache - E-mail: frantz.martinache@oca.eu\\ David Mary - E-mail: david.mary@oca.eu}
 
 % Option to view page numbers
 \pagestyle{empty} % change to \pagestyle{plain} for page numbers   
@@ -27,7 +27,7 @@
 
 \begin{abstract}
 
-    Nulling interferometry\cite{Bracewell} is a promising technique for direct detection of exoplanets. However, the performance of current devices is limited by the sensitivity to phase aberrations. The work presented here attempts to overcome those challenges by using a four-telescopes nulling interferometer architecture, called Kernel-Nuller\cite{Martinache et al. 2018}, which includes a recombiner that positions the four signals in phase quadrature. This architecture is based on an integrated optical component containing 14 electronically controlled phase shifters, used to correct optical path differences that would be induced by manufacturing defects. The first part of the study consists in the development of an algorithm providing the delays to be injected into the component to optimize the performance of that device. The next step of this study deals with the analysis of the intensity distributions produced at the output of the Kernel-Nuller\cite{Martinache et al. 2018, Cvetojevic et al. 2022} through a series of observations, against which statistical tests and data treatment techniques are applied to detect the presence of exoplanets.
+    Nulling interferometry\cite{Bracewell} is a promising technique for direct detection of exoplanets. However, the performance of current devices is limited by the sensitivity to any phase aberrations. The work presented here attempts to overcome those limitations by using a four-telescopes nulling interferometer architecture, called Kernel-Nuller\cite{Martinache et al. 2018}, which includes a recombiner that positions the four signals in phase quadrature. This architecture is based on an integrated optical component containing 14 electronically controlled phase shifters, used to correct optical path differences that would be induced by manufacturing defects. The first part of the study consists in the development of an algorithm providing the delays to be injected into the component to optimize the performance of that device. The next step of this study deals with the analysis of the intensity distributions produced at the output of the Kernel-Nuller\cite{Martinache et al. 2018, Cvetojevic et al. 2022} through a series of observations, and then apply statistical tests and data treatment techniques to detect the presence of exoplanets.
 
 \end{abstract}
 
@@ -37,11 +37,11 @@
 \section{INTRODUCTION}
 \label{sec:intro} % \label{} allows reference to this section
 
-The direct detection of exoplanets is very challenging due to the high contrast between the stellar and planetary signals. Nulling interferometry offers a promising solution to this problem. This technique involves directing multiple telescopes at the target star to achieve destructive interference, effectively canceling out the star's light. Due to the angular separation between the star and its companion, the light from the latter reaches the telescopes with different phases, preventing complete destructive interference and allowing for potential constructive interference of the planetary light. However, such system is highly sensitive to phase aberations that limit their performances. Kernel-nulling is an attempt to partially overcome this issue by employing three or more\cite{N telescope kernel} telescopes to generate symetric pairs of outputs that can be subtracted to eliminate low-order phase aberrations\cite{Martinache et al. 2018}. This study aims to enhance the performance of such a system by reducing introducting phase aberation control techniques and statistical analysis to improve the detection of exoplanets.
+The direct detection of exoplanets is very challenging due to the high contrast between the stellar and planetary signals. Nulling interferometry offers a promising solution to this problem. This technique involves pointing multiple telescopes toward the target star to achieve destructive interference, effectively canceling out the star's light. Due to the angular separation between the star and its companion, the light from the latter reaches each telescopes with a different phase, preventing complete destructive interference and allowing for potential constructive interference of the planetary light. However, such a system is highly sensitive to phase aberations that limit their performances. Kernel-nulling is an attempt to partially overcome this issue by employing three or more\cite{N telescope kernel} telescopes to generate symetric pairs of outputs that can be subtracted to eliminate low-order phase aberrations\cite{Martinache et al. 2018}. This study aims to enhance the performance of such a system by introducting phase aberation control techniques and statistical analysis to improve the detection of exoplanets.
 
 \section{Architecture}
 
-This study employs a 4-telescope Kernel-Nuller architecture, using integrated optical components. The interference is achieved through a series of 2x2 multimode interferometers\cite{MMI} (MMI). There are two types of MMIs in this system. The first type, the nullers, perform constructive interference at the first output and destructive interference at the second output by placing the two signals in phase opposition (Equation \ref{N} \& Figure \ref{fig:nuller_and_recombiner}). The second type, referred as "recombiners", are placed after the nuller one and allow to put the four signals in phase quadrature (Equation \ref{R} \& Figure \ref{fig:nuller_and_recombiner}). These MMIs are separated by thermo-optic phase shifters that allow us to introduce phase shifts at various points in the system. The overall architecture is shown in Figure \ref{fig:kernel_nuller}.
+This study employs a 4-telescope Kernel-Nuller architecture, using integrated optical components. The interference is achieved through a series of $2 \times 2$ multimode interferometers\cite{MMI} (MMI). There are two types of MMIs in this system. The first type, the nullers, perform constructive interference at the first output and destructive interference at the second output by placing the two signals in phase opposition (Equation \ref{N} \& Figure \ref{fig:nuller_and_recombiner}). The second type, referred as "recombiners", are placed after the nuller one and allow to put the four signals in phase quadrature (Equation \ref{R} \& Figure \ref{fig:nuller_and_recombiner}). These MMIs are separated by thermo-optic phase shifters that allow us to introduce phase shifts at various points in the system. The overall architecture is shown in Figure \ref{fig:kernel_nuller}.
 
 The system has seven outputs: one bright output containing all four signals in phase synchronization, and six "dark" outputs containing combinations of signals in phase quadrature (Figure \ref{fig:phases}). Interestingly, these dark outputs occur in symmetric pairs, meaning that a disturbance in one output will similarly affect the other output in the pair. This allows to cancel low-order phase aberations by subtracting the two dark outputs in each pair, creating a new observable called "kernels"\cite{Martinache et al. 2018}.
 
@@ -53,7 +53,7 @@ The system has seven outputs: one bright output containing all four signals in p
     \end{center}
     \caption[kernel_nuller] 
     { \label{fig:kernel_nuller} 
-    Schematic of the tunable Kernel-Nuller architecture. P1-14 are the thermo-optic phase shifters. N1-4 are the four 2x2 Nuller MMIs, forming a 4x4 arrangement. R1-3 are the three recombiners that place the signals in phase quadrature. I1-4 are the input signals. B is the bright output and D1-6 are the dark outputs.}
+    Schematic of the tunable Kernel-Nuller architecture. P1-14 are the thermo-optic phase shifters. N1-4 are the four $2 \times 2$ Nuller MMIs, forming a $4 \times 4$ arrangement. R1-3 are the three recombiners that place the signals in phase quadrature. I1-4 are the input signals. B is the bright output and D1-6 are the dark outputs. Cameras are placed at B and D1-6.}
 \end{figure} 
 
 \begin{figure} [H]
@@ -64,7 +64,7 @@ The system has seven outputs: one bright output containing all four signals in p
     \end{center}
     \caption[nuller_and_recombiner] 
     { \label{fig:nuller_and_recombiner} 
-    Schematic of the action of nuller (left) and recombiner (right) MMIs. The signals are represented by arrows in a complex polar plot showing the phase and amplitude of the signal. As we are insensitive to absolute phase, one signal (here the red one) is used as a reference.}
+    Schematic of the action of nuller (left) and recombiner (right) MMIs. The signals are represented by arrows in a complex polar plot showing the phase and amplitude of the signal. As we are insensitive to absolute phase, one siwhagnal (here the red one) is used as a reference.}
 \end{figure}
 
 \begin{equation}\label{N}
@@ -78,8 +78,8 @@ The system has seven outputs: one bright output containing all four signals in p
 \begin{equation}\label{R}
     R_n =
     \begin{pmatrix}
-        e^{i\frac{pi}{4}} & e^{-i\frac{pi}{4}} \\
-        e^{-i\frac{pi}{4}} & e^{i\frac{pi}{4}} \\
+        e^{i\frac{\pi}{4}} & e^{-i\frac{\pi}{4}} \\
+        e^{-i\frac{\pi}{4}} & e^{i\frac{\pi}{4}} \\
     \end{pmatrix}
 \end{equation}
 
@@ -119,7 +119,7 @@ Iteratively, the algorithm adjusts the value of a phase shifter and observes the
 
 \section{Performances}
 
-The calibration corrects phase errors caused by manufacturing defects but does not address phase errors occurring upstream, such as those induced by the atmosphere. For each observation, we obtain an intensity value for each kernel that is not exactly as expected but distributed around this value, with a dispersion that directly dependent on the phase perturbations (see Figure \ref{fig:distrib}).
+The calibration corrects phase errors caused by manufacturing defects but does not address phase errors occurring upstream, such as those induced by the atmosphere. For each observation, we obtain an intensity value for each kernel that is not exactly as expected but distributed around this value, with a dispersion that is directly dependent on the phase perturbations (see Figure \ref{fig:distrib}).
 
 \begin{figure} [H]
     \begin{center}
@@ -129,7 +129,7 @@ The calibration corrects phase errors caused by manufacturing defects but does n
     \end{center}
     \caption[distrib] 
     { \label{fig:distrib} 
-    Intensity distributions obtained on a kernel for both hypotheses (with and without a planet). We see that distributions obtained after the calibration algorithm has converged closely match the distributions expected with an ideal component. To clearly see the distribution shift due to the presence of a planet, the contrast has been set to $10^{-3}$, and the RMS phase perturbation is set to $\lambda / 100$ ($16.5$nm).}
+    Intensity distributions obtained on a kernel for both hypotheses (with and without a planet). We see that distributions obtained after the calibration process closely match the distributions expected with an ideal component. To clearly see the distribution shift due to the presence of a planet, the contrast has been set to $10^{-3}$, and the RMS phase perturbation is set to $\lambda / 100$, so $16.5$nm, which is optimistic for ground telescopes (~100nm), but pessimistic for a space application (~1nm).}
 \end{figure}
 
 If a planet is present, the intensity distribution will shift compared to the expected distribution without a planet. Statistical tests can then be used to evaluate the presence of a planet. So far, only simple tests have been conducted (see Figure \ref{fig:ROC}), reducing the distribution to a single intensity value using the mean, median, and argmax of the obtained distribution and comparing this intensity to a threshold value.
