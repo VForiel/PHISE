@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.4.30)  30 JUL 2024 11:09
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.4.30)  6 AUG 2024 13:39
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -250,44 +250,68 @@ Package: float 2001/11/08 v1.3d Float enhancements (AL)
 \float@box=\box53
 \@float@everytoks=\toks24
 \@floatcapt=\box54
-) (C:\Users\vforiel\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pdftex.def
+) (C:\Users\vforiel\AppData\Local\Programs\MiKTeX\tex/latex/listings\listings.sty
+\lst@mode=\count291
+\lst@gtempboxa=\box55
+\lst@token=\toks25
+\lst@length=\count292
+\lst@currlwidth=\dimen156
+\lst@column=\count293
+\lst@pos=\count294
+\lst@lostspace=\dimen157
+\lst@width=\dimen158
+\lst@newlines=\count295
+\lst@lineno=\count296
+\lst@maxwidth=\dimen159
+ (C:\Users\vforiel\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstpatch.sty
+File: lstpatch.sty 2024/03/11 1.10a (Carsten Heinz)
+) (C:\Users\vforiel\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstmisc.sty
+File: lstmisc.sty 2024/03/11 1.10a (Carsten Heinz)
+\c@lstnumber=\count297
+\lst@skipnumbers=\count298
+\lst@framebox=\box56
+) (C:\Users\vforiel\AppData\Local\Programs\MiKTeX\tex/latex/listings\listings.cfg
+File: listings.cfg 2024/03/11 1.10a listings configuration
+))
+Package: listings 2024/03/11 1.10a (Carsten Heinz)
+ (C:\Users\vforiel\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pdftex.def
 File: l3backend-pdftex.def 2024-03-14 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count291
-\l__pdf_internal_box=\box55
+\l__color_backend_stack_int=\count299
+\l__pdf_internal_box=\box57
 ) (main.aux)
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
  (C:\Users\vforiel\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count292
-\scratchdimen=\dimen156
-\scratchbox=\box56
-\nofMPsegments=\count293
-\nofMParguments=\count294
-\everyMPshowfont=\toks25
-\MPscratchCnt=\count295
-\MPscratchDim=\dimen157
-\MPnumerator=\count296
-\makeMPintoPDFobject=\count297
-\everyMPtoPDFconversion=\toks26
+\scratchcounter=\count300
+\scratchdimen=\dimen160
+\scratchbox=\box58
+\nofMPsegments=\count301
+\nofMParguments=\count302
+\everyMPshowfont=\toks26
+\MPscratchCnt=\count303
+\MPscratchDim=\dimen161
+\MPnumerator=\count304
+\makeMPintoPDFobject=\count305
+\everyMPtoPDFconversion=\toks27
 ) (C:\Users\vforiel\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 485.
@@ -300,138 +324,139 @@ File: color.cfg 2016/01/02 v1.6 sample color configuration
 )
 Package color Info: Driver file: pdftex.def on input line 149.
  (C:\Users\vforiel\AppData\Local\Programs\MiKTeX\tex/latex/graphics\mathcolor.ltx))
-Package hyperref Info: Link coloring ON on input line 25.
+Package hyperref Info: Link coloring ON on input line 26.
  (main.out) (main.out)
 \@outlinefile=\write3
 \openout3 = `main.out'.
 
+\c@lstlisting=\count306
 
 cmr-font_in_spiecls
 10pt
-LaTeX Font Info:    Trying to load font information for U+msa on input line 27.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 28.
 (C:\Users\vforiel\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 27.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 28.
  (C:\Users\vforiel\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
-<img/kernel_nuller.png, id=41, 583.17876pt x 261.97874pt>
-File: img/kernel_nuller.png Graphic file (type png)
-<use img/kernel_nuller.png>
-Package pdftex.def Info: img/kernel_nuller.png  used on input line 51.
-(pdftex.def)             Requested size: 380.03165pt x 170.71652pt.
- [301
+) [301
 
 {C:/Users/vforiel/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}]
-<img/nuller_and_recombiner.png, id=67, 742.775pt x 196.735pt>
+<img/kernel_nuller.png, id=66, 583.17876pt x 261.97874pt>
+File: img/kernel_nuller.png Graphic file (type png)
+<use img/kernel_nuller.png>
+Package pdftex.def Info: img/kernel_nuller.png  used on input line 52.
+(pdftex.def)             Requested size: 380.03165pt x 170.71652pt.
+<img/nuller_and_recombiner.png, id=68, 742.775pt x 196.735pt>
 File: img/nuller_and_recombiner.png Graphic file (type png)
 <use img/nuller_and_recombiner.png>
-Package pdftex.def Info: img/nuller_and_recombiner.png  used on input line 62.
+Package pdftex.def Info: img/nuller_and_recombiner.png  used on input line 63.
 (pdftex.def)             Requested size: 322.26581pt x 85.35826pt.
-<img/perturbed_phase.png, id=69, 819.8128pt x 163.3603pt>
-File: img/perturbed_phase.png Graphic file (type png)
-<use img/perturbed_phase.png>
-Package pdftex.def Info: img/perturbed_phase.png  used on input line 97.
-(pdftex.def)             Requested size: 356.96594pt x 71.13188pt.
-<img/calibrated_phase.png, id=70, 819.8128pt x 163.3603pt>
-File: img/calibrated_phase.png Graphic file (type png)
-<use img/calibrated_phase.png>
-Package pdftex.def Info: img/calibrated_phase.png  used on input line 98.
-(pdftex.def)             Requested size: 356.96594pt x 71.13188pt.
  [302
 pdfTeX warning (ext4): destination with the same identifier (name{figure.1}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.105 
-      
+l.94 
+     
 pdfTeX warning (ext4): destination with the same identifier (name{figure.2}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.105 
-       <./img/kernel_nuller.png> <./img/nuller_and_recombiner.png>]
+l.94 
+      <./img/kernel_nuller.png> <./img/nuller_and_recombiner.png>]
+<img/perturbed_phase.png, id=84, 819.8128pt x 163.3603pt>
+File: img/perturbed_phase.png Graphic file (type png)
+<use img/perturbed_phase.png>
+Package pdftex.def Info: img/perturbed_phase.png  used on input line 110.
+(pdftex.def)             Requested size: 356.96594pt x 71.13188pt.
+<img/calibrated_phase.png, id=85, 819.8128pt x 163.3603pt>
+File: img/calibrated_phase.png Graphic file (type png)
+<use img/calibrated_phase.png>
+Package pdftex.def Info: img/calibrated_phase.png  used on input line 111.
+(pdftex.def)             Requested size: 356.96594pt x 71.13188pt.
 <img/distrib.png, id=87, 831.105pt x 286.82156pt>
 File: img/distrib.png Graphic file (type png)
 <use img/distrib.png>
-Package pdftex.def Info: img/distrib.png  used on input line 127.
+Package pdftex.def Info: img/distrib.png  used on input line 126.
 (pdftex.def)             Requested size: 412.2289pt x 142.26378pt.
  [303
 pdfTeX warning (ext4): destination with the same identifier (name{figure.3}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.134 
+l.133 
        <./img/perturbed_phase.png> <./img/calibrated_phase.png>]
 <img/ROC.png, id=100, 393.72093pt x 305.64188pt>
 File: img/ROC.png Graphic file (type png)
 <use img/ROC.png>
-Package pdftex.def Info: img/ROC.png  used on input line 140.
+Package pdftex.def Info: img/ROC.png  used on input line 141.
 (pdftex.def)             Requested size: 183.25856pt x 142.26378pt.
-<img/transmission_map.png, id=103, 299.61937pt x 264.23718pt>
-File: img/transmission_map.png Graphic file (type png)
-<use img/transmission_map.png>
-Package pdftex.def Info: img/transmission_map.png  used on input line 157.
-(pdftex.def)             Requested size: 161.312pt x 142.26378pt.
  [304
 pdfTeX warning (ext4): destination with the same identifier (name{figure.4}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.164 
+l.154 
       
 pdfTeX warning (ext4): destination with the same identifier (name{figure.5}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.164 
+l.154 
        <./img/distrib.png> <./img/ROC.png>]
-<img/fit.png, id=117, 785.93625pt x 261.97874pt>
+<img/transmission_map.png, id=115, 299.61937pt x 264.23718pt>
+File: img/transmission_map.png Graphic file (type png)
+<use img/transmission_map.png>
+Package pdftex.def Info: img/transmission_map.png  used on input line 158.
+(pdftex.def)             Requested size: 161.312pt x 142.26378pt.
+<img/fit.png, id=118, 785.93625pt x 261.97874pt>
 File: img/fit.png Graphic file (type png)
 <use img/fit.png>
-Package pdftex.def Info: img/fit.png  used on input line 168.
+Package pdftex.def Info: img/fit.png  used on input line 169.
 (pdftex.def)             Requested size: 426.79773pt x 142.26378pt.
-<img/contribution_zone.png, id=120, 775.39688pt x 166.37157pt>
-File: img/contribution_zone.png Graphic file (type png)
-<use img/contribution_zone.png>
-Package pdftex.def Info: img/contribution_zone.png  used on input line 183.
-(pdftex.def)             Requested size: 464.12955pt x 99.58464pt.
  [305
 pdfTeX warning (ext4): destination with the same identifier (name{figure.6}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.190 
+l.180 
       
 pdfTeX warning (ext4): destination with the same identifier (name{figure.7}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.190 
+l.180 
        <./img/transmission_map.png> <./img/fit.png>]
-Underfull \hbox (badness 2334) in paragraph at lines 214--215
-\OT1/cmr/m/n/10 Prin-ci-ples and Ap-pli-ca-tions". \OT1/cmr/m/it/10 Jour-nal of Light-wave Tech-nol-ogy \OT1/cmr/m/n/10 13, no 4 (avril 1995): 615[]27.
- []
-
-[306
+<img/contribution_zone.png, id=130, 775.39688pt x 166.37157pt>
+File: img/contribution_zone.png Graphic file (type png)
+<use img/contribution_zone.png>
+Package pdftex.def Info: img/contribution_zone.png  used on input line 215.
+(pdftex.def)             Requested size: 464.12955pt x 99.58464pt.
+ [306
 pdfTeX warning (ext4): destination with the same identifier (name{figure.8}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.224 \end{document}
-                     <./img/contribution_zone.png>] (main.aux)
+l.232 
+       <./img/contribution_zone.png>]
+Underfull \hbox (badness 2334) in paragraph at lines 246--247
+\OT1/cmr/m/n/10 Prin-ci-ples and Ap-pli-ca-tions". \OT1/cmr/m/it/10 Jour-nal of Light-wave Tech-nol-ogy \OT1/cmr/m/n/10 13, no 4 (avril 1995): 615[]27.
+ []
+
+[307] (main.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-03-14>
  ***********
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: BFE9DF50223A36B186E9932FF2F0CD2E;735.
+(rerunfilecheck)             Checksum: 8A9F50DFC46641D783411CC41113D4B0;821.
  ) 
 Here is how much of TeX's memory you used:
- 10127 strings out of 474424
- 155999 string characters out of 5740795
- 1943496 words of memory out of 5000000
- 32306 multiletter control sequences out of 15000+600000
- 567864 words of font info for 74 fonts, out of 8000000 for 9000
+ 11760 strings out of 474424
+ 178058 string characters out of 5740795
+ 1942496 words of memory out of 5000000
+ 33920 multiletter control sequences out of 15000+600000
+ 568199 words of font info for 75 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,12n,79p,1242b,464s stack positions out of 10000i,1000n,20000p,200000b,200000s
- <C:\Users\vforiel\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm0900.pk><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi5.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi9.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr5.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy9.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb>
-Output written on main.pdf (6 pages, 1070290 bytes).
+ 75i,12n,79p,1242b,1239s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ <C:\Users\vforiel\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1000.pk> <C:\Users\vforiel\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm0900.pk><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi5.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi9.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr5.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy9.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb>
+Output written on main.pdf (7 pages, 1082612 bytes).
 PDF statistics:
- 227 PDF objects out of 1000 (max. 8388607)
- 35 named destinations out of 1000 (max. 500000)
+ 249 PDF objects out of 1000 (max. 8388607)
+ 41 named destinations out of 1000 (max. 500000)
  94 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -8,6 +8,7 @@
 \usepackage{graphicx}
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
 \usepackage{float}
+\usepackage{listings}
 
 \title{Tunable Kernel-Nulling interferometry for direct exoplanet detection}
 
@@ -41,7 +42,7 @@ The direct detection of exoplanets is very challenging due to the high contrast 
 
 \section{Architecture}
 
-This study employs a 4-telescope Kernel-Nuller architecture, using integrated optical components. The interference is achieved through a series of $2 \times 2$ multimode interferometers\cite{MMI} (MMI). There are two types of MMIs in this system. The first type, the nullers, perform constructive interference at the first output and destructive interference at the second output by placing the two signals in phase opposition (Equation \ref{N} \& Figure \ref{fig:nuller_and_recombiner}). The second type, referred as "recombiners", are placed after the nuller one and allow to put the four signals in phase quadrature (Equation \ref{R} \& Figure \ref{fig:nuller_and_recombiner}). These MMIs are separated by thermo-optic phase shifters that allow us to introduce phase shifts at various points in the system. The overall architecture is shown in Figure \ref{fig:kernel_nuller}.
+This study employs a 4-telescope Kernel-Nuller architecture, using integrated optical components. The interference is achieved through a series of $2 \times 2$ multimode interferometers\cite{MMI} (MMI). There are two types of MMIs in this system. The first type, the nullers, denoted $N_n$, perform constructive interference at the first output and destructive interference at the second output by placing the two electric fields in phase opposition (Equation \ref{N} \& Figure \ref{fig:nuller_and_recombiner}). The second type, referred as "recombiners", denoted $R_n$, are placed after the nuller one and allow to put the four signals in phase quadrature (Equation \ref{R} \& Figure \ref{fig:nuller_and_recombiner}). These MMIs are separated by thermo-optic phase shifters, denoted $P_n$, that allow us to introduce phase shifts at various points in the system. The overall architecture is shown in Figure \ref{fig:kernel_nuller}.
 
 The system has seven outputs: one bright output containing all four signals in phase synchronization, and six "dark" outputs containing combinations of signals in phase quadrature (Figure \ref{fig:phases}). Interestingly, these dark outputs occur in symmetric pairs, meaning that a disturbance in one output will similarly affect the other output in the pair. This allows to cancel low-order phase aberations by subtracting the two dark outputs in each pair, creating a new observable called "kernels"\cite{Martinache et al. 2018}.
 
@@ -89,7 +90,19 @@ The system has seven outputs: one bright output containing all four signals in p
 
 \section{Calibration}
 
-Due to unavoidable manufacturing defects, the system will produce some phase aberrations that we aim to cancel using the active thermo-optic phase shifters. There are fourteen phase shifters in total, and we need to find the optimal values to place the signals in phase quadrature (see Figure \ref{fig:phases}) and optimize system performance. To achieve this, we use a genetic algorithm to explore the parameter space and find these optimal values.
+Due to unavoidable manufacturing defects, the system will produce some phase aberrations that we aim to cancel using the active thermo-optic phase shifters. There are fourteen phase shifters in total, and we need to find the optimal values to place the signals in phase quadrature (see Figure \ref{fig:phases}) and optimize system performance. To achieve this, we use a deterministic genetic algorithm to explore the parameter space and find these optimal values. This algorithm consist in interatively change (mutation operation) one of the phase shifters in a specific order and evaluate the impact on the system performance. If the performance improves, the change is kept, otherwise it is discarded. This process is repeated for each phase shifter in a loop, reducing the modification step size each time. The algorithm stops when the modification step size is below a certain threshold, which will be detemine by the physical limitations such as the photon noise or the precision with which we can adjust the phase shifters.
+
+To evaluate the performance, we consider a single star without phase perturbation at the input. In this case, all the light flux should be directed to the bright output, and all kernels should be perfectly null. We use two metrics to evaluate system performance, based on the electric fields at the bright ($B$) and dark ($D_n$) outputs:
+
+\begin{equation}
+    M_B = |B|^2
+\end{equation}
+
+\begin{equation}
+    M_K = \Big||D_1|^2 - |D_2|^2\Big|+\Big||D_3|^2 - |D_4|^2\Big|+\Big||D_5|^2 - |D_6|^2\Big|
+\end{equation}
+
+Each phase shifter is associated with a performance metric. Phase shifters $P_1$ to $P_5$ and $P_7$ (see Figure \ref{fig:kernel_nuller}) are associated with the $M_B$ metric as they contribute to redirecting the flux to the bright output. The remaining phase shifters are associated with the $M_K$ metric. This algorithm will then try to maximize $M_B$ and minimize $M_K$.
 
 \begin{figure} [H]
     \begin{center}
@@ -100,26 +113,12 @@ Due to unavoidable manufacturing defects, the system will produce some phase abe
     \end{center}
     \caption[phases] 
     { \label{fig:phases} 
-    Polar representation of the complex amplitudes obtained at the dark outputs. Each output is a combination of signals from the 4 telescopes, ideally separated by 90°. The first line is what we get without calibrating the system. We observe that phase perturbations of the order of $\lambda / 10$ cause significant performance degradation. However, the convergence algorithm effectively corrects these perturbations, restoring the signals to the desired phase quadrature.}
+    Polar representation of the complex amplitudes obtained at the dark outputs. Each output is a combination of signals from the 4 telescopes, ideally separated by 90°. The first row is what we get without calibrating the system. We observe that phase perturbations of the order of $\lambda / 10$ cause significant performance degradation. However, as shown on the bottom row, the calibration algorithm effectively corrects these perturbations, restoring the signals to the desired phase quadrature.}
 \end{figure}
 
-During the calibration phase, we consider a single star without phase perturbation at the input. In this case, all the light flux should be directed to the bright output, and all kernels should be perfectly null. We use two metrics to evaluate system performance:
+\section{Performances and limitations}
 
-\begin{equation}
-    M_B = |B|^2
-\end{equation}
-
-\begin{equation}
-    M_K = \Big||D_1|^2 - |D_2|^2\Big|+\Big||D_3|^2 - |D_4|^2\Big|+\Big||D_5|^2 - |D_6|^2\Big|
-\end{equation}
-
-Each phase shifter is associated with a performance metric. Phase shifters $P_1$ to $P_5$ and $P_7$ (see Figure \ref{fig:kernel_nuller}) are associated with the $M_B$ metric as they contribute to redirecting the flux to the bright output. The remaining phase shifters are associated with the $M_K$ metric. The goal of the genetic algorithm is to maximize $M_B$ and minimize $M_K$.
-
-Iteratively, the algorithm adjusts the value of a phase shifter and observes the impact on the associated metric. If the metric improves, the change is kept; otherwise, it is discarded. This process is repeated for each phase shifter in a loop, reducing the modification step size each time. The algorithm stops when the modification step size is below a certain threshold, corresponding to the precision with which we can adjust the phase shifters.
-
-\section{Performances}
-
-The calibration corrects phase errors caused by manufacturing defects but does not address phase errors occurring upstream, such as those induced by the atmosphere. For each observation, we obtain an intensity value for each kernel that is not exactly as expected but distributed around this value, with a dispersion that is directly dependent on the phase perturbations (see Figure \ref{fig:distrib}).
+The calibration corrects phase errors caused by manufacturing defects but does not address phase errors occurring upstream, such as those induced by the atmosphere. For each observation, we obtain an intensity value for each kernel that is not exactly as expected but distributed around this value, with a dispersion that is directly dependent on the phase perturbations (see Figure \ref{fig:distrib}). If a planet is present, the intensity distribution will shift compared to the expected distribution without a planet. 
 
 \begin{figure} [H]
     \begin{center}
@@ -132,7 +131,9 @@ The calibration corrects phase errors caused by manufacturing defects but does n
     Intensity distributions obtained on a kernel for both hypotheses (with and without a planet). We see that distributions obtained after the calibration process closely match the distributions expected with an ideal component. To clearly see the distribution shift due to the presence of a planet, the contrast has been set to $10^{-3}$, and the RMS phase perturbation is set to $\lambda / 100$, so $16.5$nm, which is optimistic for ground telescopes (~100nm), but pessimistic for a space application (~1nm).}
 \end{figure}
 
-If a planet is present, the intensity distribution will shift compared to the expected distribution without a planet. Statistical tests can then be used to evaluate the presence of a planet. So far, only simple tests have been conducted (see Figure \ref{fig:ROC}), reducing the distribution to a single intensity value using the mean, median, and argmax of the obtained distribution and comparing this intensity to a threshold value.
+\subsection*{Performance evaluation}
+
+As these distributions are dominated by noise, the shift are not trivial to observe. We then use statistical tests that evaluate the presence such shift (and then the presence of a planet). So far, only simple tests have been conducted (see Figure \ref{fig:ROC}), reducing the distribution to a single intensity value using the mean, median, and different argmax (position of the highest bin, "argmax100" refer to a 100 bin sampling) of the obtained distribution and comparing this intensity to a threshold value. In practice, this treshold value is defined according to the distribution under the null hypothesis, which is something we don't necessarily have an easy access to.
 
 \begin{figure} [H]
     \begin{center}
@@ -142,14 +143,14 @@ If a planet is present, the intensity distribution will shift compared to the ex
     \end{center}
     \caption[ROC] 
     { \label{fig:ROC} 
-    This plot shows the detection performance (Pdet) as a function of the probability of false alarm (Pfa) for different methods. The methods used here consist of reducing the distribution to a single value using the median, mean, and argmax operations and comparing this value to a threshold. The higher the threshold, the more the null hypothesis is favored. The lower the threshold, the more false alarms we encounter.}
+    This plot shows the detection performance (Pdet) as a function of the probability of false alarm (Pfa) for different methods. The methods used here consist of reducing the distribution to a single value using the median, mean, and argmax operations and comparing this value to a threshold. The higher the threshold, the more the null hypothesis is favored. The lower the threshold, the more false alarms we encounter. These results were obtained using 1000 different distributions containing 1000 intensities each.}
 \end{figure}
 
-For a series of observations with the same parallactic angle, looking at the median of the distribution is theoretically sufficient to detect planets with a contrast of $10^{-5}$ in the presence of phase perturbations of the order of $\lambda / 100$ in 90\% of cases with a 1\% probability of false alarm. While very encouraging, these results must be confirmed by laboratory tests.
+For a series of observations performed in the same conditions, looking at the median of the distribution is theoretically sufficient to detect planets with a contrast of $10^{-5}$ in the presence of phase perturbations of the order of $\lambda / 100$ in 90\% of cases with a 1\% probability of false alarm. These results tends to confirm the accuracy already reached in the literature \cite{Cvetojevic et al. 2022}, which will allow us to study other statistical tests in order to enhance this detection power.
 
 \section{Position caracterization}
 
-The next step is to determine the position of the detected planet. To do this, we perform a series of observations at various parallactic angles. Using the transmission maps of the different kernels (see Figure \ref{fig:transmission_map}), we can determine the expected signal modulation for a planet at a given location. By fitting this function to the obtained data, we can determine the planet's position (Figure \ref{fig:fit}).
+Beyond detecting the presence of an exoplanet, this system can caracterize it's position by performing a series of observations at various hour angles. Using the transmission maps of the different kernels (see Figure \ref{fig:transmission_map}) for each different hour angle \cite{Chingaipe}, we can determine the expected signal modulation for a planet at a given location. By fitting this function to the obtained data, we can determine the planet's position (Figure \ref{fig:fit}).
 
 \begin{figure} [H]
     \begin{center}
@@ -170,12 +171,43 @@ The next step is to determine the position of the detected planet. To do this, w
     \end{center}
     \caption[fit] 
     {\label{fig:fit} 
-    To determine the position of the planet, we fit the signal modulation function to the obtained data. This fitting process is conducted for each kernel individually, referred as the "specific fit". After performing the specific fits, we average the resulting positions to derive a new position estimate. We then plot the modulation for this averaged position, referred to as the "global fit".}
+    To determine the position of the planet, we fit the signal modulation function to the obtained data using the non linear fitting algorithme included in the \lstinline{scipy.optimize} python pakcage. This fitting process is conducted for each kernel individually, referred as the "specific fit". After performing the specific fits, we average the resulting positions to derive a new position estimate. We then plot the modulation for this averaged position, referred to as the "global fit". In practice, as we don't know the expected signal, the correlation of the global fit and each specific fits gives us some information about the goodness of these fits. In this exemple, we only consider a simple baseline rotation, resulting in a rotation of the transmission map. In practice, due to the earth shape, the projection of the baseline dring the night vary in a more complex way, leading to a more complex modulation function that can be difficult to fit properly.}
 \end{figure}
 
-The modulation function's complexity makes it difficult for the fitting algorithm to converge unless it is initially given an approximate but close position and contrast to the expected true parameters. Unfortunately, we lack this information. One approach is to perform the fit by using each point in the sky as an initial parameter and identifying when the fit properly converges using a correlation indicator.
+The modulation function's complexity makes it difficult for a non-linear fitting algorithm - such as the one provided by scipy -  to converge unless it is initially given an approximate but close position and contrast to the expected true parameters. Unfortunately, we lack this information. One approach is to perform the fit by using each point in the sky as an initial parameter and identifying when the fit properly converges using a correlation indicator.
 
 An alternative solution is to generate a sky map highlighting the regions that could potentially have contributed to the observed data. This method, already explored with classic nulling interferometers\cite{Image reconstruction}, involves weighting each rotated transmission map by the data obtained for that specific parallactic angle, then summing all the weighted maps. It results in a map that highlight the planet's position (Figure \ref{fig:contribution_zone}).
+
+The base idea was already explored as "image reconstruction" technic using classical nulling interferometry $^1$. However, the method here is based on Kernel-Nulls which makes it more complex but less sensitive to phase aberations and by considerig the different Kernels, we can reduce the degeneracy of the solutions.
+
+Considering:
+\begin{itemize}
+\item $T_{n}$ represents the n-th kernel's normalized transmission map.
+\item $d_{n,\beta}$ denotes the data point obtained for kernel $n$ with baseline rotation $\beta$.
+\item $h$ is the hour angle.
+\item $\theta$ is the angular separation.
+\end{itemize}
+
+We can define the raw contribution zones for each kernel at a given hour angle:
+
+\begin{equation}
+    \label{eq:raw_kernel}
+    r_n(\theta, \alpha) = \sum_a T_{n,h}(\theta,\alpha) d_{n,h}
+\end{equation}
+
+
+As the kernel outputs are antisymetric, we can filter the negative contributions:
+\begin{equation}
+    \label{eq:heaviside}
+    r'_n = \frac{1}{2}(r_n+|r_n|)
+\end{equation}
+
+
+Finally, we can compute the product over all the kernels to get the final contribution zones:
+\begin{equation}
+    \label{eq:final}
+    C(\theta, \alpha) = \prod_n r'_n(\theta, \alpha)
+\end{equation}
 
 \begin{figure}[H]
     \begin{center}
@@ -185,18 +217,18 @@ An alternative solution is to generate a sky map highlighting the regions that c
     \end{center}
     \caption[contribution_zone] 
     {\label{fig:contribution_zone} 
-    Each of the first three plots represents the sum of the contribution maps oriented at a specific parallactic angle, weighted by the data obtained for that angle. The final plot represents the product of the first three plots.}
+    Each of the first three plots represents the sum of the contribution maps at different times, weighted by the data obtained for that time. We are still in the particular case where the hour angle is approximated to a simple baseline rotation. The final plot represents the product of the first three plots.}
 \end{figure}
 
 \section{Discussion \& Prospects}
 
-Simulation results are highly encouraging, showing detection performance comparable to current techniques (contrast of $10^{-5}$ to $10^{-6}$) and indicating the potential for even greater contrast by leveraging angular diversity. However, these results must be validated through laboratory tests.
+Simulation results shows detection performance comparable to current techniques \cite{Cvetojevic et al. 2022} (contrast of $10^{-5}$ to $10^{-6}$) and indicating the potential for even greater contrast by leveraging angular diversity. However, these results must be validated through laboratory tests.
 
 Several factors could reduce these performances, such as amplitude aberrations, the chromatic nature of light, or the presence of multiple objects around the star. Adding these constraints to the simulation model and conducting an in-depth study on possible statistical tests will help to better define the actual limitations of such a system.
 
 \acknowledgments
 
-Thanks to Romain Laugier for his wise advice, to Nick Cvetojevic for his introduction to the topic of photonics and to Margaux Abello for her presentation recommendations. This thesis is made possible by the PHOTONICS project of the PEPR ORIGINS and Thales Alenia Space
+Thanks to Romain Laugier for his wise advice, to Nick Cvetojevic for his introduction to the topic of photonics and to Margaux Abello for her presentation recommendations. This thesis is made possible by the PHOTONICS project of the PEPR ORIGINS and Thales Alenia Space.
 
 
 
@@ -215,6 +247,7 @@ Thanks to Romain Laugier for his wise advice, to Nick Cvetojevic for his introdu
 
     \bibitem{Image reconstruction} Angel, J. R. P., et N. J. Woolf. "An Imaging Nulling Interferometer to Study Extrasolar Planets". {\it The Astrophysical Journal} 475, no 1 (1997): 373‑79. https://doi.org/10.1086/303529.
 
+    \bibitem{Chingaipe} Chingaipe P. M. et al. "High-contrast detection of exoplanets with a kernel-nuller at the VLTI". {\it Astronomy \& Astrophysics} 676, A43 (2023): A87. https://doi.org/10.1051/0004-6361/202346118.
 
 \end{thebibliography}
 % References
