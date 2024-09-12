@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1722944360.12996 "d:/Tunable-Kernel-Nulling/docs/SPIE proceeding/main.tex" "main.pdf" "main" 1722944361.70446 0
+["pdflatex"] 1726146120.35913 "d:/Tunable-Kernel-Nulling/docs/SPIE proceeding/main.tex" "main.pdf" "main" 1726146121.65637 0
   "C:/Users/vforiel/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1722250073 82507 a9eef8696c92627b87e9975edea03b2a ""
   "C:/Users/vforiel/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm0900.pk" 1722250086 10472 45534d53232032d1f861f9721278d6ad ""
   "C:/Users/vforiel/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm1000.pk" 1722932869 11548 c30c36a867be73a45469c485e0d5535b ""
@@ -111,8 +111,8 @@
   "C:/Users/vforiel/AppData/Local/Programs/MiKTeX/tex/latex/refcount/refcount.sty" 1576433952 9878 9e94e8fa600d95f9c7731bb21dfb67a4 ""
   "C:/Users/vforiel/AppData/Local/Programs/MiKTeX/tex/latex/rerunfilecheck/rerunfilecheck.sty" 1657800696 9714 ba3194bd52c8499b3f1e3eb91d409670 ""
   "C:/Users/vforiel/AppData/Local/Programs/MiKTeX/tex/latex/url/url.sty" 1388490452 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
-  "d:/Tunable-Kernel-Nulling/docs/SPIE proceeding/main.tex" 1722944359 20798 3aca6ca5b04147f41298b42ba5cb0046 ""
-  "img/ROC.png" 1717152735 54082 0dfe141fec2424545ddaab9893fd1fdf ""
+  "d:/Tunable-Kernel-Nulling/docs/SPIE proceeding/main.tex" 1726146119 21026 b36668cb63768bc571c8174a135c53f6 ""
+  "img/ROC.png" 1726144163 57536 6492418a1989ad3753cf5af8b36c3699 ""
   "img/calibrated_phase.png" 1717152735 127987 2c66a014921820ed54ae7e88873c77b5 ""
   "img/contribution_zone.png" 1717152735 140443 c85c068750a4cf55edf5d1840624ff53 ""
   "img/distrib.png" 1717152735 134626 d72aa264e5c3f507555ae42c5bc39cc8 ""
@@ -121,9 +121,9 @@
   "img/nuller_and_recombiner.png" 1717152735 41329 6dc7208f4e3a9d2ef810778b60a9ac6f ""
   "img/perturbed_phase.png" 1717152735 152278 7dbc0386fd5b75543fa9178dfe286673 ""
   "img/transmission_map.png" 1717152735 110357 b9e1d6852ef6cd74af4000e8501c5b64 ""
-  "main.aux" 1722944361 3337 6884b704a20f965296323de5b05923c0 "pdflatex"
-  "main.out" 1722944361 821 8a9f50dfc46641d783411cc41113d4b0 "pdflatex"
-  "main.tex" 1722944359 20798 3aca6ca5b04147f41298b42ba5cb0046 ""
+  "main.aux" 1726146121 3337 6dfd6940c8b50e647a6facea1886c185 "pdflatex"
+  "main.out" 1726146121 821 8a9f50dfc46641d783411cc41113d4b0 "pdflatex"
+  "main.tex" 1726146119 21026 b36668cb63768bc571c8174a135c53f6 ""
   "spie.cls" 1716281678 13116 00206a99d10bba05851078caee7247c2 ""
   (generated)
   "main.aux"

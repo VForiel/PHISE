@@ -143,14 +143,14 @@ As these distributions are dominated by noise, the shift are not trivial to obse
     \end{center}
     \caption[ROC] 
     { \label{fig:ROC} 
-    This plot shows the detection performance (Pdet) as a function of the probability of false alarm (Pfa) for different methods. The methods used here consist of reducing the distribution to a single value using the median, mean, and argmax operations and comparing this value to a threshold. The higher the threshold, the more the null hypothesis is favored. The lower the threshold, the more false alarms we encounter. These results were obtained using 1000 different distributions containing 1000 intensities each.}
+    These plots shows the detection performance (Pdet) as a function of the probability of false alarm (Pfa) for different methods. The methods used here consist of reducing the distribution to a single value using the median, mean, and argmax operations and comparing this value to a threshold. The higher the threshold, the more the null hypothesis is favored. The lower the threshold, the more false alarms we encounter. These results were obtained using 1000 different distributions containing 1000 intensities each. We clearly see that, in these conditions, the calibration process leads to more revelant statistical tests.}
 \end{figure}
 
 For a series of observations performed in the same conditions, looking at the median of the distribution is theoretically sufficient to detect planets with a contrast of $10^{-5}$ in the presence of phase perturbations of the order of $\lambda / 100$ in 90\% of cases with a 1\% probability of false alarm. These results tends to confirm the accuracy already reached in the literature \cite{Cvetojevic et al. 2022}, which will allow us to study other statistical tests in order to enhance this detection power.
 
 \section{Position caracterization}
 
-Beyond detecting the presence of an exoplanet, this system can caracterize it's position by performing a series of observations at various hour angles. Using the transmission maps of the different kernels (see Figure \ref{fig:transmission_map}) for each different hour angle \cite{Chingaipe}, we can determine the expected signal modulation for a planet at a given location. By fitting this function to the obtained data, we can determine the planet's position (Figure \ref{fig:fit}).
+Beyond detecting the presence of an exoplanet, this system can caracterize it's position by performing a series of observations at various hour angles. Using the transmission maps of the different kernels (on-sky projection of the outputs, see Figure \ref{fig:transmission_map}) for each different hour angle \cite{Chingaipe}, we can determine the expected signal modulation for a planet at a given location. By fitting this function to the obtained data, we can determine the planet's position (Figure \ref{fig:fit}).
 
 \begin{figure} [H]
     \begin{center}
@@ -222,7 +222,7 @@ Finally, we can compute the product over all the kernels to get the final contri
 
 \section{Discussion \& Prospects}
 
-Simulation results shows detection performance comparable to current techniques \cite{Cvetojevic et al. 2022} (contrast of $10^{-5}$ to $10^{-6}$) and indicating the potential for even greater contrast by leveraging angular diversity. However, these results must be validated through laboratory tests.
+These simulations and statistical analysis shows highly promising results since we reach a detection contrast of $10^{-5}$ to $10^{-6}$ while the null depth goes up to $10^{-3}$ in the litterature \cite{Cvetojevic et al. 2022}. It also indicates the potential for even greater contrast by leveraging angular diversity. However, these results must be validated through laboratory tests.
 
 Several factors could reduce these performances, such as amplitude aberrations, the chromatic nature of light, or the presence of multiple objects around the star. Adding these constraints to the simulation model and conducting an in-depth study on possible statistical tests will help to better define the actual limitations of such a system.
 

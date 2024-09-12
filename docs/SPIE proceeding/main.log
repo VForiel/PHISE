@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.4.30)  6 AUG 2024 13:39
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.4.30)  12 SEP 2024 15:02
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -385,11 +385,11 @@ pdfTeX warning (ext4): destination with the same identifier (name{figure.3}) has
                                                   \__shipout_drop_firstpage_...
 l.133 
        <./img/perturbed_phase.png> <./img/calibrated_phase.png>]
-<img/ROC.png, id=100, 393.72093pt x 305.64188pt>
+<img/ROC.png, id=100, 564.60938pt x 263.48438pt>
 File: img/ROC.png Graphic file (type png)
 <use img/ROC.png>
 Package pdftex.def Info: img/ROC.png  used on input line 141.
-(pdftex.def)             Requested size: 183.25856pt x 142.26378pt.
+(pdftex.def)             Requested size: 304.86728pt x 142.26378pt.
  [304
 pdfTeX warning (ext4): destination with the same identifier (name{figure.4}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
@@ -401,12 +401,12 @@ pdfTeX warning (ext4): destination with the same identifier (name{figure.5}) has
                                                   \__shipout_drop_firstpage_...
 l.154 
        <./img/distrib.png> <./img/ROC.png>]
-<img/transmission_map.png, id=115, 299.61937pt x 264.23718pt>
+<img/transmission_map.png, id=114, 299.61937pt x 264.23718pt>
 File: img/transmission_map.png Graphic file (type png)
 <use img/transmission_map.png>
 Package pdftex.def Info: img/transmission_map.png  used on input line 158.
 (pdftex.def)             Requested size: 161.312pt x 142.26378pt.
-<img/fit.png, id=118, 785.93625pt x 261.97874pt>
+<img/fit.png, id=117, 785.93625pt x 261.97874pt>
 File: img/fit.png Graphic file (type png)
 <use img/fit.png>
 Package pdftex.def Info: img/fit.png  used on input line 169.
@@ -415,14 +415,14 @@ Package pdftex.def Info: img/fit.png  used on input line 169.
 pdfTeX warning (ext4): destination with the same identifier (name{figure.6}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.180 
-      
+l.179 A
+       n alternative solution is to generate a sky map highlighting the regi...
 pdfTeX warning (ext4): destination with the same identifier (name{figure.7}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.180 
-       <./img/transmission_map.png> <./img/fit.png>]
-<img/contribution_zone.png, id=130, 775.39688pt x 166.37157pt>
+l.179 A
+       n alternative solution is to generate a sky map highlighting the regi... <./img/transmission_map.png> <./img/fit.png>]
+<img/contribution_zone.png, id=129, 775.39688pt x 166.37157pt>
 File: img/contribution_zone.png Graphic file (type png)
 <use img/contribution_zone.png>
 Package pdftex.def Info: img/contribution_zone.png  used on input line 215.
@@ -431,8 +431,8 @@ Package pdftex.def Info: img/contribution_zone.png  used on input line 215.
 pdfTeX warning (ext4): destination with the same identifier (name{figure.8}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.232 
-       <./img/contribution_zone.png>]
+l.229 \acknowledgments
+                       <./img/contribution_zone.png>]
 Underfull \hbox (badness 2334) in paragraph at lines 246--247
 \OT1/cmr/m/n/10 Prin-ci-ples and Ap-pli-ca-tions". \OT1/cmr/m/it/10 Jour-nal of Light-wave Tech-nol-ogy \OT1/cmr/m/n/10 13, no 4 (avril 1995): 615[]27.
  []
@@ -454,9 +454,9 @@ Here is how much of TeX's memory you used:
  1141 hyphenation exceptions out of 8191
  75i,12n,79p,1242b,1239s stack positions out of 10000i,1000n,20000p,200000b,200000s
  <C:\Users\vforiel\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1000.pk> <C:\Users\vforiel\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm0900.pk><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi5.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi9.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr5.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy9.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb>
-Output written on main.pdf (7 pages, 1082612 bytes).
+Output written on main.pdf (7 pages, 1078239 bytes).
 PDF statistics:
- 249 PDF objects out of 1000 (max. 8388607)
+ 248 PDF objects out of 1000 (max. 8388607)
  41 named destinations out of 1000 (max. 500000)
  94 words of extra memory for PDF output out of 10000 (max. 10000000)
 
