@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.4.30)  12 SEP 2024 15:02
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.4.30)  17 SEP 2024 10:45
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -343,12 +343,12 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 ) [301
 
 {C:/Users/vforiel/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}]
-<img/kernel_nuller.png, id=66, 583.17876pt x 261.97874pt>
+<img/kernel_nuller.png, id=68, 583.17876pt x 261.97874pt>
 File: img/kernel_nuller.png Graphic file (type png)
 <use img/kernel_nuller.png>
 Package pdftex.def Info: img/kernel_nuller.png  used on input line 52.
 (pdftex.def)             Requested size: 380.03165pt x 170.71652pt.
-<img/nuller_and_recombiner.png, id=68, 742.775pt x 196.735pt>
+<img/nuller_and_recombiner.png, id=70, 742.775pt x 196.735pt>
 File: img/nuller_and_recombiner.png Graphic file (type png)
 <use img/nuller_and_recombiner.png>
 Package pdftex.def Info: img/nuller_and_recombiner.png  used on input line 63.
@@ -364,17 +364,17 @@ pdfTeX warning (ext4): destination with the same identifier (name{figure.2}) has
                                                   \__shipout_drop_firstpage_...
 l.94 
       <./img/kernel_nuller.png> <./img/nuller_and_recombiner.png>]
-<img/perturbed_phase.png, id=84, 819.8128pt x 163.3603pt>
+<img/perturbed_phase.png, id=86, 819.8128pt x 163.3603pt>
 File: img/perturbed_phase.png Graphic file (type png)
 <use img/perturbed_phase.png>
 Package pdftex.def Info: img/perturbed_phase.png  used on input line 110.
 (pdftex.def)             Requested size: 356.96594pt x 71.13188pt.
-<img/calibrated_phase.png, id=85, 819.8128pt x 163.3603pt>
+<img/calibrated_phase.png, id=87, 819.8128pt x 163.3603pt>
 File: img/calibrated_phase.png Graphic file (type png)
 <use img/calibrated_phase.png>
 Package pdftex.def Info: img/calibrated_phase.png  used on input line 111.
 (pdftex.def)             Requested size: 356.96594pt x 71.13188pt.
-<img/distrib.png, id=87, 831.105pt x 286.82156pt>
+<img/distrib.png, id=89, 831.105pt x 286.82156pt>
 File: img/distrib.png Graphic file (type png)
 <use img/distrib.png>
 Package pdftex.def Info: img/distrib.png  used on input line 126.
@@ -385,7 +385,7 @@ pdfTeX warning (ext4): destination with the same identifier (name{figure.3}) has
                                                   \__shipout_drop_firstpage_...
 l.133 
        <./img/perturbed_phase.png> <./img/calibrated_phase.png>]
-<img/ROC.png, id=100, 564.60938pt x 263.48438pt>
+<img/ROC.png, id=102, 564.60938pt x 263.48438pt>
 File: img/ROC.png Graphic file (type png)
 <use img/ROC.png>
 Package pdftex.def Info: img/ROC.png  used on input line 141.
@@ -401,12 +401,12 @@ pdfTeX warning (ext4): destination with the same identifier (name{figure.5}) has
                                                   \__shipout_drop_firstpage_...
 l.154 
        <./img/distrib.png> <./img/ROC.png>]
-<img/transmission_map.png, id=114, 299.61937pt x 264.23718pt>
+<img/transmission_map.png, id=116, 299.61937pt x 264.23718pt>
 File: img/transmission_map.png Graphic file (type png)
 <use img/transmission_map.png>
 Package pdftex.def Info: img/transmission_map.png  used on input line 158.
 (pdftex.def)             Requested size: 161.312pt x 142.26378pt.
-<img/fit.png, id=117, 785.93625pt x 261.97874pt>
+<img/fit.png, id=119, 785.93625pt x 261.97874pt>
 File: img/fit.png Graphic file (type png)
 <use img/fit.png>
 Package pdftex.def Info: img/fit.png  used on input line 169.
@@ -422,7 +422,7 @@ pdfTeX warning (ext4): destination with the same identifier (name{figure.7}) has
                                                   \__shipout_drop_firstpage_...
 l.179 A
        n alternative solution is to generate a sky map highlighting the regi... <./img/transmission_map.png> <./img/fit.png>]
-<img/contribution_zone.png, id=129, 775.39688pt x 166.37157pt>
+<img/contribution_zone.png, id=131, 775.39688pt x 166.37157pt>
 File: img/contribution_zone.png Graphic file (type png)
 <use img/contribution_zone.png>
 Package pdftex.def Info: img/contribution_zone.png  used on input line 215.
@@ -433,7 +433,12 @@ pdfTeX warning (ext4): destination with the same identifier (name{figure.8}) has
                                                   \__shipout_drop_firstpage_...
 l.229 \acknowledgments
                        <./img/contribution_zone.png>]
-Underfull \hbox (badness 2334) in paragraph at lines 246--247
+Underfull \hbox (badness 1466) in paragraph at lines 239--240
+[]\OT1/cmr/m/n/10 Lay, O.P. "Sys-tem-atic er-rors in nulling in-ter-fer-om-e-ters". \OT1/cmr/m/it/10 Appl. Opt.\OT1/cmr/m/n/10 , AO 43, 6100{6123 (2004).
+ []
+
+
+Underfull \hbox (badness 2334) in paragraph at lines 248--249
 \OT1/cmr/m/n/10 Prin-ci-ples and Ap-pli-ca-tions". \OT1/cmr/m/it/10 Jour-nal of Light-wave Tech-nol-ogy \OT1/cmr/m/n/10 13, no 4 (avril 1995): 615[]27.
  []
 
@@ -446,17 +451,17 @@ Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: 8A9F50DFC46641D783411CC41113D4B0;821.
  ) 
 Here is how much of TeX's memory you used:
- 11760 strings out of 474424
- 178058 string characters out of 5740795
+ 11762 strings out of 474424
+ 178104 string characters out of 5740795
  1942496 words of memory out of 5000000
- 33920 multiletter control sequences out of 15000+600000
+ 33921 multiletter control sequences out of 15000+600000
  568199 words of font info for 75 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,12n,79p,1242b,1239s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,12n,79p,1316b,1239s stack positions out of 10000i,1000n,20000p,200000b,200000s
  <C:\Users\vforiel\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1000.pk> <C:\Users\vforiel\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm0900.pk><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi5.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi9.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr5.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy9.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb>
-Output written on main.pdf (7 pages, 1078239 bytes).
+Output written on main.pdf (7 pages, 1079448 bytes).
 PDF statistics:
- 248 PDF objects out of 1000 (max. 8388607)
- 41 named destinations out of 1000 (max. 500000)
+ 250 PDF objects out of 1000 (max. 8388607)
+ 42 named destinations out of 1000 (max. 500000)
  94 words of extra memory for PDF output out of 10000 (max. 10000000)
 
