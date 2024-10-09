@@ -28,7 +28,7 @@
 
 \begin{abstract}
 
-    Nulling interferometry\cite{Bracewell} is a promising technique for direct detection of exoplanets. However, the performance of current devices is limited by different perturbations sources \cite{Lay et al. 2004} and especially by it's sensitivity to any phase aberrations. The work presented here attempts to overcome those limitations by using a four-telescopes nulling interferometer architecture, called Kernel-Nuller\cite{Martinache et al. 2018}, which includes a recombiner that positions the four signals in phase quadrature. This architecture is based on an integrated optical component containing 14 electronically controlled phase shifters, used to correct optical path differences that would be induced by manufacturing defects. The first part of the study consists in the development of an algorithm providing the delays to be injected into the component to optimize the performance of that device. The next step of this study deals with the analysis of the intensity distributions produced at the output of the Kernel-Nuller\cite{Martinache et al. 2018, Cvetojevic et al. 2022} through a series of observations, and then apply statistical tests and data treatment techniques to detect the presence of exoplanets.
+    Nulling interferometry\cite{Bracewell} is a promising technique for direct detection of exoplanets. However, the performance of current devices is limited by different perturbations sources \cite{Lay et al. 2004} and especially by its sensitivity to any phase aberrations. The work presented here attempts to overcome those limitations by using a four-telescopes nulling interferometer architecture, called Kernel-Nuller\cite{Martinache et al. 2018}, which includes a recombiner that positions the four signals in phase quadrature. This architecture is based on an integrated optical component containing 14 electronically controlled phase shifters, used to correct optical path differences that would be induced by manufacturing defects. The first part of the study consists in the development of an algorithm providing the delays to be injected into the component to optimize the performance of that device. The next step of this study deals with the analysis of the intensity distributions produced at the output of the Kernel-Nuller\cite{Martinache et al. 2018, Cvetojevic et al. 2022} through a series of observations. Then we apply statistical tests and data treatment techniques to detect the signature of an exoplanets.
 
 \end{abstract}
 
@@ -65,8 +65,10 @@ The system has seven outputs: one bright output containing all four signals in p
     \end{center}
     \caption[nuller_and_recombiner] 
     { \label{fig:nuller_and_recombiner} 
-    Schematic of the action of nuller (left) and recombiner (right) MMIs. The signals are represented by arrows in a complex polar plot showing the phase and amplitude of the signal. As we are insensitive to absolute phase, one siwhagnal (here the red one) is used as a reference.}
+    Schematic of the action of nuller (left) and recombiner (right) MMIs. The signals (electric fields) are represented by arrows in a complex polar plot showing the phase and amplitude of the signal. As we are insensitive to absolute phase, one of the signals (here the red one) is used as a reference.}
 \end{figure}
+
+Formally, the Nuller and Rcombiner MMIs can be expressed using the following matrices:
 
 \begin{equation}\label{N}
     N_n =
@@ -90,9 +92,9 @@ The system has seven outputs: one bright output containing all four signals in p
 
 \section{Calibration}
 
-Due to unavoidable manufacturing defects, the system will produce some phase aberrations that we aim to cancel using the active thermo-optic phase shifters. There are fourteen phase shifters in total, and we need to find the optimal values to place the signals in phase quadrature (see Figure \ref{fig:phases}) and optimize system performance. To achieve this, we use a deterministic genetic algorithm to explore the parameter space and find these optimal values. This algorithm consist in interatively change (mutation operation) one of the phase shifters in a specific order and evaluate the impact on the system performance. If the performance improves, the change is kept, otherwise it is discarded. This process is repeated for each phase shifter in a loop, reducing the modification step size each time. The algorithm stops when the modification step size is below a certain threshold, which will be detemine by the physical limitations such as the photon noise or the precision with which we can adjust the phase shifters.
+Due to unavoidable manufacturing defects, the system will produce some phase aberrations that we aim to cancel using the active thermo-optic phase shifters. There are fourteen phase shifters in total, and we need to find the optimal values to place the signals in phase quadrature (see Figure \ref{fig:phases}) and optimize system performance. To achieve this, we use a deterministic genetic algorithm to explore the parameter space and find these optimal values. This algorithm consists in interatively changing (mutation operation) one of the phase shifters in a specific order and evaluate the impact on the system performance. If the performance improves, the change is kept, otherwise it is discarded. This process is repeated for each phase shifter in a loop, reducing the modification step size each time. The algorithm stops when the modification step size is below a certain threshold, which will be determined by the physical limitations such as the photon noise or the precision with which we can adjust the phase shifters.
 
-To evaluate the performance, we consider a single star without phase perturbation at the input. In this case, all the light flux should be directed to the bright output, and all kernels should be perfectly null. We use two metrics to evaluate system performance, based on the electric fields at the bright ($B$) and dark ($D_n$) outputs:
+To evaluate the performance, we consider a single star without phase perturbation at the input. In this case, all the light flux should be directed to the bright output, and all kernels should be perfectly null. We use two metrics ($M_B$ and $M_K$ below) to evaluate system performance, based on the electric fields at the bright ($B$) and dark ($D_n$) outputs:
 
 \begin{equation}
     M_B = |B|^2
@@ -102,7 +104,7 @@ To evaluate the performance, we consider a single star without phase perturbatio
     M_K = \Big||D_1|^2 - |D_2|^2\Big|+\Big||D_3|^2 - |D_4|^2\Big|+\Big||D_5|^2 - |D_6|^2\Big|
 \end{equation}
 
-Each phase shifter is associated with a performance metric. Phase shifters $P_1$ to $P_5$ and $P_7$ (see Figure \ref{fig:kernel_nuller}) are associated with the $M_B$ metric as they contribute to redirecting the flux to the bright output. The remaining phase shifters are associated with the $M_K$ metric. This algorithm will then try to maximize $M_B$ and minimize $M_K$.
+This algorithm will then try to maximize $M_B$ and minimize $M_K$. To do so, each phase shifter is associated with one of these performance metric. Phase shifters $P_1$ to $P_5$ and $P_7$ (see Figure \ref{fig:kernel_nuller}) are associated with the $M_B$ metric as they contribute to redirecting the flux to the bright output. The remaining phase shifters are associated with the $M_K$ metric. For each output we take the square modulus as we only get the intensity of the resulting electric fields.
 
 \begin{figure} [H]
     \begin{center}
@@ -113,12 +115,12 @@ Each phase shifter is associated with a performance metric. Phase shifters $P_1$
     \end{center}
     \caption[phases] 
     { \label{fig:phases} 
-    Polar representation of the complex amplitudes obtained at the dark outputs. Each output is a combination of signals from the 4 telescopes, ideally separated by 90°. The first row is what we get without calibrating the system. We observe that phase perturbations of the order of $\lambda / 10$ cause significant performance degradation. However, as shown on the bottom row, the calibration algorithm effectively corrects these perturbations, restoring the signals to the desired phase quadrature.}
+    Polar representation of the complex amplitudes obtained at the dark outputs. Each output is a combination of signals from the 4 telescopes, ideally separated by 90°. The first row is what we get without calibrating the system. We observe that phase perturbations of the order of $\lambda / 10$ cause significant performance degradation. However, as shown on the bottom row, the calibration algorithm effectively corrects these perturbations, restoring the signals to the desired phase quadrature. These results were observed over a large number of simulations with different aberations.}
 \end{figure}
 
 \section{Performances and limitations}
 
-The calibration corrects phase errors caused by manufacturing defects but does not address phase errors occurring upstream, such as those induced by the atmosphere. For each observation, we obtain an intensity value for each kernel that is not exactly as expected but distributed around this value, with a dispersion that is directly dependent on the phase perturbations (see Figure \ref{fig:distrib}). If a planet is present, the intensity distribution will shift compared to the expected distribution without a planet. 
+The calibration corrects phase errors caused by manufacturing defects but does not address phase errors occurring upstream, such as those induced by the atmosphere. For each observation, we obtain an intensity value for each kernel that is a realisation of a random variable  distributed around this value, with a dispersion that is directly dependent on the phase perturbations (see Figure \ref{fig:distrib}). If a planet is present, the intensity distribution will shift compared to the expected distribution without a planet. 
 
 \begin{figure} [H]
     \begin{center}
@@ -128,12 +130,12 @@ The calibration corrects phase errors caused by manufacturing defects but does n
     \end{center}
     \caption[distrib] 
     { \label{fig:distrib} 
-    Intensity distributions obtained on a kernel for both hypotheses (with and without a planet). We see that distributions obtained after the calibration process, represented by the colored filled parts, closely match the distributions expected with an ideal component, represented by the continuous lines. To clearly see the distribution shift due to the presence of a planet, the contrast has been set to $10^{-3}$, and the RMS phase perturbation is set to $\lambda / 100$, so $16.5$nm, which is optimistic for ground telescopes (~100nm), but pessimistic for a space application (~1nm).}
+    Intensity distributions obtained on the second kernel for both hypotheses (with and without a planet). We see that distributions obtained after the calibration process, represented by the colored filled parts, closely match the distributions expected with an ideal component, represented by the continuous lines. To clearly see the distribution shift due to the presence of a planet, the contrast has been set to $10^{-3}$. The RMS phase perturbation is set to $\lambda / 100$, so $16.5$nm, which is optimistic for ground telescopes (~100nm), but pessimistic for a space application (~1nm).}
 \end{figure}
 
 \subsection*{Performance evaluation}
 
-As these distributions are dominated by noise, the shift are not trivial to observe. We then use statistical tests that evaluate the presence such shift (and then the presence of a planet). So far, only simple tests have been conducted (see Figure \ref{fig:ROC}), reducing the distribution to a single intensity value using the mean, median, and different argmax (position of the highest bin, "argmax100" refer to a 100 bin sampling) of the obtained distribution and comparing this intensity to a threshold value. In practice, this treshold value is defined according to the distribution under the null hypothesis, which is something we don't necessarily have an easy access to.
+As the signal to noise ratio is very low, the shift is not trivial to observe. We then use statistical tests to evaluate the presence of such a shift (and then the presence of a planet). So far, only simple tests have been conducted (see Figure \ref{fig:ROC}), reducing the distribution to a single intensity value. The considered test statistics are the mean, the median, and different argmax (position of the highest bin, "argmax100" refer to a 100 bin sampling) of the obtained distribution and comparing this intensity to a threshold value. If this latter value is too low, we will often detect a shift that is actually due to the phase perturbations, and then the probability of false alarm will be high. If it is too high, we will not detect the planet, so the probability of detection will be low. We can estimate the power of the test by comparing the probability of detection to the probability of false alarm (Figure \ref{fig:ROC}).
 
 \begin{figure} [H]
     \begin{center}
