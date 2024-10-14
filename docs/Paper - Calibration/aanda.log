@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2024.5.27)  9 OCT 2024 16:55
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2024.5.27)  10 OCT 2024 15:05
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -339,6 +339,51 @@ Package: float 2001/11/08 v1.3d Float enhancements (AL)
 \float@box=\box68
 \@float@everytoks=\toks35
 \@floatcapt=\box69
+) (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/algorithm2e\algorithm2e.sty
+Package: algorithm2e 2017/07/18 v5.2 algorithms environments
+\c@AlgoLine=\count311
+\algocf@hangindent=\skip126
+ (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/ifoddpage\ifoddpage.sty
+Package: ifoddpage 2022/10/18 v1.2 Conditionals for odd/even page detection
+\c@checkoddpage=\count312
+) (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/relsize\relsize.sty
+Package: relsize 2013/03/29 ver 4.1
+)
+\skiptotal=\skip127
+\skiplinenumber=\skip128
+\skiprule=\skip129
+\skiphlne=\skip130
+\skiptext=\skip131
+\skiplength=\skip132
+\algomargin=\skip133
+\skipalgocfslide=\skip134
+\algowidth=\dimen170
+\inoutsize=\dimen171
+\inoutindent=\dimen172
+\interspacetitleruled=\dimen173
+\interspacealgoruled=\dimen174
+\interspacetitleboxruled=\dimen175
+\algocf@ruledwidth=\skip135
+\algocf@inoutbox=\box70
+\algocf@inputbox=\box71
+\AlCapSkip=\skip136
+\AlCapHSkip=\skip137
+\algoskipindent=\skip138
+\algocf@nlbox=\box72
+\algocf@hangingbox=\box73
+\algocf@untilbox=\box74
+\algocf@skipuntil=\skip139
+\algocf@capbox=\box75
+\algocf@lcaptionbox=\skip140
+\algoheightruledefault=\skip141
+\algoheightrule=\skip142
+\algotitleheightruledefault=\skip143
+\algotitleheightrule=\skip144
+\c@algocfline=\count313
+\c@algocfproc=\count314
+\c@algocf=\count315
+\algocf@algoframe=\box76
+\algocf@algobox=\box77
 ) (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/txfonts\txfonts.sty
 Package: txfonts 2008/01/22 v3.2.1
 LaTeX Font Info:    Redeclaring symbol font `operators' on input line 21.
@@ -425,46 +470,46 @@ LaTeX Font Info:    Overwriting symbol font `largesymbolsA' in version `bold'
 LaTeX Font Info:    Redeclaring math symbol \mathsterling on input line 164.
 LaTeX Info: Redefining \not on input line 1043.
 )
-LaTeX Font Info:    Trying to load font information for T1+txr on input line 27.
+LaTeX Font Info:    Trying to load font information for T1+txr on input line 29.
  (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/txfonts\t1txr.fd
 File: t1txr.fd 2000/12/15 v3.1
 ) (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pdftex.def
 File: l3backend-pdftex.def 2024-01-04 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count311
-\l__pdf_internal_box=\box70
+\l__color_backend_stack_int=\count316
+\l__pdf_internal_box=\box78
 ) (aanda.aux)
 \openout1 = `aanda.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/txmi/m/it on input line 27.
-LaTeX Font Info:    Trying to load font information for OML+txmi on input line 27.
+LaTeX Font Info:    Checking defaults for OML/txmi/m/it on input line 29.
+LaTeX Font Info:    Trying to load font information for OML+txmi on input line 29.
  (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/txfonts\omltxmi.fd
 File: omltxmi.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    ... okay on input line 27.
-LaTeX Font Info:    Checking defaults for OMS/txsy/m/n on input line 27.
-LaTeX Font Info:    Trying to load font information for OMS+txsy on input line 27.
+LaTeX Font Info:    ... okay on input line 29.
+LaTeX Font Info:    Checking defaults for OMS/txsy/m/n on input line 29.
+LaTeX Font Info:    Trying to load font information for OMS+txsy on input line 29.
  (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/txfonts\omstxsy.fd
 File: omstxsy.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    ... okay on input line 27.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 27.
-LaTeX Font Info:    ... okay on input line 27.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 27.
-LaTeX Font Info:    ... okay on input line 27.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 27.
-LaTeX Font Info:    ... okay on input line 27.
-LaTeX Font Info:    Checking defaults for OMX/txex/m/n on input line 27.
-LaTeX Font Info:    Trying to load font information for OMX+txex on input line 27.
+LaTeX Font Info:    ... okay on input line 29.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 29.
+LaTeX Font Info:    ... okay on input line 29.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 29.
+LaTeX Font Info:    ... okay on input line 29.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 29.
+LaTeX Font Info:    ... okay on input line 29.
+LaTeX Font Info:    Checking defaults for OMX/txex/m/n on input line 29.
+LaTeX Font Info:    Trying to load font information for OMX+txex on input line 29.
  (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/txfonts\omxtxex.fd
 File: omxtxex.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    ... okay on input line 27.
-LaTeX Font Info:    Checking defaults for U/txexa/m/n on input line 27.
-LaTeX Font Info:    Trying to load font information for U+txexa on input line 27.
+LaTeX Font Info:    ... okay on input line 29.
+LaTeX Font Info:    Checking defaults for U/txexa/m/n on input line 29.
+LaTeX Font Info:    Trying to load font information for U+txexa on input line 29.
  (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/txfonts\utxexa.fd
 File: utxexa.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    ... okay on input line 29.
 
 *geometry* detected driver: pdftex
 *geometry* verbose mode - [ preamble ] result:
@@ -501,16 +546,16 @@ LaTeX Font Info:    ... okay on input line 27.
 
 (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count312
-\scratchdimen=\dimen170
-\scratchbox=\box71
-\nofMPsegments=\count313
-\nofMParguments=\count314
+\scratchcounter=\count317
+\scratchdimen=\dimen176
+\scratchbox=\box79
+\nofMPsegments=\count318
+\nofMParguments=\count319
 \everyMPshowfont=\toks36
-\MPscratchCnt=\count315
-\MPscratchDim=\dimen171
-\MPnumerator=\count316
-\makeMPintoPDFobject=\count317
+\MPscratchCnt=\count320
+\MPscratchDim=\dimen177
+\MPnumerator=\count321
+\makeMPintoPDFobject=\count322
 \everyMPtoPDFconversion=\toks37
 ) (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
@@ -518,104 +563,124 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 48
  (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/00miktex\epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
 ))
-LaTeX Font Info:    Trying to load font information for TS1+txr on input line 66.
+LaTeX Font Info:    Trying to load font information for TS1+txr on input line 68.
  (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/txfonts\ts1txr.fd
 File: ts1txr.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    Trying to load font information for OT1+txr on input line 66.
+LaTeX Font Info:    Trying to load font information for OT1+txr on input line 68.
  (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/txfonts\ot1txr.fd
 File: ot1txr.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    Trying to load font information for U+txsya on input line 66.
+LaTeX Font Info:    Trying to load font information for U+txsya on input line 68.
  (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/txfonts\utxsya.fd
 File: utxsya.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    Trying to load font information for U+txsyb on input line 66.
+LaTeX Font Info:    Trying to load font information for U+txsyb on input line 68.
  (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/txfonts\utxsyb.fd
 File: utxsyb.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    Trying to load font information for U+txmia on input line 66.
+LaTeX Font Info:    Trying to load font information for U+txmia on input line 68.
  (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/txfonts\utxmia.fd
 File: utxmia.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    Trying to load font information for U+txsyc on input line 66.
+LaTeX Font Info:    Trying to load font information for U+txsyc on input line 68.
  (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/txfonts\utxsyc.fd
 File: utxsyc.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    Trying to load font information for T1+txss on input line 66.
+LaTeX Font Info:    Trying to load font information for T1+txss on input line 68.
  (C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/txfonts\t1txss.fd
 File: t1txss.fd 2000/12/15 v3.1
 )
 LaTeX Font Info:    Font shape `T1/txss/m/n' will be
-(Font)              scaled to size 16.41594pt on input line 66.
+(Font)              scaled to size 16.41594pt on input line 68.
 LaTeX Font Info:    Font shape `T1/txss/b/n' in size <17.28> not available
-(Font)              Font shape `T1/txss/bx/n' tried instead on input line 66.
+(Font)              Font shape `T1/txss/bx/n' tried instead on input line 68.
 LaTeX Font Info:    Font shape `T1/txss/bx/n' will be
-(Font)              scaled to size 16.41594pt on input line 66.
+(Font)              scaled to size 16.41594pt on input line 68.
 LaTeX Font Info:    Font shape `T1/txss/m/n' will be
-(Font)              scaled to size 13.67995pt on input line 66.
+(Font)              scaled to size 13.67995pt on input line 68.
 LaTeX Font Info:    Font shape `T1/txss/b/n' in size <14.4> not available
-(Font)              Font shape `T1/txss/bx/n' tried instead on input line 66.
+(Font)              Font shape `T1/txss/bx/n' tried instead on input line 68.
 LaTeX Font Info:    Font shape `T1/txss/bx/n' will be
-(Font)              scaled to size 13.67995pt on input line 66.
+(Font)              scaled to size 13.67995pt on input line 68.
 LaTeX Font Info:    Font shape `T1/txss/m/n' will be
-(Font)              scaled to size 8.54997pt on input line 66.
+(Font)              scaled to size 8.54997pt on input line 68.
 LaTeX Font Info:    Font shape `T1/txss/b/n' in size <9> not available
-(Font)              Font shape `T1/txss/bx/n' tried instead on input line 66.
+(Font)              Font shape `T1/txss/bx/n' tried instead on input line 68.
 LaTeX Font Info:    Font shape `T1/txss/bx/n' will be
-(Font)              scaled to size 8.54997pt on input line 66.
+(Font)              scaled to size 8.54997pt on input line 68.
 LaTeX Font Info:    Font shape `T1/txss/m/it' in size <9> not available
-(Font)              Font shape `T1/txss/m/sl' tried instead on input line 66.
+(Font)              Font shape `T1/txss/m/sl' tried instead on input line 68.
 LaTeX Font Info:    Font shape `T1/txss/m/sl' will be
-(Font)              scaled to size 8.54997pt on input line 66.
+(Font)              scaled to size 8.54997pt on input line 68.
 LaTeX Font Info:    Font shape `T1/txss/m/n' will be
-(Font)              scaled to size 10.40245pt on input line 70.
+(Font)              scaled to size 10.40245pt on input line 72.
 LaTeX Font Info:    Font shape `T1/txss/b/n' in size <10.95> not available
-(Font)              Font shape `T1/txss/bx/n' tried instead on input line 70.
+(Font)              Font shape `T1/txss/bx/n' tried instead on input line 72.
 LaTeX Font Info:    Font shape `T1/txss/bx/n' will be
-(Font)              scaled to size 10.40245pt on input line 70.
+(Font)              scaled to size 10.40245pt on input line 72.
 <img/scheme.png, id=1, 921.4425pt x 411.03563pt>
 File: img/scheme.png Graphic file (type png)
 <use img/scheme.png>
-Package pdftex.def Info: img/scheme.png  used on input line 96.
+Package pdftex.def Info: img/scheme.png  used on input line 98.
 (pdftex.def)             Requested size: 223.24567pt x 99.58464pt.
 LaTeX Font Info:    Font shape `T1/txr/b/n' in size <9> not available
-(Font)              Font shape `T1/txr/bx/n' tried instead on input line 101.
+(Font)              Font shape `T1/txr/bx/n' tried instead on input line 103.
 LaTeX Font Info:    Font shape `T1/txss/m/n' will be
-(Font)              scaled to size 9.49997pt on input line 104.
+(Font)              scaled to size 9.49997pt on input line 106.
 LaTeX Font Info:    Font shape `T1/txss/m/it' in size <10> not available
-(Font)              Font shape `T1/txss/m/sl' tried instead on input line 104.
+(Font)              Font shape `T1/txss/m/sl' tried instead on input line 106.
 LaTeX Font Info:    Font shape `T1/txss/m/sl' will be
-(Font)              scaled to size 9.49997pt on input line 104.
+(Font)              scaled to size 9.49997pt on input line 106.
  [1{C:/Users/vince/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8r.enc}
 
 
  <./img/scheme.png>]
+LaTeX Font Info:    Font shape `T1/txr/b/n' in size <10> not available
+(Font)              Font shape `T1/txr/bx/n' tried instead on input line 138.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 144.
+
+LaTeX Font Info:    Font shape `T1/txr/b/n' in size <7> not available
+(Font)              Font shape `T1/txr/bx/n' tried instead on input line 144.
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 145.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 146.
+
 <img/calibration_genetic.png, id=21, 906.2658pt x 896.148pt>
 File: img/calibration_genetic.png Graphic file (type png)
 <use img/calibration_genetic.png>
-Package pdftex.def Info: img/calibration_genetic.png  used on input line 137.
+Package pdftex.def Info: img/calibration_genetic.png  used on input line 158.
 (pdftex.def)             Requested size: 201.41188pt x 199.16928pt.
- [2 <./img/calibration_genetic.png>]
-<img/calibration_obstruction.png, id=26, 899.7615pt x 896.148pt>
+[2 <./img/calibration_genetic.png>]
+<img/calibration_obstruction.png, id=28, 899.7615pt x 896.148pt>
 File: img/calibration_obstruction.png Graphic file (type png)
 <use img/calibration_obstruction.png>
-Package pdftex.def Info: img/calibration_obstruction.png  used on input line 195.
+Package pdftex.def Info: img/calibration_obstruction.png  used on input line 216.
 (pdftex.def)             Requested size: 199.96634pt x 199.16928pt.
-<img/perturbed_phases.png, id=27, 1180.1691pt x 456.0237pt>
+<img/perturbed_phases.png, id=29, 1180.1691pt x 456.0237pt>
 File: img/perturbed_phases.png Graphic file (type png)
 <use img/perturbed_phases.png>
-Package pdftex.def Info: img/perturbed_phases.png  used on input line 206.
+Package pdftex.def Info: img/perturbed_phases.png  used on input line 227.
 (pdftex.def)             Requested size: 235.63347pt x 91.04872pt.
-<img/calibrated_phases.png, id=28, 1180.1691pt x 456.0237pt>
+
+Underfull \vbox (badness 1168) has occurred while \output is active []
+
+<img/calibrated_phases.png, id=30, 1180.1691pt x 456.0237pt>
 File: img/calibrated_phases.png Graphic file (type png)
 <use img/calibrated_phases.png>
-Package pdftex.def Info: img/calibrated_phases.png  used on input line 217.
+Package pdftex.def Info: img/calibrated_phases.png  used on input line 238.
 (pdftex.def)             Requested size: 235.63347pt x 91.04872pt.
-<img/noise_sensitivity.png, id=29, 899.7615pt x 339.669pt>
+<img/noise_sensitivity.png, id=31, 899.7615pt x 339.669pt>
 File: img/noise_sensitivity.png Graphic file (type png)
 <use img/noise_sensitivity.png>
-Package pdftex.def Info: img/noise_sensitivity.png  used on input line 240.
+Package pdftex.def Info: img/noise_sensitivity.png  used on input line 261.
 (pdftex.def)             Requested size: 226.10681pt x 85.35826pt.
  [3 <./img/calibration_obstruction.png> <./img/perturbed_phases.png> <./img/calibrated_phases.png> <./img/noise_sensitivity.png>] (aanda.aux
 
@@ -623,17 +688,17 @@ Package natbib Warning: Citation `lorem ipsum' multiply defined.
 
 ) ) 
 Here is how much of TeX's memory you used:
- 7356 strings out of 474486
- 111052 string characters out of 5743755
- 1947542 words of memory out of 5000000
- 29474 multiletter control sequences out of 15000+600000
- 648725 words of font info for 172 fonts, out of 8000000 for 9000
+ 8373 strings out of 474486
+ 127999 string characters out of 5743755
+ 1948542 words of memory out of 5000000
+ 30464 multiletter control sequences out of 15000+600000
+ 666189 words of font info for 210 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 87i,12n,93p,1256b,477s stack positions out of 10000i,1000n,20000p,200000b,200000s
-<C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/rtcxr.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/rtxmi.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/rtxr.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/rtxr.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/txex.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/txsy.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvb8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvr8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvr8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmb8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmr8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmr8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmri8a.pfb>
-Output written on aanda.pdf (3 pages, 1238059 bytes).
+ 87i,12n,93p,1256b,494s stack positions out of 10000i,1000n,20000p,200000b,200000s
+<C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/rtcxr.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/rtxbmi.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/rtxmi.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/rtxr.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/rtxr.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/txex.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/txsy.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvb8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvr8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvr8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmb8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmbi8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmr8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmr8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmri8a.pfb>
+Output written on aanda.pdf (3 pages, 1247401 bytes).
 PDF statistics:
- 90 PDF objects out of 1000 (max. 8388607)
+ 100 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  31 words of extra memory for PDF output out of 10000 (max. 10000000)
 

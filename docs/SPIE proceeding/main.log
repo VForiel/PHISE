@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2024.5.27)  7 OCT 2024 15:43
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2024.5.27)  14 OCT 2024 13:13
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -421,7 +421,7 @@ pdfTeX warning (ext4): destination with the same identifier (name{figure.7}) has
                                                   \__shipout_drop_firstpage_...
 l.180 
        <./img/transmission_map.png> <./img/fit.png>]
-<img/contribution_zone.png, id=132, 775.39688pt x 166.37157pt>
+<img/contribution_zone.png, id=133, 775.39688pt x 166.37157pt>
 File: img/contribution_zone.png Graphic file (type png)
 <use img/contribution_zone.png>
 Package pdftex.def Info: img/contribution_zone.png  used on input line 217.
@@ -430,14 +430,14 @@ Package pdftex.def Info: img/contribution_zone.png  used on input line 217.
 pdfTeX warning (ext4): destination with the same identifier (name{figure.8}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.230 
+l.228 
        <./img/contribution_zone.png>]
-Underfull \hbox (badness 1466) in paragraph at lines 241--242
+Underfull \hbox (badness 1466) in paragraph at lines 243--244
 []\OT1/cmr/m/n/10 Lay, O.P. "Sys-tem-atic er-rors in nulling in-ter-fer-om-e-ters". \OT1/cmr/m/it/10 Appl. Opt.\OT1/cmr/m/n/10 , AO 43, 6100{6123 (2004).
  []
 
 
-Underfull \hbox (badness 2334) in paragraph at lines 250--251
+Underfull \hbox (badness 2334) in paragraph at lines 252--253
 \OT1/cmr/m/n/10 Prin-ci-ples and Ap-pli-ca-tions". \OT1/cmr/m/it/10 Jour-nal of Light-wave Tech-nol-ogy \OT1/cmr/m/n/10 13, no 4 (avril 1995): 615[]27.
  []
 
@@ -458,9 +458,9 @@ Here is how much of TeX's memory you used:
  1141 hyphenation exceptions out of 8191
  75i,12n,79p,1318b,1239s stack positions out of 10000i,1000n,20000p,200000b,200000s
  <C:\Users\vince\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1000.pk> <C:\Users\vince\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm0900.pk><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi5.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi9.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr5.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy9.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb>
-Output written on main.pdf (7 pages, 1080107 bytes).
+Output written on main.pdf (7 pages, 1081367 bytes).
 PDF statistics:
- 251 PDF objects out of 1000 (max. 8388607)
+ 252 PDF objects out of 1000 (max. 8388607)
  42 named destinations out of 1000 (max. 500000)
  94 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -17,6 +17,8 @@
 %
 \usepackage{graphicx}
 \usepackage{float}
+% \usepackage{algorithmic}
+\usepackage[lined,ruled,linesnumbered]{algorithm2e}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \usepackage{txfonts}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -128,6 +130,25 @@
                 \item Convergence : on répète les étapes 2 et 3 en réduisant à chaque fois la valeur de $\Delta \phi$ d'un facteur $\beta \in [0.5,1[$. Un facteur $\beta$ proche de $1$ permet une convergeance lente mais plus précise, là où un facteur $\beta = 0.5$ donnera la meilleur vitesse de convergeance mais peut régulièrement manquer de précision.
                 \item Point d'arrêt : on s'arrête lorsque la variation de phase $\Delta \phi$ introduite est inférieur à l'incertitude sur la phase injectée, qui doit être déterminé via une caractérisation préalable des retardateurs de phase.
             \end{enumerate}
+            
+            % \IncMargin{1em}
+            \begin{algorithm}
+            %\SetKwData{Left}{left}\SetKwData{This}{this}\SetKwData{Up}{up}
+            %\SetKwFunction{Union}{Union}\SetKwFunction{FindCompress}{FindCompress}
+            \SetKwInOut{Input}{Inputs}\SetKwInOut{Output}{Output}
+            \Input{$\epsilon, \beta$}
+            \BlankLine
+            \Output{\vec{P}}
+            \BlankLine
+            
+            $\vec P \leftarrow \vec 0$;\\
+            $\vec \psi \leftarrow \vec 1 \times \frac{1}{\sqrt{4}}$;\\
+            $\vec PM_K \leftarrow [1,5] \cup [7]$; $\vec PM_B \leftarrow [6] \cup [8,14]$;\\
+            
+            \caption{Genetic algorithm}
+            \label{genetic}
+            \end{algorithm}
+            \DecMargin{1em}
 
             Cet algorithme a pour avantages d'être très facile à adapter à d'autres architectures de Kernel-Nuller et ne fait intervenir aucune pièce mobile durant le processus de calibration ce qui permet une calibration automatisée et rapide. En revanche, il souffre d'une limitation lié au bruit de photon. En effet, les retards de phase à injecter sur les retardateurs des couches proches des sorties dépendent des retards de phase injectés sur les couches précédentes. Ainsi, la calibration des dernier retardateurs ne peut se faire finament qu'une foit les premiers retardateurs calibrés, ce qui a pour conséquence d'avoir très peu de flux sur les sorties sombres lors de la calibration et ainsi d'augmenter la sensibilité au bruit de photon. Numériquement, même en tenant compte du bruit de photon, il est toutefois possible d'atteindre des profondeur de kernel-null de l'ordre de $10^{-8}$. [RAJOUTER LES RESULTATS EN LABO]. Un autre défaut de cet algorithme réside dans le fait que la convergeance peut être sous-optimale. La fréquence de ce genre de cas décroit lorsque $\beta$ est proche de 1, ce qui implique une convergeance plus lente.
 

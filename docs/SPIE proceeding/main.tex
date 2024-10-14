@@ -145,14 +145,14 @@ As the signal to noise ratio is very low, the shift is not trivial to observe. W
     \end{center}
     \caption[ROC] 
     { \label{fig:ROC} 
-    These plots shows the detection performance (Pdet) as a function of the probability of false alarm (Pfa) for different methods. The methods used here consist of reducing the distribution to a single value using the median, mean, and argmax (with different number of bins) operations and comparing this value to a threshold. The higher the threshold, the more the null hypothesis is favored. The lower the threshold, the more false alarms we encounter. These results were obtained using 1000 different distributions containing 1000 intensities each. We clearly see that, in these conditions, the calibration process leads to more revelant statistical tests.}
+    These plots shows the detection performance (Pdet) as a function of the probability of false alarm (Pfa) for different methods. The methods used here consist of reducing the distribution to a single value using the median, mean, and argmax (with different number of bins) operations and comparing this value to a threshold. The higher the threshold, the more the null hypothesis is favored. The lower the threshold, the more false alarms we encounter. So, by varying the threshold, we obtain for each considered test statistic different trade-offs Pdet vs Pfa, the set of which draws a curve called ROC curve. These results were obtained using 1000 different distributions containing 1000 intensities each. We clearly see that, in these conditions, the calibration process leads to more powerful statistical tests. Moreover, among the considered test statistics, the median appeared to be the most powerful.}
 \end{figure}
 
-For a series of observations performed in the same conditions, looking at the median of the distribution is theoretically sufficient to detect planets with a contrast of $10^{-5}$ in the presence of phase perturbations of the order of $\lambda / 100$ in 90\% of cases with a 1\% probability of false alarm. These results tends to confirm the accuracy already reached in the literature \cite{Cvetojevic et al. 2022}, which will allow us to study other statistical tests in order to enhance this detection power.
+For a series of observations performed in the same conditions, looking at the median of the distribution is theoretically sufficient to detect planets with a contrast of $10^{-5}$ in the presence of phase perturbations of the order of $\lambda / 100$ in 90\% of cases with a 1\% probability of false alarm. These results tends to confirm the accuracy already reached in the literature \cite{Cvetojevic et al. 2022}, but there is still a chance to improve them by studying more advanced statistical tests.
 
 \section{Position caracterization}
 
-Beyond detecting the presence of an exoplanet, this system can caracterize it's position by performing a series of observations at various hour angles. Using the transmission maps of the different kernels (on-sky projection of the outputs, see Figure \ref{fig:transmission_map}) for each different hour angle \cite{Chingaipe}, we can determine the expected signal modulation for a planet at a given location. By fitting this function to the obtained data using a non-linear least square method, we can determine the planet's position (Figure \ref{fig:fit}).
+Beyond detecting the presence of an exoplanet, this system can caracterize its position by performing a series of observations at various hour angles. Using the transmission maps of the different kernels (on-sky projection of the outputs, see Figure \ref{fig:transmission_map}) for each different hour angle \cite{Chingaipe}, we can determine the expected signal modulation for a planet at a given location. By fitting this function to the obtained data using a non-linear least square method, we can determine the planet's position (Figure \ref{fig:fit}).
 
 \begin{figure} [H]
     \begin{center}
@@ -173,19 +173,19 @@ Beyond detecting the presence of an exoplanet, this system can caracterize it's 
     \end{center}
     \caption[fit] 
     {\label{fig:fit} 
-    To determine the position of the planet, we fit the signal modulation function to the obtained data using the non linear fitting algorithme included in the \lstinline{scipy.optimize} python pakcage. This fitting process is conducted for each kernel individually, referred as the "specific fit". After performing the specific fits, we average the resulting positions to derive a new position estimate. We then plot the modulation for this averaged position, referred to as the "global fit". In practice, as we don't know the expected signal, the correlation of the global fit and each specific fits gives us some information about the goodness of these fits. In this exemple, we only consider a simple baseline rotation, resulting in a rotation of the transmission map. In practice, due to the earth shape, the projection of the baseline dring the night vary in a more complex way, leading to a more complex modulation function that can be difficult to fit properly.}
+    To determine the position of the planet, we fit the signal modulation function to the obtained data using the non linear fitting algorithme included in the \lstinline{scipy.optimize} python pakcage. This fitting process is conducted for each kernel individually, referred as the "specific fit". After performing the specific fits, we average the resulting positions to derive a new position estimate. We then plot the modulation for this averaged position, referred to as the "global fit". In practice, as we do not know the expected signal, the correlation of the global fit and each specific fits gives us some information about the goodness of these fits. In this simulation example, we set a contrast of $10^{-5}$ and a RMS phase perturbation of $\lambda / 100$ and we only consider a simple baseline rotation, resulting in a rotation of the transmission map. In practice, due to the earth shape, the projection of the baseline during the night vary in a more complex way, leading to a more complex modulation function that can be difficult to fit properly.}
 \end{figure}
 
-The modulation function's complexity makes it difficult for a non-linear least square fitting algorithm - such as the one provided by scipy -  to converge unless it is initially given an approximate but close position and contrast to the expected true parameters. Unfortunately, we lack this information. One approach is to perform the fit by using each point in the sky as an initial parameter and identifying when the fit properly converges using a correlation indicator.
+The modulation function can be obtained by considering the value of a point in the transmission map over an entire revolution of this map around its center. As the transmission map is highly repetitive, a non-linear least square fitting algorithm - such as the one provided by scipy - can easily fall into local minimums. It then often lead to incorrect results unless it is initially given an approximate but close position and contrast to the expected true parameters. Unfortunately, we lack this information. One approach is to perform the fit by using each point in the position and contrast parameter grid as an initial parameter and identifying when the fit properly converge.
 
-An alternative solution is to generate a sky map highlighting the regions that could potentially have contributed to the observed data. This method, already explored with classic nulling interferometers\cite{Image reconstruction}, involves weighting each rotated transmission map by the data obtained for that specific parallactic angle, then summing all the weighted maps. It results in a map that highlight the planet's position (Figure \ref{fig:contribution_zone}).
+An alternative solution is to generate a sky map highlighting the regions that could potentially have contributed to the observed data. This method, already explored with classic nulling interferometers\cite{Image reconstruction}, involves weighting each rotated transmission map by the data obtained for that specific parallactic angle (detailed below), then summing all the weighted maps. It results in a map that highlight the planet's position (Figure \ref{fig:contribution_zone}).
 
-The base idea was already explored as "image reconstruction" technic using classical nulling interferometry $^1$. However, the method here is based on Kernel-Nulls which makes it more complex but less sensitive to phase aberations and by considerig the different Kernels, we can reduce the degeneracy of the solutions.
+The base idea was already explored as "image reconstruction" technic using classical nulling interferometry $^1$. However, the method here is based on Kernel-Nulls which have asymetric transmission maps. Thus, allow to better constrain the source of the signal by filtering the negative contributions.
 
 Considering:
 \begin{itemize}
-\item $T_{n}$ represents the n-th kernel's normalized transmission map.
-\item $d_{n,\beta}$ denotes the data point obtained for kernel $n$ with baseline rotation $\beta$.
+\item $T_{n}$ represents the $n$-th kernel's transmission map normalized such as the max is 1.
+\item $d_{n,\beta}$ denotes the data point obtained for kernel $n$ with baseline rotation $\beta$. Ex: $d_{1,\beta} = |D_{1,\beta}|^2 - |D_{2,\beta}|^2$ (see figure \ref{fig:kernel_nuller}).
 \item $h$ is the hour angle.
 \item $\theta$ is the angular separation.
 \end{itemize}
@@ -194,14 +194,14 @@ We can define the raw contribution zones for each kernel at a given hour angle:
 
 \begin{equation}
     \label{eq:raw_kernel}
-    r_n(\theta, \alpha) = \sum_a T_{n,h}(\theta,\alpha) d_{n,h}
+    r_n(\theta, \alpha) = \sum_h T_{n,h}(\theta,\alpha) d_{n,h}
 \end{equation}
 
 
 As the kernel outputs are antisymetric, we can filter the negative contributions:
 \begin{equation}
     \label{eq:heaviside}
-    r'_n = \frac{1}{2}(r_n+|r_n|)
+    r'_n = \max(0, r_n)
 \end{equation}
 
 
@@ -219,14 +219,16 @@ Finally, we can compute the product over all the kernels to get the final contri
     \end{center}
     \caption[contribution_zone] 
     {\label{fig:contribution_zone} 
-    Each of the first three plots represents the sum of the contribution maps at different times, weighted by the data obtained for that time. We are still in the particular case where the hour angle is approximated to a simple baseline rotation. The final plot represents the product of the first three plots.}
+    Each of the first three plots represents the sum of the contribution maps at different times, weighted by the data obtained for that time. We are still in the particular case where the hour angle is approximated to a simple baseline rotation. The final plot represents the product of the first three plots which show here the approximate position of the planet we placed in the simulation (white cross). These results where also obtained for a contrast of $10^{-5}$ and a RMS phase perturbation of $\lambda / 100$. Also, this process can be considered for more powerfull statistical tests.}
 \end{figure}
 
 \section{Discussion \& Prospects}
 
-These simulations and statistical analysis shows highly promising results since we reach a detection contrast of $10^{-5}$ to $10^{-6}$ while the null depth goes up to $10^{-3}$ in the litterature \cite{Cvetojevic et al. 2022}. It also indicates the potential for even greater contrast by leveraging angular diversity. However, these results must be validated through laboratory tests.
+These simulations and statistical analysis shows highly promising results since we reach a detection contrast of $10^{-5}$ to $10^{-6}$ while the null depth goes up to $10^{-3}$ in the litterature \cite{Cvetojevic et al. 2022}. It also indicates the potential for even greater contrast by leveraging angular diversity.
 
 Several factors could reduce these performances, such as amplitude aberrations, the chromatic nature of light, or the presence of multiple objects around the star. Adding these constraints to the simulation model and conducting an in-depth study on possible statistical tests will help to better define the actual limitations of such a system.
+
+The photonic chip is already available and will be tested in the near future. We will then be able to compare the results obtained in the laboratory with those obtained in the simulations presented here.
 
 \acknowledgments
 
