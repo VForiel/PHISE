@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2024.5.27)  10 OCT 2024 15:05
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2024.5.27)  12 NOV 2024 16:50
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -632,73 +632,192 @@ LaTeX Font Info:    Font shape `T1/txss/m/it' in size <10> not available
 (Font)              Font shape `T1/txss/m/sl' tried instead on input line 106.
 LaTeX Font Info:    Font shape `T1/txss/m/sl' will be
 (Font)              scaled to size 9.49997pt on input line 106.
+LaTeX Font Info:    Font shape `T1/txr/b/n' in size <10> not available
+(Font)              Font shape `T1/txr/bx/n' tried instead on input line 112.
  [1{C:/Users/vince/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8r.enc}
 
 
  <./img/scheme.png>]
-LaTeX Font Info:    Font shape `T1/txr/b/n' in size <10> not available
-(Font)              Font shape `T1/txr/bx/n' tried instead on input line 138.
-
 
 Package relsize Warning: Font size 6.94446pt is too small.
-(relsize)                Using 7.0pt instead on input line 144.
+(relsize)                Using 7.0pt instead on input line 149.
 
 LaTeX Font Info:    Font shape `T1/txr/b/n' in size <7> not available
-(Font)              Font shape `T1/txr/bx/n' tried instead on input line 144.
+(Font)              Font shape `T1/txr/bx/n' tried instead on input line 149.
+LaTeX Font Info:    Trying to load font information for T1+txtt on input line 149.
+(C:\Users\vince\AppData\Local\Programs\MiKTeX\tex/latex/txfonts\t1txtt.fd
+File: t1txtt.fd 2000/12/15 v3.1
+)
 
 Package relsize Warning: Font size 6.94446pt is too small.
-(relsize)                Using 7.0pt instead on input line 145.
+(relsize)                Using 7.0pt instead on input line 150.
 
 
 Package relsize Warning: Font size 6.94446pt is too small.
-(relsize)                Using 7.0pt instead on input line 146.
+(relsize)                Using 7.0pt instead on input line 151.
 
-<img/calibration_genetic.png, id=21, 906.2658pt x 896.148pt>
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 152.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 182.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 182.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 182.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 182.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 182.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 182.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 182.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 182.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 182.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 182.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 182.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 182.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 182.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 182.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 182.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 182.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 182.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 182.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 182.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 182.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 182.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 182.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 182.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 182.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 182.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 184.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 185.
+
+
+Package relsize Warning: Font size 6.94446pt is too small.
+(relsize)                Using 7.0pt instead on input line 186.
+
+<img/calibration_genetic.png, id=20, 906.2658pt x 896.148pt>
 File: img/calibration_genetic.png Graphic file (type png)
 <use img/calibration_genetic.png>
-Package pdftex.def Info: img/calibration_genetic.png  used on input line 158.
+Package pdftex.def Info: img/calibration_genetic.png  used on input line 204.
 (pdftex.def)             Requested size: 201.41188pt x 199.16928pt.
 [2 <./img/calibration_genetic.png>]
-<img/calibration_obstruction.png, id=28, 899.7615pt x 896.148pt>
+<img/calibration_obstruction.png, id=30, 899.7615pt x 896.148pt>
 File: img/calibration_obstruction.png Graphic file (type png)
 <use img/calibration_obstruction.png>
-Package pdftex.def Info: img/calibration_obstruction.png  used on input line 216.
+Package pdftex.def Info: img/calibration_obstruction.png  used on input line 262.
 (pdftex.def)             Requested size: 199.96634pt x 199.16928pt.
-<img/perturbed_phases.png, id=29, 1180.1691pt x 456.0237pt>
+<img/perturbed_phases.png, id=31, 1180.1691pt x 456.0237pt>
 File: img/perturbed_phases.png Graphic file (type png)
 <use img/perturbed_phases.png>
-Package pdftex.def Info: img/perturbed_phases.png  used on input line 227.
+Package pdftex.def Info: img/perturbed_phases.png  used on input line 273.
 (pdftex.def)             Requested size: 235.63347pt x 91.04872pt.
-
-Underfull \vbox (badness 1168) has occurred while \output is active []
-
-<img/calibrated_phases.png, id=30, 1180.1691pt x 456.0237pt>
+<img/calibrated_phases.png, id=32, 1180.1691pt x 456.0237pt>
 File: img/calibrated_phases.png Graphic file (type png)
 <use img/calibrated_phases.png>
-Package pdftex.def Info: img/calibrated_phases.png  used on input line 238.
+Package pdftex.def Info: img/calibrated_phases.png  used on input line 284.
 (pdftex.def)             Requested size: 235.63347pt x 91.04872pt.
-<img/noise_sensitivity.png, id=31, 899.7615pt x 339.669pt>
+ [3 <./img/calibration_obstruction.png> <./img/perturbed_phases.png>]
+<img/noise_sensitivity.png, id=37, 899.7615pt x 339.669pt>
 File: img/noise_sensitivity.png Graphic file (type png)
 <use img/noise_sensitivity.png>
-Package pdftex.def Info: img/noise_sensitivity.png  used on input line 261.
+Package pdftex.def Info: img/noise_sensitivity.png  used on input line 307.
 (pdftex.def)             Requested size: 226.10681pt x 85.35826pt.
- [3 <./img/calibration_obstruction.png> <./img/perturbed_phases.png> <./img/calibrated_phases.png> <./img/noise_sensitivity.png>] (aanda.aux
+ [4
+
+ <./img/calibrated_phases.png> <./img/noise_sensitivity.png>] (aanda.aux
 
 Package natbib Warning: Citation `lorem ipsum' multiply defined.
 
 ) ) 
 Here is how much of TeX's memory you used:
- 8373 strings out of 474486
- 127999 string characters out of 5743755
- 1948542 words of memory out of 5000000
- 30464 multiletter control sequences out of 15000+600000
- 666189 words of font info for 210 fonts, out of 8000000 for 9000
+ 8614 strings out of 474486
+ 132176 string characters out of 5743755
+ 1952542 words of memory out of 5000000
+ 30699 multiletter control sequences out of 15000+600000
+ 669563 words of font info for 214 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 87i,12n,93p,1256b,494s stack positions out of 10000i,1000n,20000p,200000b,200000s
-<C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/rtcxr.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/rtxbmi.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/rtxmi.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/rtxr.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/rtxr.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/txex.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/txsy.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvb8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvr8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvr8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmb8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmbi8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmr8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmr8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmri8a.pfb>
-Output written on aanda.pdf (3 pages, 1247401 bytes).
+ 87i,24n,93p,1177b,613s stack positions out of 10000i,1000n,20000p,200000b,200000s
+<C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/rtcxr.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/rtxb.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/rtxmi.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/rtxr.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/rtxr.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/t1xtt.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/txbsy.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/txex.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/txsy.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvb8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvr8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvr8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmb8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmbi8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmr8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmr8a.pfb><C:/Users/vince/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmri8a.pfb>
+Output written on aanda.pdf (4 pages, 1264127 bytes).
 PDF statistics:
- 100 PDF objects out of 1000 (max. 8388607)
+ 113 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  31 words of extra memory for PDF output out of 10000 (max. 10000000)
 

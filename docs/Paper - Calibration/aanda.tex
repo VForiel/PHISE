@@ -18,7 +18,7 @@
 \usepackage{graphicx}
 \usepackage{float}
 % \usepackage{algorithmic}
-\usepackage[lined,ruled,linesnumbered]{algorithm2e}
+\usepackage[lined,ruled,linesnumbered,algoruled,french,commentsnumbered]{algorithm2e}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \usepackage{txfonts}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -104,53 +104,99 @@
     \end{figure}
 
     \subsection{Algorithms}
-        \subsubsection{Genetic}
-            Le premier algorithme à avoir été mis au point repose sur le principe d'algorithme génétique déterministe. On définit une métrique de performance $M$, qui va ici correspondre à la profondeur du kernel-null, puis on cherche à l'optimiser en faisant introduisant successivement une variation de phase $\Delta \phi$ sur chacun des retardateurs $P_i$.
 
-            Le processus d'optimisation se fait en utilisant une source ponctuelle qui simule une étoile seule. Le but est alors d'annuler son signal. Toutefois, étant donné que les Kernels sont construit via la différence de deux sorties sombres, il est possible d'obtenir de très bon kernel-nulls sans pour autant avoir bien annulé la lumière de l'étoile. Pour palier à ce problème, on définit alors deux métriques, l'une mesurant la profondeur du kernel-null $M_K$, l'autre l'intensité obtenue sur la sortie brillante du coposant $M_B$. Ainsi, on a :
+        In order to calibrate the component, two algorithms have been developed. The first is based on the principle of a genetic algorithm, the second on the principle of input obstruction. Both algorithms have been implemented in Python and are based on the same principle: we seek to optimize the component's performance by introducing phase variations on each phase shifter. The difference between the two algorithms lies in the way these phase variations are introduced and the metrics used to evaluate the component's performance. We will present both methods and discuss their advantages and limitations.
+
+        Consistent with our architecture (Figure \ref{fig:architecture}), these algorithmes involve the following quantities:
+        \begin{itemize}
+            \item $I_n$ the $n^{th}$ input signal (electric field)
+            \item $B$ the bright output signal (electric field)
+            \item $D_n$ the $n^{th}$ dark output signal (electric field)
+            \item $K_n$ the $n^{th}$ kernel output (intensity). We have:
+            \subitem $K_1 = |D_1|^2 - |D_2|^2$
+            \subitem $K_2 = |D_3|^2 - |D_4|^2$
+            \subitem $K_3 = |D_5|^2 - |D_6|^2$
+            \item $P_n$ the phase introduced on the $n^{th}$ phase shifter (distance)
+        \end{itemize}
+
+        \subsubsection{Genetic}
+            The first algorithm that was developed is based on the principle of deterministic genetic algorithm. We define a performance metric $M$, which in this case corresponds to the kernel-null depth, then we seek to optimize it by successively introducing a phase variation $\Delta \phi$ on each phase shifter $P_n$.
+
+            The optimization process is performed using a point source that simulates a single star. The goal is to nullify its signal on the dark outputs. However, since Kernels are constructed via the difference of two dark outputs, it is possible to obtain very good kernel-nulls without necessarily having well nullified the star's light. To address this issue, we define two different metrics, one measuring the average kernel-null depth $M_K$ that we want to minimize, the other measuring the intensity obtained on the bright output of the component $M_B$ (which is opposed to the total intensity obtained over all the dark outputs) that we want to maximize. Thus, we have:
 
             \begin{equation}
-                M_K = \left||D_1|^2 - |D_2|^2\right| + \left||D_3|^2 - |D_4|^2\right| + \left||D_5|^2 - |D_6|^2\right|
+                M_K = \sum_{n=1}^3 K_n
             \end{equation}
 
             \begin{equation}
                 M_B = |B|^2
             \end{equation}
             
-            Au regard de l'architecture de notre composant, on peut alors associer la métrique $M_B$ à chacun des retardateurs qui influent sur la sortie brillante, soit $P_{1 \rightarrow 5}$ ainsi que $P_7$. L'ensemble des autres retardateurs sont alors associé à la métrique $M_K$.
+            Given our component's architecture, we can associate the metric $M_B$ with each phase shifter that affects the bright output, namely $P_{1 \rightarrow 5}$ and $P_7$. All other phase shifters are then associated with the metric $M_K$ (cf. Algorithme \ref{genetic} line 3-4).
 
-            L'algorithme génétique se construit alors de la façon suivante :
+            The genetic algorithm is then structured as follows:
+
+            \begin{algorithm}
+            \caption{Genetic calibration algorithm}
+            \label{genetic}
+            \SetKwInOut{Input}{Inputs}\SetKwInOut{Output}{Output}
+            
+            \Input{$\varepsilon$: desired phase precision\\
+                   $\beta$: phase variation reduction factor ($\beta \in [0.5,1[$)}
+            \Output{$\vec{P}$: optimized phase shifts vector}
+            \BlankLine
+            
+            $\vec{P} \leftarrow \vec{0}$ \tcp*{Initialize phase shifts to 0}
+            $\Delta\phi \leftarrow \lambda/4$ \tcp*{Initial phase variation}
+            $\vec{PM_B} \leftarrow [1,5] \cup [7]$ \tcp*{Phase shifters for bright output}
+            $\vec{PM_K} \leftarrow [6] \cup [8,14]$ \tcp*{Phase shifters for kernel-nulls}
+            \BlankLine
+            
+            \While{$\Delta\phi > \varepsilon$}{
+                \For{$n \leftarrow 1$ \KwTo $14$}{
+                    $\vec{P^+} \leftarrow \vec{P}$\;
+                    $P^+_n \leftarrow P_n + \Delta\phi$\;
+                    
+                    $\vec{P^-} \leftarrow \vec{P}$\;
+                    $P^-_n \leftarrow P_n - \Delta\phi$\;
+                    
+                    \uIf{$n \in \vec{PM_B}$}{
+                        \If{$M_B(\vec{P^+}) > M_B(\vec{P})$}{
+                            $\vec{P} \leftarrow \vec{P^+}$\;
+                        }
+                        \If{$M_B(\vec{P^-}) > M_B(\vec{P})$}{
+                            $\vec{P} \leftarrow \vec{P^-}$\;
+                        }
+                    }
+                    \ElseIf{$n \in \vec{PM_K}$}{
+                        \If{$M_K(\vec{P^+}) < M_K(\vec{P})$}{
+                            $\vec{P} \leftarrow \vec{P^+}$\;
+                        }
+                        \If{$M_K(\vec{P^-}) < M_K(\vec{P})$}{
+                            $\vec{P} \leftarrow \vec{P^-}$\;
+                        }
+                    }
+                }
+                $\Delta\phi \leftarrow \beta \Delta\phi$ \tcp*{Reduce phase variation}
+            }
+            \Return{$\vec{P}$}
+            \BlankLine
+            where:\\
+            $M_B(\vec{P}) = |B|^2$ \tcp*{Bright output intensity}
+            $M_K(\vec{P}) = \left||D_1|^2 - |D_2|^2\right| + \left||D_3|^2 - |D_4|^2\right| + \left||D_5|^2 - |D_6|^2\right|$ \tcp*{Kernel-nulls depth}
+            \end{algorithm}
 
             \begin{enumerate}
-                \item Initialisation : on initialise les phases de chacun des retardateurs à 0
-                \item Mutation : on introduit une variation de phase $+ \Delta \phi$ puis de $- \Delta \phi$ successivement sur chaque retardateur $P_i$ (toujours dans le même ordre).
-                \item Sélection : on conserve la configuration qui a le plus amélioré la métrique associé à ce retardateur.
-                    \subitem Si $i \in [1, 5] \cup 7$, on conserve la variation qui a le plus augmenté la métrique $M_B$ (redirection de l'ensemble du flux de létoile sur la sortie brillante)
-                    \subitem Si $i \in 6 \cup [8, 14]$, on conserve la variation qui a le plus réduit la métrique $M_K$ (symétrisation des sorties sombres pour creuser la profondeur des kernel-nulls)
-                \item Convergence : on répète les étapes 2 et 3 en réduisant à chaque fois la valeur de $\Delta \phi$ d'un facteur $\beta \in [0.5,1[$. Un facteur $\beta$ proche de $1$ permet une convergeance lente mais plus précise, là où un facteur $\beta = 0.5$ donnera la meilleur vitesse de convergeance mais peut régulièrement manquer de précision.
-                \item Point d'arrêt : on s'arrête lorsque la variation de phase $\Delta \phi$ introduite est inférieur à l'incertitude sur la phase injectée, qui doit être déterminé via une caractérisation préalable des retardateurs de phase.
+                \item Initialization: we initialize the phases of each phase shifter $P_n$ to 0.  (cf. Algorithme \ref{genetic} line 1)
+                \item Mutation: we consider two phase variations of $+ \Delta \phi$ and $- \Delta \phi$, successively on each phase shifter $P_n$, always in the same order  (cf. Algorithme \ref{genetic} line 6-10).
+                \item Selection: we retain the configuration that most improves the metric associated with that phase shifter (cf. Algorithme \ref{genetic} line 11-25).
+                    \subitem If $n \in [1, 5] \cup 7$, we keep the variation that most increased metric $M_B$ so we redirect the entire star flux to the bright output  (cf. Algorithme \ref{genetic} line 11-17).
+                    \subitem If $n \in 6 \cup [8, 14]$, we keep the variation that most reduced metric $M_K$ so we symmetrize dark outputs pairs to enhance kernel-nulls depth  (cf. Algorithme \ref{genetic} line 18-24).
+                \item Convergence: we repeat steps 2 and 3, reducing the value of $\Delta \phi$ by a factor of $\beta \in [0.5,1[$ each time. A $\beta$ factor close to $1$ allows for slow but more precise convergence, whereas a $\beta$ factor of $0.5$ will yield the fastest convergence but may lead to an under-optimal solution  (cf. Algorithme \ref{genetic} line 5, 27).
+                \item Stopping point: we stop when the phase variation $\Delta \phi$ introduced is smaller than the uncertainty in the injected phase, which must be determined through prior characterization of the phase shifters  (cf. Algorithme \ref{genetic} line 5).
             \end{enumerate}
-            
-            % \IncMargin{1em}
-            \begin{algorithm}
-            %\SetKwData{Left}{left}\SetKwData{This}{this}\SetKwData{Up}{up}
-            %\SetKwFunction{Union}{Union}\SetKwFunction{FindCompress}{FindCompress}
-            \SetKwInOut{Input}{Inputs}\SetKwInOut{Output}{Output}
-            \Input{$\epsilon, \beta$}
-            \BlankLine
-            \Output{\vec{P}}
-            \BlankLine
-            
-            $\vec P \leftarrow \vec 0$;\\
-            $\vec \psi \leftarrow \vec 1 \times \frac{1}{\sqrt{4}}$;\\
-            $\vec PM_K \leftarrow [1,5] \cup [7]$; $\vec PM_B \leftarrow [6] \cup [8,14]$;\\
-            
-            \caption{Genetic algorithm}
-            \label{genetic}
-            \end{algorithm}
-            \DecMargin{1em}
 
-            Cet algorithme a pour avantages d'être très facile à adapter à d'autres architectures de Kernel-Nuller et ne fait intervenir aucune pièce mobile durant le processus de calibration ce qui permet une calibration automatisée et rapide. En revanche, il souffre d'une limitation lié au bruit de photon. En effet, les retards de phase à injecter sur les retardateurs des couches proches des sorties dépendent des retards de phase injectés sur les couches précédentes. Ainsi, la calibration des dernier retardateurs ne peut se faire finament qu'une foit les premiers retardateurs calibrés, ce qui a pour conséquence d'avoir très peu de flux sur les sorties sombres lors de la calibration et ainsi d'augmenter la sensibilité au bruit de photon. Numériquement, même en tenant compte du bruit de photon, il est toutefois possible d'atteindre des profondeur de kernel-null de l'ordre de $10^{-8}$. [RAJOUTER LES RESULTATS EN LABO]. Un autre défaut de cet algorithme réside dans le fait que la convergeance peut être sous-optimale. La fréquence de ce genre de cas décroit lorsque $\beta$ est proche de 1, ce qui implique une convergeance plus lente.
+            This algorithm has the advantages of being very easy to adapt to other Kernel-Nuller architectures and does not require any moving parts during the calibration process, allowing for fast and automated calibration. However, it suffers from a limitation related to photon noise. Specifically, the phase to inject using the shifters near the outputs depend on the phase injected in the previous layers. Thus, the calibration of the final shifters can only be finely tuned once the initial shifters have been calibrated, which implies very little flux on the dark outputs during calibration and therefore a greater sensitivity to photon noise. Numerically, even accounting for photon noise, it is possible to achieve kernel-null depths on the order of $10^{-8}$. [ADD LABORATORY RESULTS]. Another disadvantage of this algorithm is that, for some given initial conditions, the convergence can be suboptimal and there is no way to know when this suboptimal solution happen. The frequency of these suboptimal cases decreases when $\beta$ is close to 1, which implies a slower convergence.
 
             \begin{figure}[H]
                 \begin{center}
@@ -164,51 +210,51 @@
             \end{figure}
 
         \subsubsection{Input obstruction}
-            Afin de palier aux limitations de l'algorithme génétique, une autre méthode de calibration a été mise en place. Cette méthode repose sur le principe d'obstruction des entrées du composant. On injecte toujours une source ponctuelle dans le composant mais l'on obstrue cette fois 2 de ses entrées. On s'intéresse alors à l'une de ses sorties dont la fontion de transfert se retrouve grandement simplifiée, au point de n'avoir plus qu'un seul paramètre (retardateur de phase) influencant sur cette sortie.
+            To overcome the limitations of the genetic algorithm, another calibration method has been implemented. This method is based on the principle of obstructing the component's inputs. We still inject a point source into the component but this time we obstruct 2 of its inputs. We then focus on one of its outputs whose transfer function is greatly simplified, to the point of having only one parameter (phase shifter) influencing this output.
 
-            L'algorithme se construit alors de la façon suivante :
+            The algorithm is constructed as follows:
 
             \begin{enumerate}
-                \item On obstrue les entrées 3 et 4 puis on chercher à maximiser la sortie brillante. Etant donné qu'on est insensible à la phase globale, on peut utiliser la phase du champ élctrique de la première entrée comme phase de référence. Ainsi, la sortie brillante peut être maximisée en jouant uniquement sur le retardateur $P_2$.
-                \item On obstrue les entrées 1 et 2 puis on cherche à maximiser la sortie brillante, cette fois ci en jouant sur le retardateur $P_4$. On utilise alors temporairement la phase du champ élctrique de la troisième entrée comme phase de référence.
-                \item On obstrue les entrées 2 et 4 puis on cherche à nouveau à maximiser la sortie brillante. Cette fois, on joue sur le retardateur $P_3$, qui va correspondre à la différence de phase en sortie de la première couche de Nullers (Figure \ref{fig:architecture}). On rajoute alors la phase introduite sur $P_3$ à celle introduite sur $P_4$ afin de changer la phase comune de $I_3$ et $I_4$.
-                \item Toujours en obstruant $I_2$ et $I_4$, on cherche à minimiser les sorties sombres 3 et 4 qui sont supposé avoir les entrées $I_1$ et $I_3$ en parfaite opposition de phase. Pour cela, on joue alors sur le retardateur $P_8$.
-                \item On obstrue $I_3$ et $I_4$ et on va chercher à minimiser le kernel 3. Etant donné que les retards injectés jusque là redirigent le flux vers la sortie brillante, on introduit une phase $+\frac{\pi}{2}$ sur $P_2$, transformant ainsi la sortie brillante en sortie sombre et les sorties sombres associé au kernel 3 en sorties brillante. On joue alors sur le retardateur $P_10$ afin de symétriser les sorties sombres (ce que l'on constate par l'annulation du kernel malgré la présence de flux).
-                \item De la même façon, on obstrue $I_2$ et $I_4$ et on cherche à minimiser le kernel 2 en introduisant une phase $+\frac{\pi}{2}$ sur $P_3$. On joue alors cette fois-ci sur le retardateur $P_10$.
-                \item Enfin, on obstrue $I_2$ et $I_3$ et on cherche à minimiser le kernel 1 en introduisant une phase $+\frac{\pi}{2}$ sur $P_4$. On joue alors sur le retardateur $P_9$.
+                \item We obstruct inputs 3 and 4 then seek to maximize the bright output. Given that we are insensitive to the global phase, we can use the electric field phase of the first input as a reference phase. Thus, the bright output can be maximized by only adjusting phase shifter $P_2$.
+                \item We obstruct inputs 1 and 2 then seek to maximize the bright output, this time by adjusting phase shifter $P_4$. We temporarily use the electric field phase of the third input as a reference phase.
+                \item We obstruct inputs 2 and 4 then again seek to maximize the bright output. This time, we adjust phase shifter $P_3$, which will correspond to the phase difference at the output of the first layer of Nullers (Figure \ref{fig:architecture}). We then add the phase introduced on $P_3$ to that introduced on $P_4$ to change the common phase of $I_3$ and $I_4$.
+                \item Still obstructing $I_2$ and $I_4$, we seek to minimize dark outputs 3 and 4 which are supposed to have inputs $I_1$ and $I_3$ in perfect phase opposition. For this, we adjust phase shifter $P_8$.
+                \item We obstruct $I_3$ and $I_4$ and seek to minimize kernel 3. Given that the delays injected so far redirect the flux towards the bright output, we introduce a phase $+\frac{\pi}{2}$ on $P_2$, thus transforming the bright output into a dark output and the dark outputs associated with kernel 3 into bright outputs. We then adjust phase shifter $P_10$ to symmetrize the dark outputs (which we observe through the nulling of the kernel despite the presence of flux).
+                \item Similarly, we obstruct $I_2$ and $I_4$ and seek to minimize kernel 2 by introducing a phase $+\frac{\pi}{2}$ on $P_3$. We then adjust phase shifter $P_10$.
+                \item Finally, we obstruct $I_2$ and $I_3$ and seek to minimize kernel 1 by introducing a phase $+\frac{\pi}{2}$ on $P_4$. We then adjust phase shifter $P_9$.
             \end{enumerate}
 
-            Pour chaque étape, la bonne phase à injecter sur le retardateur considéré peut être obtenue soit de façon dichotomique, soit de façon formelle en effectuant une série de mesures. En effet, pour chaque étape, le problème se simplifie suffisament pour être résolu analytiquement. Par exemple, pour la première étape, on cherche à maximiser la sortie brillante $B$ qui s'écrit alors :
+            For each step, the correct phase to inject on the considered phase shifter can be obtained either dichotomously or formally by performing a series of measurements. Indeed, for each step, the problem simplifies sufficiently to be solved analytically. For example, for the first step, we seek to maximize the bright output $B$ which can then be written as:
 
             \begin{equation}
                 B = \left|\left(a_1 e^{i(\theta_1 + \sigma_1 + \phi_1)} + a_2 e^{i(\theta_2 + \sigma_2 + \phi_2)}\right) e^{i(\sigma_5 + \phi_5)}\right|^2
             \end{equation}
 
-            Où $a_n$ et $\theta_i$ représentent respectivement l'amplitude et la phase des signaux d'entrée. $\sigma_i$ correspond à la perturbation de phase (inconnue) associé au retardateur $i$ et $\phi_i$ est la phase que l'on inject volontairement via le retardateur pour tenter de compenser cette perturbation.
+            Where $a_n$ and $\theta_n$ represent the amplitude and phase of the input signals respectively. $\sigma_n$ corresponds to the (unknown) phase perturbation associated with shifter $n$ and $\phi_n$ is the phase that we voluntarily inject via the shifter to try to compensate for this perturbation.
 
-            La calibration se faisant en laboatoire, on peut supposer une intensité totale fixée à $1$ (unité arbitraire) et que chaque entrée recçoi le même flux soit $a_1 = a_2 = 1/\sqrt{2}$, et parfaitement cophasé, soit $\theta_1 = \theta_2 = \theta$. Etant donné que l'on a accès qu'a l'intensité du signal, nous sommes insensible à la phase globale, ce qui permet de simplifier l'équation précédente :
+            Since calibration is done in the laboratory, we can assume a total intensity fixed at $1$ (arbitrary unit) and that each input receives the same flux, i.e., $a_1 = a_2 = 1/\sqrt{2}$, and perfectly in phase, i.e., $\theta_1 = \theta_2 = \theta$. Since we only have access to signal intensity, we are insensitive to the global phase, which allows us to simplify the previous equation:
 
             \begin{equation}
                 B = \frac{1}{2} \left|e^{i(\sigma_1 + \phi_1)} + e^{i(\sigma_2 + \phi_2)}\right|^2
             \end{equation}
 
-            En maximisant $B$, on devrait alors trouver $1$ ce qui implique que
+            By maximizing $B$, we should then find $1$ which implies that
 
             \begin{equation}
                 \sigma_1 + \phi_1 = \sigma_2 + \phi_2
             \end{equation}
 
-            On peut utiliser $\phi_1$ comme référence (phase globale) et ainsi le fixer à 0, ce qui donne alors
+            We can use $\phi_1$ as a reference (global phase) and thus fix it to 0, which then gives
 
             \begin{equation}
                 \phi_2 = \sigma_1 - \sigma_2
             \end{equation}
 
-            On peut effectuer différentes mesures de $B$ à $\phi_2$ fixé et en déduire $\sigma_1$ et $\sigma_2$ par résolution d'un système déquation.
+            We can take different measurements of $B$ at fixed $\phi_2$ and deduce $\sigma_1$ and $\sigma_2$ by solving a system of equations.
 
-            Cette seconde méthode de calibration a pour avantages de ne pas souffrir de la sensibilité au bruit de photon étant donné que l'on s'assure à chaque étape d'avoir du flux sur les sorties qui nous intéressent. En revanche, elle est adapté à notre architecture et peut doit être complètement repensée pour être adaptée à une autre architecture de Kernel-Nuller. De plus, elle nécessite l'action de pièce mobile pour obstruer les entrées du composant, ce qui peut être un inconvénient pour une calibration automatisée.
+            This second calibration method has the advantage of not suffering from photon noise sensitivity since we ensure at each step that we have flux on the outputs of interest. However, it is adapted to our architecture and must be completely rethought to be adapted to another Kernel-Nuller architecture. Moreover, it requires the action of moving parts to obstruct the component's inputs, which can be a disadvantage for automated calibration.
 
-            Grâce à cette méthode, on obtient numériquement une profondeur de nulle également de l'ordre de $10^{-8}$. Grâce à la simplification successive du problème, on se retrouve toutefois dans un cas où la convergeance vers une solution optimale est assurée. [RAJOUTER LES RESULTATS EN LABO]
+            Using this method, we numerically obtain a null depth also on the order of $10^{-8}$. Thanks to the successive simplification of the problem, we find ourselves in a case where convergence to an optimal solution is assured. [ADD LABORATORY RESULTS]
 
             \begin{figure}[H]
                 \begin{center}
