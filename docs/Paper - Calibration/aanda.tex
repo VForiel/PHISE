@@ -19,6 +19,7 @@
 \usepackage{float}
 % \usepackage{algorithmic}
 \usepackage[lined,ruled,linesnumbered,algoruled,french,commentsnumbered]{algorithm2e}
+\usepackage{svg}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \usepackage{txfonts}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -79,13 +80,17 @@
 
 %--------------------------------------------------------------------
 
-\section{Materials and methods}
+\section{Materials and conditions}
 
     \begin{enumerate}
         \item VLTI/ASGARD (/NOTT?)
         \item Integrated optics \& phase shifters
         \item Studied architecture
         \item Observation conditions (Vegga-like star, noise etc.)
+    \end{enumerate}
+
+\section{System modelisation \& calibration}
+    \begin{enumerate}
         \item Calibration methods (Fig \ref{fig:perturbed_phases} \& \ref{fig:calibrated_phases})
         \subitem Genertic Algorithm
         \subitem Input obstruction
@@ -95,7 +100,7 @@
     \begin{figure}[H]
         \begin{center}
         \begin{tabular}{c}
-        \includegraphics[height=3.5cm]{img/scheme.png}
+        \includegraphics[width=8cm]{img/kernel_scheme.png}
         \end{tabular}
         \end{center}
         \caption[architecture] 
