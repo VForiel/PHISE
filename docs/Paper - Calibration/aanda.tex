@@ -19,7 +19,9 @@
 \usepackage{float}
 % \usepackage{algorithmic}
 \usepackage[lined,ruled,linesnumbered,algoruled,french,commentsnumbered]{algorithm2e}
-\usepackage{svg}
+\usepackage{amsmath}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \usepackage{txfonts}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -27,8 +29,8 @@
 % To add links in your PDF file, use the package "hyperref"
 % with options according to your LaTeX or PDFLaTeX drivers.
 %
-\begin{document} 
 
+\begin{document} 
 
    \title{Tunable Kernel-Nulling for direct detection of exoplanets}
 
@@ -97,109 +99,110 @@
         \subitem Machine Leaning?
     \end{enumerate}
 
-    \begin{figure}[H]
+    \begin{figure}
         \begin{center}
         \begin{tabular}{c}
-        \includegraphics[width=8cm]{img/kernel_scheme.png}
+        \includegraphics[width=7cm]{img/kernel_scheme.png}
         \end{tabular}
         \end{center}
         \caption[architecture] 
         { \label{fig:architecture} 
-        Studied architecture}
+        A model of our Kernel-Nuller architecture. It takes 4 input electric fields $I_n$ that are supposed to be co-phased and have the same amplitude. It outputs one "bright" electric field $B$ that should contain all the on-axis light and 6 "dark" electric fields $D_n$ where the on-axis light is nulled. Additionally, we introduce 3 "kernel" outputs resulting from the difference of two dark output intensities. The interferometric operations (nulling $N_n$ and cross-recombination $R_n$) are performed by MMI presented in section 2.2. In this model, the phase perturbations $\sigma_n$ induced by manufacturing errors are associated with a phase offset on each phase shifter $\varphi_n$ such that $\Phi_n = \varphi_n + \sigma_n$. The circles with colored arrows show, at different steps, the phase of each input signal we should have under ideal conditions. Thus, the goal of the calibration is to find the correct phase $\varphi_n$ to inject on each phase shifter to compensate for these perturbations.}
     \end{figure}
 
     \subsection{Algorithms}
 
-        In order to calibrate the component, two algorithms have been developed. The first is based on the principle of a genetic algorithm, the second on the principle of input obstruction. Both algorithms have been implemented in Python and are based on the same principle: we seek to optimize the component's performance by introducing phase variations on each phase shifter. The difference between the two algorithms lies in the way these phase variations are introduced and the metrics used to evaluate the component's performance. We will present both methods and discuss their advantages and limitations.
-
-        Consistent with our architecture (Figure \ref{fig:architecture}), these algorithmes involve the following quantities:
-        \begin{itemize}
-            \item $I_n$ the $n^{th}$ input signal (electric field)
-            \item $B$ the bright output signal (electric field)
-            \item $D_n$ the $n^{th}$ dark output signal (electric field)
-            \item $K_n$ the $n^{th}$ kernel output (intensity). We have:
-            \subitem $K_1 = |D_1|^2 - |D_2|^2$
-            \subitem $K_2 = |D_3|^2 - |D_4|^2$
-            \subitem $K_3 = |D_5|^2 - |D_6|^2$
-            \item $P_n$ the phase introduced on the $n^{th}$ phase shifter (distance)
-        \end{itemize}
+        In order to calibrate the component, two algorithms have been developed. The first is based on the principle of a genetic algorithm, the second on the principle of input obstruction. Both algorithms have been implemented in Python and are based on the same principle: we seek to optimize the component's performance by introducing phase variations on each phase shifter. The difference between the two algorithms lies in the way these phase variations are introduced and the metrics used to evaluate the component's performances. We will present both methods and discuss their advantages and limitations.
 
         \subsubsection{Genetic}
-            The first algorithm that was developed is based on the principle of deterministic genetic algorithm. We define a performance metric $M$, which in this case corresponds to the kernel-null depth, then we seek to optimize it by successively introducing a phase variation $\Delta \phi$ on each phase shifter $P_n$.
+            The straightforward approach is based on the principle of deterministic genetic algorithm, which smply consist in successively introducing a phase variation $\Delta \phi$ on each phase shifter $\varphi_n$ and looking at how it improve or decrease the system performances according to some metrics.
 
-            The optimization process is performed using a point source that simulates a single star. The goal is to nullify its signal on the dark outputs. However, since Kernels are constructed via the difference of two dark outputs, it is possible to obtain very good kernel-nulls without necessarily having well nullified the star's light. To address this issue, we define two different metrics, one measuring the average kernel-null depth $M_K$ that we want to minimize, the other measuring the intensity obtained on the bright output of the component $M_B$ (which is opposed to the total intensity obtained over all the dark outputs) that we want to maximize. Thus, we have:
-
-            \begin{equation}
-                M_K = \sum_{n=1}^3 K_n
-            \end{equation}
-
-            \begin{equation}
-                M_B = |B|^2
-            \end{equation}
+            This calibration process is performed using a point source that simulates a single star. The goal is to nullify its signal on the dark outputs. However, since kernels are built using the difference of two dark outputs, it is possible to obtain very good kernel-nulls without necessarily having well nullified the star's light. To address this issue, we define two different metrics, one measuring the average of kernel-null depth $M_K$ that we want to minimize, the other measuring the intensity obtained on the bright output of the component $M_B$ that we want to maximize (which, by construction, minimize the total dark output intensity).
             
-            Given our component's architecture, we can associate the metric $M_B$ with each phase shifter that affects the bright output, namely $P_{1 \rightarrow 5}$ and $P_7$. All other phase shifters are then associated with the metric $M_K$ (cf. Algorithme \ref{genetic} line 3-4).
+            Given our component's architecture, we can associate the metric $M_B$ with each phase shifter that affects the bright output, namely $\varphi_{1 \rightarrow 5}$ and $\varphi_7$ that we will call $\varphi_b$. All other phase shifters are then associated with the metric $M_K$ (cf. Algorithme \ref{genetic} line 3-4) and will be called $\varphi_k$. Thus, we are searching for the optimal phase shifts $\varphi_n^* = \varphi_k^* \cup \varphi_b^*$ such as:
+
+            \begin{equation}
+                \varphi_k^* = \argmax_{\varphi_k} \Big( M_K(\varphi_k) \Big)
+            \end{equation}
+
+            \begin{equation}
+                \varphi_b^* = \argmin_{\varphi_b} \Big( M_B(\varphi_b) \Big)
+            \end{equation}
+
+            where
+            
+            \begin{equation}
+                M_K(\varphi_k) = \frac{1}{3}\sum_{n=1}^3 |K_n(\varphi_k)|
+            \end{equation}
+
+            \begin{equation}
+                M_B(\varphi_b) = |B(\varphi_b)|^2
+            \end{equation}
+
+            \begin{equation}
+                \varphi_k = \varphi_{\{6,8,9,10,11,12\}}
+            \end{equation}
+
+            \begin{equation}
+                \varphi_b = \varphi_{\{1,2,3,4,5,7\}}
+            \end{equation}
 
             The genetic algorithm is then structured as follows:
 
-            \begin{algorithm}
-            \caption{Genetic calibration algorithm}
-            \label{genetic}
-            \SetKwInOut{Input}{Inputs}\SetKwInOut{Output}{Output}
-            
-            \Input{$\varepsilon$: desired phase precision\\
-                   $\beta$: phase variation reduction factor ($\beta \in [0.5,1[$)}
-            \Output{$\vec{P}$: optimized phase shifts vector}
-            \BlankLine
-            
-            $\vec{P} \leftarrow \vec{0}$ \tcp*{Initialize phase shifts to 0}
-            $\Delta\phi \leftarrow \lambda/4$ \tcp*{Initial phase variation}
-            $\vec{PM_B} \leftarrow [1,5] \cup [7]$ \tcp*{Phase shifters for bright output}
-            $\vec{PM_K} \leftarrow [6] \cup [8,14]$ \tcp*{Phase shifters for kernel-nulls}
-            \BlankLine
-            
-            \While{$\Delta\phi > \varepsilon$}{
-                \For{$n \leftarrow 1$ \KwTo $14$}{
-                    $\vec{P^+} \leftarrow \vec{P}$\;
-                    $P^+_n \leftarrow P_n + \Delta\phi$\;
-                    
-                    $\vec{P^-} \leftarrow \vec{P}$\;
-                    $P^-_n \leftarrow P_n - \Delta\phi$\;
-                    
-                    \uIf{$n \in \vec{PM_B}$}{
-                        \If{$M_B(\vec{P^+}) > M_B(\vec{P})$}{
-                            $\vec{P} \leftarrow \vec{P^+}$\;
-                        }
-                        \If{$M_B(\vec{P^-}) > M_B(\vec{P})$}{
-                            $\vec{P} \leftarrow \vec{P^-}$\;
-                        }
-                    }
-                    \ElseIf{$n \in \vec{PM_K}$}{
-                        \If{$M_K(\vec{P^+}) < M_K(\vec{P})$}{
-                            $\vec{P} \leftarrow \vec{P^+}$\;
-                        }
-                        \If{$M_K(\vec{P^-}) < M_K(\vec{P})$}{
-                            $\vec{P} \leftarrow \vec{P^-}$\;
-                        }
-                    }
-                }
-                $\Delta\phi \leftarrow \beta \Delta\phi$ \tcp*{Reduce phase variation}
-            }
-            \Return{$\vec{P}$}
-            \BlankLine
-            where:\\
-            $M_B(\vec{P}) = |B|^2$ \tcp*{Bright output intensity}
-            $M_K(\vec{P}) = \left||D_1|^2 - |D_2|^2\right| + \left||D_3|^2 - |D_4|^2\right| + \left||D_5|^2 - |D_6|^2\right|$ \tcp*{Kernel-nulls depth}
-            \end{algorithm}
-
             \begin{enumerate}
-                \item Initialization: we initialize the phases of each phase shifter $P_n$ to 0.  (cf. Algorithme \ref{genetic} line 1)
-                \item Mutation: we consider two phase variations of $+ \Delta \phi$ and $- \Delta \phi$, successively on each phase shifter $P_n$, always in the same order  (cf. Algorithme \ref{genetic} line 6-10).
+                \item Initialization: we initialize the phases of each phase shifter $\varphi_n$ to 0.  (cf. Algorithme \ref{genetic} line 1)
+                \item Mutation: we consider two phase variations of $+ \Delta \phi$ and $- \Delta \phi$, successively on each phase shifter $\varphi_n$, always in the same order  (cf. Algorithme \ref{genetic} line 6-10).
                 \item Selection: we retain the configuration that most improves the metric associated with that phase shifter (cf. Algorithme \ref{genetic} line 11-25).
                     \subitem If $n \in [1, 5] \cup 7$, we keep the variation that most increased metric $M_B$ so we redirect the entire star flux to the bright output  (cf. Algorithme \ref{genetic} line 11-17).
                     \subitem If $n \in 6 \cup [8, 14]$, we keep the variation that most reduced metric $M_K$ so we symmetrize dark outputs pairs to enhance kernel-nulls depth  (cf. Algorithme \ref{genetic} line 18-24).
                 \item Convergence: we repeat steps 2 and 3, reducing the value of $\Delta \phi$ by a factor of $\beta \in [0.5,1[$ each time. A $\beta$ factor close to $1$ allows for slow but more precise convergence, whereas a $\beta$ factor of $0.5$ will yield the fastest convergence but may lead to an under-optimal solution  (cf. Algorithme \ref{genetic} line 5, 27).
                 \item Stopping point: we stop when the phase variation $\Delta \phi$ introduced is smaller than the uncertainty in the injected phase, which must be determined through prior characterization of the phase shifters  (cf. Algorithme \ref{genetic} line 5).
             \end{enumerate}
+
+            \begin{algorithm}
+                \caption{Straightforward approach (genetic)}
+                \label{genetic}
+                \SetKwInOut{Input}{Inputs}\SetKwInOut{Output}{Output}
+                
+                \Input{$\varepsilon$: minimal phase increment\\
+                       $\beta$: phase variation reduction factor ($\beta \in [0.5,1[$)}
+                \Output{$\vec{\varphi}$: optimized phase shifts vector}
+                \BlankLine
+                
+                $\vec{\varphi} \leftarrow \vec{0}$ \tcp*{Initialize phase shifts to 0}
+                $\Delta\varphi \leftarrow \lambda/4$ \tcp*{Initial phase variation}
+                \BlankLine
+                
+                \While{$\Delta\phi > \varepsilon$}{
+                    \For{$n \leftarrow 1$ \KwTo $14$}{
+                        $\vec{\varphi^+} \leftarrow \vec{\varphi}$\;
+                        $\varphi^+_n \leftarrow \varphi_n + \Delta\varphi$\;
+                        
+                        $\vec{\varphi^-} \leftarrow \vec{\varphi}$\;
+                        $\varphi^-_n \leftarrow \varphi_n - \Delta\varphi$\;
+                        
+                        \uIf{$n \in \vec{\varphi_b}$}{
+                            \If{$M_B(\vec{\varphi^+}) > M_B(\vec{\varphi})$}{
+                                $\vec{\varphi} \leftarrow \vec{\varphi^+}$\;
+                            }
+                            \If{$M_B(\vec{\varphi^-}) > M_B(\vec{\varphi})$}{
+                                $\vec{\varphi} \leftarrow \vec{\varphi^-}$\;
+                            }
+                        }
+                        \ElseIf{$n \in \vec{\varphi_k}$}{
+                            \If{$M_K(\vec{\varphi^+}) < M_K(\vec{\varphi})$}{
+                                $\vec{\varphi} \leftarrow \vec{\varphi^+}$\;
+                            }
+                            \If{$M_K(\vec{\varphi^-}) < M_K(\vec{\varphi})$}{
+                                $\vec{\varphi} \leftarrow \vec{\varphi^-}$\;
+                            }
+                        }
+                    }
+                    $\Delta\varphi \leftarrow \beta \Delta\varphi$ \tcp*{Reduce phase variation}
+                }
+                \Return{$\vec{\varphi}$}
+                \BlankLine
+            \end{algorithm}
 
             This algorithm has the advantages of being very easy to adapt to other Kernel-Nuller architectures and does not require any moving parts during the calibration process, allowing for fast and automated calibration. However, it suffers from a limitation related to photon noise. Specifically, the phase to inject using the shifters near the outputs depend on the phase injected in the previous layers. Thus, the calibration of the final shifters can only be finely tuned once the initial shifters have been calibrated, which implies very little flux on the dark outputs during calibration and therefore a greater sensitivity to photon noise. Numerically, even accounting for photon noise, it is possible to achieve kernel-null depths on the order of $10^{-8}$. [ADD LABORATORY RESULTS]. Another disadvantage of this algorithm is that, for some given initial conditions, the convergence can be suboptimal and there is no way to know when this suboptimal solution happen. The frequency of these suboptimal cases decreases when $\beta$ is close to 1, which implies a slower convergence.
 
@@ -220,13 +223,13 @@
             The algorithm is constructed as follows:
 
             \begin{enumerate}
-                \item We obstruct inputs 3 and 4 then seek to maximize the bright output. Given that we are insensitive to the global phase, we can use the electric field phase of the first input as a reference phase. Thus, the bright output can be maximized by only adjusting phase shifter $P_2$.
-                \item We obstruct inputs 1 and 2 then seek to maximize the bright output, this time by adjusting phase shifter $P_4$. We temporarily use the electric field phase of the third input as a reference phase.
-                \item We obstruct inputs 2 and 4 then again seek to maximize the bright output. This time, we adjust phase shifter $P_3$, which will correspond to the phase difference at the output of the first layer of Nullers (Figure \ref{fig:architecture}). We then add the phase introduced on $P_3$ to that introduced on $P_4$ to change the common phase of $I_3$ and $I_4$.
-                \item Still obstructing $I_2$ and $I_4$, we seek to minimize dark outputs 3 and 4 which are supposed to have inputs $I_1$ and $I_3$ in perfect phase opposition. For this, we adjust phase shifter $P_8$.
-                \item We obstruct $I_3$ and $I_4$ and seek to minimize kernel 3. Given that the delays injected so far redirect the flux towards the bright output, we introduce a phase $+\frac{\pi}{2}$ on $P_2$, thus transforming the bright output into a dark output and the dark outputs associated with kernel 3 into bright outputs. We then adjust phase shifter $P_10$ to symmetrize the dark outputs (which we observe through the nulling of the kernel despite the presence of flux).
-                \item Similarly, we obstruct $I_2$ and $I_4$ and seek to minimize kernel 2 by introducing a phase $+\frac{\pi}{2}$ on $P_3$. We then adjust phase shifter $P_10$.
-                \item Finally, we obstruct $I_2$ and $I_3$ and seek to minimize kernel 1 by introducing a phase $+\frac{\pi}{2}$ on $P_4$. We then adjust phase shifter $P_9$.
+                \item We obstruct inputs 3 and 4 then seek to maximize the bright output. Given that we are insensitive to the global phase, we can use the electric field phase of the first input as a reference phase. Thus, the bright output can be maximized by only adjusting phase shifter $\varphi_2$.
+                \item We obstruct inputs 1 and 2 then seek to maximize the bright output, this time by adjusting phase shifter $\varphi_4$. We temporarily use the electric field phase of the third input as a reference phase.
+                \item We obstruct inputs 2 and 4 then again seek to maximize the bright output. This time, we adjust phase shifter $\varphi_3$, which will correspond to the phase difference at the output of the first layer of Nullers (Figure \ref{fig:architecture}). We then add the phase introduced on $\varphi_3$ to that introduced on $\varphi_4$ to change the common phase of $I_3$ and $I_4$.
+                \item Still obstructing $I_2$ and $I_4$, we seek to minimize dark outputs 3 and 4 which are supposed to have inputs $I_1$ and $I_3$ in perfect phase opposition. For this, we adjust phase shifter $\varphi_8$.
+                \item We obstruct $I_3$ and $I_4$ and seek to minimize kernel 3. Given that the delays injected so far redirect the flux towards the bright output, we introduce a phase $+\frac{\pi}{2}$ on $\varphi_2$, thus transforming the bright output into a dark output and the dark outputs associated with kernel 3 into bright outputs. We then adjust phase shifter $\varphi_10$ to symmetrize the dark outputs (which we observe through the nulling of the kernel despite the presence of flux).
+                \item Similarly, we obstruct $I_2$ and $I_4$ and seek to minimize kernel 2 by introducing a phase $+\frac{\pi}{2}$ on $\varphi_3$. We then adjust phase shifter $\varphi_10$.
+                \item Finally, we obstruct $I_2$ and $I_3$ and seek to minimize kernel 1 by introducing a phase $+\frac{\pi}{2}$ on $\varphi_4$. We then adjust phase shifter $\varphi_9$.
             \end{enumerate}
 
             For each step, the correct phase to inject on the considered phase shifter can be obtained either dichotomously or formally by performing a series of measurements. Indeed, for each step, the problem simplifies sufficiently to be solved analytically. For example, for the first step, we seek to maximize the bright output $B$ which can then be written as:
