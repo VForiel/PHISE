@@ -10,13 +10,15 @@ from . import phase
 from .body import Body
 
 class KernelNuller():
-    def __init__(self, σ:u.Quantity):
+    def __init__(self, φ:np.ndarray[u.Quantity], σ:np.ndarray[u.Quantity]):
         """Kernel-Nuller object.
 
         Parameters
         ----------
+        - φ: Array of 14 injected OPD
         - σ: Array of 14 intrasic OPD error
         """
+        self.φ = φ
         self.σ = σ
 
     # Electric fields propagation -------------------------------------------------
@@ -24,7 +26,6 @@ class KernelNuller():
     def propagate_fields(
             self,
             ψ: np.ndarray[complex],
-            φ: u.Quantity,
             λ: u.Quantity,
         ) -> tuple[np.ndarray[float], np.ndarray[float], np.ndarray[float], float]:
         """
@@ -33,7 +34,6 @@ class KernelNuller():
         Parameters
         ----------
         - ψ: Array of 4 input signals complex amplitudes
-        - φ: Array of 14 injected OPD
         - λ: Wavelength of the light
 
         Returns
@@ -42,18 +42,17 @@ class KernelNuller():
         - Array of 6 dark outputs electric fields
         - Bright output electric fields
         """
-        φ = φ.to(λ.unit).value
+        φ = self.φ.to(λ.unit).value
         σ = self.σ.to(λ.unit).value
         λ = λ.value
-        return propagate_fields_njit(ψ=ψ, φ=φ, σ=σ, λ=λ)
 
+        return propagate_fields_njit(ψ=ψ, φ=φ, σ=σ, λ=λ)
 
     # Observation -----------------------------------------------------------------
 
     def observe(
             self,
             ψ: np.ndarray[complex],
-            φ: u.Quantity,
             λ: u.Quantity,
             f: float = None,
             dt:u.Quantity = 1*u.s,
@@ -64,7 +63,6 @@ class KernelNuller():
         Parameters
         ----------
         - Ψ: Array of 4 input beams complex amplitudes
-        - φ: Array of 14 injected OPD
         - λ: Wavelength of the light
         - f: Star photon flux (in photon/s). If set, the output will be a number of photons. If None, the output will correspond to the throughput.
         - dt: Exposure time 
@@ -75,7 +73,7 @@ class KernelNuller():
         - Array of 3 kernels output intensities
         - Bright output intensity
         """
-        φ = φ.to(λ.unit).value
+        φ = self.φ.to(λ.unit).value
         σ = self.σ.to(λ.unit).value
         dt = dt.to(u.s).value
         if f is not None: f = f.to(1/u.s).value
@@ -86,23 +84,19 @@ class KernelNuller():
     def plot_phase(
             self,
             λ,
-            φ=None,
             ψ=np.array([0.5+0j, 0.5+0j, 0.5+0j, 0.5+0j]),
             plot=True
         ):
-
-        if φ is None:
-            φ = np.zeros(14) * λ.unit
 
         ψ1 = np.array([ψ[0], 0, 0, 0])
         ψ2 = np.array([0, ψ[1], 0, 0])
         ψ3 = np.array([0, 0, ψ[2], 0])
         ψ4 = np.array([0, 0, 0, ψ[3]])
 
-        n1, d1, b1 = self.propagate_fields(ψ1, φ, λ)
-        n2, d2, b2 = self.propagate_fields(ψ2, φ, λ)
-        n3, d3, b3 = self.propagate_fields(ψ3, φ, λ)
-        n4, d4, b4 = self.propagate_fields(ψ4, φ, λ)
+        n1, d1, b1 = self.propagate_fields(ψ1, λ)
+        n2, d2, b2 = self.propagate_fields(ψ2, λ)
+        n3, d3, b3 = self.propagate_fields(ψ3, λ)
+        n4, d4, b4 = self.propagate_fields(ψ4, λ)
 
         # Using first signal as reference
         n2 = np.abs(n2) * np.exp(1j * (np.angle(n2) - np.angle(n1)))
@@ -173,7 +167,11 @@ class KernelNuller():
             plt.close()
             return plot.getvalue()
         plt.show()
-    
+
+#==============================================================================
+# Numba functions
+#==============================================================================
+
 # Electric fields propagation -------------------------------------------------
 
 @nb.njit()
@@ -277,7 +275,7 @@ def observe_njit(
     - Bright output intensity
     """
 
-    _, d, b = propagate_fields_njit(ψ, φ, σ, λ)
+    _, d, b = KernelNuller.propagate_fields_njit(ψ, φ, σ, λ)
 
     # Get intensities
     d = np.abs(d) ** 2

@@ -14,17 +14,20 @@ from scipy.optimize import curve_fit
 from scipy.ndimage import rotate
 from LRFutils import color
 import tensorflow as tf
+from copy import deepcopy as copy
 
 # Modules
 from . import phase
 from . import mmi
 from . import telescopes
 from . import signals
-from . import kernel_nuller
 from . import body
+from . import kernel_nuller
 from . import instrument
+from . import scene
 
 # Classes
 from .body import Body
 from .kernel_nuller import KernelNuller
 from .instrument import Instrument
+from .scene import Scene

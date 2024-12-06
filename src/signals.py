@@ -48,7 +48,7 @@ def get_input_fields_njit(
     - θ: Angular separation (in radian)
     - α: Parallactic angle (in radian)
     - λ: Wavelength (in meter)
-    - r: Projected telescope positions (in meter)
+    - p: Projected telescope positions (in meter)
 
     Returns
     -------

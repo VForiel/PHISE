@@ -1,18 +1,27 @@
 import numpy as np
+import numba as nb
+import matplotlib.pyplot as plt
 from astropy import units as u
+import ipywidgets as widgets
+from IPython.display import display
+from io import BytesIO
 
+from . import signals
+from. import telescopes
+from . import coordinates
+from . import signals
 from . import kernel_nuller
 from .kernel_nuller import KernelNuller
 from .body import Body
-from . import signals
-from. import telescopes
 
 class Instrument:
     def __init__(
             self,
             λ:u.Quantity,
+            Δλ:u.Quantity,
             r:np.ndarray[u.Quantity],
             l:u.Quantity,
+            fov:u.Quantity,
             kn:KernelNuller
         ):
         """Instrument object.
@@ -20,15 +29,21 @@ class Instrument:
         Parameters
         ----------
         - λ: Wavelength
+        - Δλ: Bandwidth
         - r: Relative telescope positions (Nx2 array)
         - l: Latitude of reference telescope
+        - fov: Field of view
         - kn: Kernel-Nuller object
         """
 
         self.λ = λ
+        self.Δλ = Δλ
         self.r = r
         self.l = l
+        self.fov = fov
         self.kn = kn
+
+    # Observation -------------------------------------------------------------
 
     def observe(
             self,
@@ -63,3 +78,226 @@ class Instrument:
         ψ = signals.get_input_fields(f=f*b.c, θ=b.θ, α=b.α, λ=self.λ, p=p)
 
         return self.kn.observe(ψ, φ, self.λ, f, dt)
+
+    # Transmission maps -------------------------------------------------------
+    
+    def get_transmission_maps(
+        self,
+        N:int,
+        h:u.Quantity,
+        δ:u.Quantity,
+    ) -> tuple[np.ndarray[complex], np.ndarray[complex], np.ndarray[float]]:
+        """
+        Generate all the kernel-nuller transmission maps for a given resolution
+
+        Parameters
+        ----------
+        - N: Resolution of the map
+        - h: Hour angle
+        - δ: Declination
+
+        Returns
+        -------
+        - Null outputs map (3 x resolution x resolution)
+        - Dark outputs map (6 x resolution x resolution)
+        - Kernel outputs map (3 x resolution x resolution)
+        """
+        φ = self.kn.φ.to(self.λ.unit).value
+        σ = self.kn.σ.to(self.λ.unit).value
+        fov = self.fov.to(u.mas).value
+        p = telescopes.project_position(r=self.r, h=h, l=self.l, δ=δ).to(u.m).value
+        λ = self.λ.to(u.m).value
+
+        return get_transmission_map_njit(N=N, φ=φ, σ=σ, p=p, λ=λ, fov=fov)
+    
+    # Plotting ----------------------------------------------------------------
+
+    def plot_transmission_maps(
+            self,
+            N: int,
+            h: float,
+            δ: float,
+            companions: list[Body],
+            return_plot=False
+        ) -> None:
+        
+        # Get transmission maps
+        n_maps, d_maps, k_maps = self.get_transmission_maps(N=N, h=h, δ=δ)
+
+        # Get companions position to plot them
+        companions_pos = []
+        for c in companions:
+            x, y = coordinates.αθ_to_xy(α=c.α, θ=c.θ, fov=self.fov)
+            companions_pos.append((x*self.fov, y*self.fov))
+
+        _, axs = plt.subplots(2, 6, figsize=(35, 10))
+
+        for i in range(3):
+            im = axs[0, i].imshow(n_maps[i], aspect="equal", cmap="hot", extent=(-self.fov.value, self.fov.value, -self.fov.value, self.fov.value))
+            axs[0, i].set_title(f"Nuller output {i+1}")
+            plt.colorbar(im, ax=axs[0, i])
+
+        for i in range(6):
+            im = axs[1, i].imshow(d_maps[i], aspect="equal", cmap="hot", extent=(-self.fov.value, self.fov.value, -self.fov.value, self.fov.value))
+            axs[1, i].set_title(f"Dark output {i+1}")
+            axs[1, i].set_aspect("equal")
+            plt.colorbar(im, ax=axs[1, i])
+
+        for i in range(3):
+            im = axs[0, i + 3].imshow(k_maps[i], aspect="equal", cmap="bwr", extent=(-self.fov.value, self.fov.value, -self.fov.value, self.fov.value))
+            axs[0, i + 3].set_title(f"Kernel {i+1}")
+            plt.colorbar(im, ax=axs[0, i + 3])
+
+        for ax in axs.flatten():
+            ax.set_xlabel(r"$\theta_x$" + f" ({self.fov.unit})")
+            ax.set_ylabel(r"$\theta_y$" + f" ({self.fov.unit})")
+            ax.scatter(0, 0, color="yellow", marker="*", edgecolors="black")
+            for x, y in companions_pos:
+                ax.scatter(x, y, color="blue", edgecolors="black")
+
+        transmissions = ""
+        for i, c in enumerate(companions):
+            α = c.α
+            θ = c.θ
+            p = telescopes.project_position(r=self.r, h=h, l=self.l, δ=δ)
+            ψ = signals.get_input_fields(a=1, θ=θ, α=α, λ=self.λ, p=p)
+
+            n, d, b = self.kn.propagate_fields(ψ=ψ, λ=self.λ)
+
+            k = np.array([np.abs(d[2*i])**2 - np.abs(d[2*i+1])**2 for i in range(3)])
+
+            linebreak = '<br>' if return_plot else '\n   '
+            transmissions += '<h2>' if return_plot else ''
+            transmissions += f"Companion {i+1} throughputs:"
+            transmissions += '</h1>' if return_plot else '\n----------' + linebreak
+            transmissions += f"B: {np.abs(b)**2*100:.2f}%" + linebreak
+            transmissions += f"N: {' | '.join([f'{np.abs(i)**2*100:.2f}%' for i in n])}" + linebreak
+            transmissions += f"D: {' | '.join([f'{np.abs(i)**2*100:.2f}%' for i in d])}" + linebreak
+            transmissions += f"K: {' | '.join([f'{i*100:.2f}%' for i in k])}" + linebreak
+
+        if return_plot:
+            plot = BytesIO()
+            plt.savefig(plot, format='png')
+            plt.close()
+            return plot.getvalue(), transmissions
+        plt.show()
+        print(transmissions)
+
+    # Interactive plot ------------------------------------------------------------
+        
+    def iplot_transmission_maps(
+            self,
+            N: int,
+            δ: u.Quantity,
+            h: u.Quantity,
+            Δh: u.Quantity,
+            companions: list[Body],
+        ):
+
+        # UI elements
+        h_slider = widgets.FloatSlider(value=0, min=(h-Δh/2).value, max=(h+Δh/2).value, step=0.01, description='Hour angle:')
+        l_slider = widgets.FloatSlider(value=self.l.to(u.deg).value, min=-90, max=90, step=0.01, description='Latitude:')
+        δ_slider = widgets.FloatSlider(value=δ.to(u.deg).value, min=-90, max=90, step=0.01, description='Declination:')
+        reset = widgets.Button(description="Reset values")
+        run = widgets.Button(description="Run")
+        plot = widgets.Image()
+        transmission = widgets.HTML()
+
+        def update_plot(*args):
+            run.button_style = "warning"
+            
+            img, txt = self.plot_transmission_maps(
+                N=N,
+                h=h_slider.value*u.deg,
+                δ=δ_slider.value*u.deg,
+                companions=companions,
+                return_plot=True,
+            )
+            plot.value = img
+            transmission.value = txt
+            
+            run.button_style = ""
+
+        def reset_values(*args):
+            h_slider.value = 0
+            l_slider.value = self.l.to(u.deg).value
+            δ_slider.value = δ.to(u.deg).value
+            run.color = "blue"
+            enable_run()
+
+        def enable_run(*args):
+            run.button_style = "success"
+        
+        reset.on_click(reset_values)
+        h_slider.observe(enable_run)
+        l_slider.observe(enable_run)
+        δ_slider.observe(enable_run)
+        run.on_click(update_plot)
+        display(widgets.VBox([h_slider, l_slider, δ_slider, widgets.HBox([reset, run]), plot, transmission]))
+        update_plot()
+
+#==============================================================================
+# Numba functions
+#==============================================================================
+
+# Transmission maps -----------------------------------------------------------
+
+@nb.njit()
+def get_transmission_map_njit(
+        N: int,
+        φ: np.ndarray[float],
+        σ: np.ndarray[float],
+        p: np.ndarray[float],
+        λ: float,
+        fov: float,
+    ) -> tuple[np.ndarray[complex], np.ndarray[complex], np.ndarray[float]]:
+    """
+    Generate all the kernel-nuller transmission maps for a given resolution
+
+    Parameters
+    ----------
+    - N: Resolution of the map
+    - φ: Array of 14 injected OPD (in wavelenght unit)
+    - σ: Array of 14 intrasic OPD (in wavelenght unit)
+    - p: Projected telescope positions (in meter)
+    - λ: Wavelength (in meter)
+    - fov: Field of view in mas
+
+    Returns
+    -------
+    - Null outputs map (3 x resolution x resolution)
+    - Dark outputs map (6 x resolution x resolution)
+    - Kernel outputs map (3 x resolution x resolution)
+    """
+
+    _, _, α_map, θ_map = coordinates.get_maps_njit(N=N, fov=fov)
+
+    # mas to radian
+    θ_map = θ_map / 1000 / 3600 / 180 * np.pi
+
+    n_maps = np.zeros((3, N, N), dtype=np.complex128)
+    d_maps = np.zeros((6, N, N), dtype=np.complex128)
+    k_maps = np.zeros((3, N, N), dtype=float)
+
+    for x in range(N):
+        for y in range(N):
+            
+            α = α_map[x, y]
+            θ = θ_map[x, y]
+
+            ψ = signals.get_input_fields_njit(a=1, θ=θ, α=α, λ=λ, p=p)
+
+            n, d, _ = kernel_nuller.propagate_fields_njit(ψ, φ, σ, λ)
+
+            k = np.array([np.abs(d[2*i])**2 - np.abs(d[2*i+1])**2 for i in range(3)])
+
+            for i in range(3):
+                n_maps[i, x, y] = n[i]
+
+            for i in range(6):
+                d_maps[i, x, y] = d[i]
+
+            for i in range(3):
+                k_maps[i, x, y] = k[i]
+
+    return np.abs(n_maps) ** 2, np.abs(d_maps) ** 2, k_maps
