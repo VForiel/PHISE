@@ -5,6 +5,7 @@ from astropy import units as u
 import ipywidgets as widgets
 from IPython.display import display
 from io import BytesIO
+from copy import deepcopy as copy
 
 from . import signals
 from. import telescopes
@@ -203,10 +204,14 @@ class Instrument:
         plot = widgets.Image()
         transmission = widgets.HTML()
 
+        inst = copy(self)
+
         def update_plot(*args):
             run.button_style = "warning"
+
+            inst.l = l_slider.value*u.deg
             
-            img, txt = self.plot_transmission_maps(
+            img, txt = inst.plot_transmission_maps(
                 N=N,
                 h=h_slider.value*u.deg,
                 δ=δ_slider.value*u.deg,
