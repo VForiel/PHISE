@@ -5,8 +5,8 @@ from astropy import constants as const
 import matplotlib.pyplot as plt
 from io import BytesIO
 
-from . import mmi
-from . import phase
+from ..modules import mmi
+from ..modules import phase
 from .body import Body
 
 class KernelNuller():
@@ -18,8 +18,40 @@ class KernelNuller():
         - φ: Array of 14 injected OPD
         - σ: Array of 14 intrasic OPD error
         """
-        self.φ = φ
+        self._φ = φ
         self.σ = σ
+
+    @property
+    def φ(self):
+        return self._φ
+    
+    @φ.setter
+    def φ(self, φ:np.ndarray[u.Quantity]):
+        if type(φ) != u.Quantity:
+            raise ValueError("φ must be a Quantity")
+        try:
+            φ.to(u.m)
+        except u.UnitConversionError:
+            raise ValueError("φ must be in a distance unit")
+        if φ.shape != (14,):
+            raise ValueError("φ must have a shape of (14,)")
+        self._φ = φ
+
+    @property
+    def σ(self):
+        return self._σ
+    
+    @σ.setter
+    def σ(self, σ:np.ndarray[u.Quantity]):
+        if type(σ) != u.Quantity:
+            raise ValueError("σ must be a Quantity")
+        try:
+            σ.to(u.m)
+        except u.UnitConversionError:
+            raise ValueError("σ must be in a distance unit")
+        if σ.shape != (14,):
+            raise ValueError("σ must have a shape of (14,)")
+        self._σ = σ
 
     # Electric fields propagation -------------------------------------------------
 
@@ -55,7 +87,7 @@ class KernelNuller():
             ψ: np.ndarray[complex],
             λ: u.Quantity,
             f: float = None,
-            dt:u.Quantity = 1*u.s,
+            Δt:u.Quantity = 1*u.s,
         ) -> np.ndarray[float]:
         """
         Simulate a 4 telescope Kernel-Nuller propagation using a numeric approach
@@ -64,8 +96,7 @@ class KernelNuller():
         ----------
         - Ψ: Array of 4 input beams complex amplitudes
         - λ: Wavelength of the light
-        - f: Star photon flux (in photon/s). If set, the output will be a number of photons. If None, the output will correspond to the throughput.
-        - dt: Exposure time 
+        - Δt: Exposure time 
 
         Returns
         -------
@@ -76,8 +107,7 @@ class KernelNuller():
         φ = self.φ.to(λ.unit).value
         σ = self.σ.to(λ.unit).value
         dt = dt.to(u.s).value
-        if f is not None: f = f.to(1/u.s).value
-        return observe_njit(ψ, φ, σ, λ.value, dt, f)
+        return observe_njit(ψ, φ, σ, λ.value, Δt)
     
     # Plotting --------------------------------------------------------------------
 
@@ -174,7 +204,7 @@ class KernelNuller():
 
 # Electric fields propagation -------------------------------------------------
 
-@nb.njit()
+# @nb.njit()
 def propagate_fields_njit(
         ψ: np.ndarray[complex],
         φ: np.ndarray[float],
@@ -198,6 +228,8 @@ def propagate_fields_njit(
     - Bright output electric fields
     """
 
+    print("i:", np.sum(ψ * np.conjugate(ψ)))
+
     φ = phase.bound_njit(φ + σ, λ)
 
     # First layer of pahse shifters
@@ -218,6 +250,10 @@ def propagate_fields_njit(
     nulls = np.array([N3[1], N4[0], N4[1]], dtype=np.complex128)
     bright = N3[0]
 
+    nuller_output = np.array([*N3, *N4], dtype=np.complex128)
+    print(nuller_output.shape, nuller_output)
+    print("n:", np.sum(nuller_output * np.conjugate(nuller_output)))
+
     # Beam splitting
     R_inputs = np.array([N3[1], N3[1], N4[0], N4[0], N4[1], N4[1]]) * 1 / np.sqrt(2)
 
@@ -228,6 +264,10 @@ def propagate_fields_njit(
     R1_output = mmi.cross_recombiner_2x2(np.array([R_inputs[0], R_inputs[2]]))
     R2_output = mmi.cross_recombiner_2x2(np.array([R_inputs[1], R_inputs[4]]))
     R3_output = mmi.cross_recombiner_2x2(np.array([R_inputs[3], R_inputs[5]]))
+
+    recombiner_output = np.array([*R1_output, *R2_output, *R3_output, bright], dtype=np.complex128)
+    print(recombiner_output.shape, recombiner_output)
+    print("r:", np.sum(recombiner_output * np.conjugate(recombiner_output)))
 
     darks = np.array(
         [
@@ -245,28 +285,24 @@ def propagate_fields_njit(
 
 # Observation -----------------------------------------------------------------
 
-@nb.njit()
+# @nb.njit()
 def observe_njit(
     ψ: np.ndarray[complex],
     φ: u.Quantity,
     σ: u.Quantity,
     λ: u.Quantity,
-    dt:float,
-    f: float,
-    normalized:bool = False,
+    Δt:float = 1,
 ) -> np.ndarray[float]:
     """
     Simulate a 4 telescope Kernel-Nuller propagation using a numeric approach
 
     Parameters
     ----------
-    - ψ: Array of 4 input beams complex amplitudes
+    - ψ: Array of 4 input beams complex amplitudes (in photon/[Δt] unit)
     - φ: Array of 14 injected OPD
     - σ: Array of 14 intrasic OPD
     - λ: Wavelength of the light
-    - dt: Exposure time in seconds
-    - f: Star flux (in photon/s). If set, the output will be a number of photons. If None, the output will correspond to the throughput.
-    - normalized: If True, the output will be normalized to the throughput.
+    - Δt: Exposure time in seconds
 
     Returns
     -------
@@ -275,25 +311,19 @@ def observe_njit(
     - Bright output intensity
     """
 
-    _, d, b = KernelNuller.propagate_fields_njit(ψ, φ, σ, λ)
+    _, d, b = propagate_fields_njit(ψ, φ, σ, λ)
 
     # Get intensities
     d = np.abs(d) ** 2
     b = np.abs(b) ** 2
 
     # Add photon noise
-    if f is not None:
-        for i in range(3):
-            d[i] = np.random.poisson(np.floor(d[i] * f * dt))
-        b = np.random.poisson(np.floor(b * f * dt))
+    for i in range(3):
+        d[i] = np.random.poisson(np.floor(d[i] * Δt))
+    print(np.floor(b * Δt))
+    b = np.random.poisson(np.floor(b * Δt))
 
     # Create kernels
     k = np.array([d[0]-d[1], d[2]-d[3], d[4]-d[5]])
-
-    # Normalize
-    if normalized and f is not None:
-        d /= (f * dt)**2
-        k /= (f * dt)**2
-        b /= (f * dt)**2
 
     return d, k, b

@@ -7,12 +7,13 @@ from IPython.display import display
 from io import BytesIO
 from copy import deepcopy as copy
 
-from . import signals
-from. import telescopes
-from . import coordinates
-from . import signals
+from ..modules import signals
+from ..modules import telescopes
+from ..modules import coordinates
+from ..modules import signals
 from . import kernel_nuller
 from .kernel_nuller import KernelNuller
+from . import body
 from .body import Body
 
 class Instrument:
@@ -48,37 +49,45 @@ class Instrument:
 
     def observe(
             self,
-            b:Body,
-            φ:np.ndarray[u.Quantity],
+            sources:list[Body],
             δ:u.Quantity,
             h:u.Quantity,
             f:float,
-            dt:u.Quantity,
+            Δt:u.Quantity,
         ) -> np.ndarray[float]:
         """
         Simulate a 4 telescope Kernel-Nuller observation
 
         Parameters
         ----------
-        - b: Body object
-        - φ: Array of 14 injected OPD
+        - sources: List of the sources to observe
         - δ: Declination
         - h: Hour angle
         - f: Flux of the star (photons/s)
-        - dt: Integration time
+        - Δt: Integration time
 
         Returns
         -------
-        - Array of 3 null outputs electric fields
+        - np.ndarray: Dark outputs (6 float values)
+        - np.ndarray: Kernel outputs (3 float values)
+        - float: Bright output
         """
 
         # Project telescope positions
         p = telescopes.project_position(r=self.r, h=h, l=self.l, δ=δ)
 
         # Get input fields
-        ψ = signals.get_input_fields(f=f*b.c, θ=b.θ, α=b.α, λ=self.λ, p=p)
+        d_tot = np.zeros(6)
+        k_tot = np.zeros(3)
+        b_tot = 0
+        for s in sources:
+            ψ = signals.get_input_fields(f=f*s.c, θ=s.θ, α=s.α, λ=self.λ, p=p)
+            d, k, b = self.kn.observe(ψ, self.km.φ, self.λ, f, Δt)
+            d_tot += d
+            k_tot += k
+            b_tot += b
 
-        return self.kn.observe(ψ, φ, self.λ, f, dt)
+        return d_tot, k_tot, b_tot
 
     # Transmission maps -------------------------------------------------------
     

@@ -1,8 +1,9 @@
 import numpy as np
 import astropy.units as u
-from src.instrument import Instrument
-from src.body import Body
-from src import telescopes
+
+from .instrument import Instrument
+from .body import Body
+from ..modules import telescopes
 
 class Scene:
     def __init__(
@@ -12,6 +13,7 @@ class Scene:
             h:u.Quantity,
             Δh: u.Quantity,
             f:u.Quantity,
+            Δt: u.Quantity,
             companions: list[Body] = None
         ):
         """
@@ -30,9 +32,18 @@ class Scene:
         self.h = h
         self.Δh = Δh
         self.f = f
+        self.Δt = Δt
         self.companions = companions if companions else []
 
         self.p = telescopes.project_position(r=self.instrument.r, h=self.h, l=self.instrument.l, δ=self.δ)
+
+    # Observation -------------------------------------------------------------
+
+    def observe(self):
+        """
+        Simulate the observation of the scene
+        """
+        self.instrument.observe(companions=self.companions, δ=self.δ, h=self.h, f=self.f, Δt=self.Δt)
 
     def get_trasmission_map(self, N:int) -> np.ndarray[float]:
         """
