@@ -67,9 +67,9 @@ def get_input_fields_njit(
         Φ = 2 * np.pi * p_rot * np.sin(θ) / λ
 
         # Build the complex amplitude of the signal
-        s[i] = a * np.exp(1j * Φ)
+        s[i] = np.exp(1j * Φ)
 
-    return s / np.sqrt(p.shape[0])
+    return s * np.sqrt(a / p.shape[0])
 
 def as_str(signals: np.ndarray[complex]) -> str:
     """

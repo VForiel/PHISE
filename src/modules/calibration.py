@@ -112,7 +112,9 @@ def genetic(
 
         Δφ *= β
 
-    return phase.bound(kn.φ, λ=λ), {
+    kn.φ = phase.bound(kn.φ, λ)
+
+    return {
         "bright": np.array(bright_history),
         "kernel": np.array(kernel_history),
         "shifters": np.array(shifters_history),
@@ -173,7 +175,6 @@ def obstruction(
 
     Returns
     -------
-    - Array of optimized phase shifters offsets
     - Dict containing the history of the optimization
     """
 
@@ -336,7 +337,9 @@ def obstruction(
     minimize_kernel(kn, ψ, 13, 2)
     minimize_kernel(kn, ψ, 14, 3)
 
-    return kn.φ.copy(), {'bright':np.array(b_history), 'kernel':np.array(k_history), 'shifts':np.array(φ_history)}
+    kn.φ = phase.bound(kn.φ, λ)
+
+    return {'bright':np.array(b_history), 'kernel':np.array(k_history), 'shifts':np.array(φ_history)}
 
 def plot_obstruction_history(history: dict[str, np.ndarray[float]]):
     bright_evol, kernel_evol, shifts_evol = history["bright"], history["kernel"], history["shifts"]
