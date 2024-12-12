@@ -112,11 +112,13 @@ class Instrument:
         - Dark outputs map (6 x resolution x resolution)
         - Kernel outputs map (3 x resolution x resolution)
         """
-        φ = self.kn.φ.to(self.λ.unit).value
-        σ = self.kn.σ.to(self.λ.unit).value
+        φ = self.kn.φ.to(u.m).value
+        σ = self.kn.σ.to(u.m).value
         fov = self.fov.to(u.mas).value
         p = telescopes.project_position(r=self.r, h=h, l=self.l, δ=δ).to(u.m).value
         λ = self.λ.to(u.m).value
+
+        print("plot", p)
 
         return get_transmission_map_njit(N=N, φ=φ, σ=σ, p=p, λ=λ, fov=fov)
     
@@ -171,6 +173,8 @@ class Instrument:
             θ = c.θ
             p = telescopes.project_position(r=self.r, h=h, l=self.l, δ=δ)
             ψ = signals.get_input_fields(a=1, θ=θ, α=α, λ=self.λ, p=p)
+
+            print("print", p)
 
             n, d, b = self.kn.propagate_fields(ψ=ψ, λ=self.λ)
 
@@ -271,8 +275,8 @@ def get_transmission_map_njit(
     Parameters
     ----------
     - N: Resolution of the map
-    - φ: Array of 14 injected OPD (in wavelenght unit)
-    - σ: Array of 14 intrasic OPD (in wavelenght unit)
+    - φ: Array of 14 injected OPD (in meter)
+    - σ: Array of 14 intrasic OPD (in meter)
     - p: Projected telescope positions (in meter)
     - λ: Wavelength (in meter)
     - fov: Field of view in mas
