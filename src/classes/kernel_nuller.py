@@ -481,7 +481,7 @@ def observe_njit(
     # Add photon noise
     for i in range(3):
         d[i] = np.random.poisson(np.floor(d[i] * Δt))
-    b = np.random.poisson(np.floor(b * Δt, dtype=np.float64))
+    b = np.random.poisson(b * Δt)
 
     # Create kernels
     k = np.array([d[0]-d[1], d[2]-d[3], d[4]-d[5]])
