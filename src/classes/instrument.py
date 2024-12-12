@@ -118,8 +118,6 @@ class Instrument:
         p = telescopes.project_position(r=self.r, h=h, l=self.l, δ=δ).to(u.m).value
         λ = self.λ.to(u.m).value
 
-        print("plot", p)
-
         return get_transmission_map_njit(N=N, φ=φ, σ=σ, p=p, λ=λ, fov=fov)
     
     # Plotting ----------------------------------------------------------------
@@ -173,8 +171,6 @@ class Instrument:
             θ = c.θ
             p = telescopes.project_position(r=self.r, h=h, l=self.l, δ=δ)
             ψ = signals.get_input_fields(a=1, θ=θ, α=α, λ=self.λ, p=p)
-
-            print("print", p)
 
             n, d, b = self.kn.propagate_fields(ψ=ψ, λ=self.λ)
 
