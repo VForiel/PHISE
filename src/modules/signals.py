@@ -89,7 +89,7 @@ def as_str(signals: np.ndarray[complex]) -> str:
         res += f" - Telescope {i}:   {np.abs(s):.2e} *exp(i* {np.angle(s)/np.pi:.2f} *pi)   ->   {np.abs(s)**2:.2e}\n"
     return res[:-1]
 
-def nb_photons(
+def photon_flux(
         λ:u.Quantity,
         Δλ:u.Quantity,
         f:u.Quantity,
@@ -98,7 +98,7 @@ def nb_photons(
         m:float,
     ) -> u.Quantity:
     """
-    Compute the number of photons detected by the telescope per second.
+    Compute the number of photons per second coming from a star and captured by a telescope.
 
     Parameters
     ----------

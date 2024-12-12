@@ -4,6 +4,8 @@ import astropy.units as u
 from astropy import constants as const
 import matplotlib.pyplot as plt
 from io import BytesIO
+import os
+import ipywidgets as widgets
 
 from ..modules import mmi
 from ..modules import phase
@@ -106,7 +108,7 @@ class KernelNuller():
         """
         φ = self.φ.to(λ.unit).value
         σ = self.σ.to(λ.unit).value
-        dt = dt.to(u.s).value
+        Δt = Δt.to(u.s).value
         return observe_njit(ψ, φ, σ, λ.value, Δt)
     
     # Plotting --------------------------------------------------------------------
@@ -198,13 +200,182 @@ class KernelNuller():
             return plot.getvalue()
         plt.show()
 
+    # Shift control GUI -------------------------------------------------------
+
+    def shifts_control_gui(self, λ:u.Quantity):
+        step = 1e-20
+
+        # Build sliders -----------------------------------------------------------
+
+        # Input amplitude
+        IA_sliders = [
+            widgets.FloatSlider(
+                value=0.5, min=0, max=0.5, step=step, description=f"I{i+1}",
+                continuous_update=False,
+            )
+            for i in range(4)
+        ]
+
+        # Input phase
+        IP_sliders = [
+            widgets.FloatSlider(
+                value=0, min=0, max=λ.value, step=step, description=f"I{i+1}",
+                continuous_update=False,
+            )
+            for i in range(4)
+        ]
+
+        # Shifter phase
+        P_sliders = [
+            widgets.FloatSlider(
+                value=0, min=0, max=λ.value, step=step, description=f"P{i+1}",
+                continuous_update=False,
+            )
+            for i in range(14)
+        ]
+
+        # for i in range(14):
+        #     P_sliders[i].value = CALIBRATED_SHIFTS_IB[i].value
+
+
+        # Build GUI ---------------------------------------------------------------
+
+        def beam_repr(beam: complex) -> str:
+            return f"<b>{np.abs(beam):.2e}</b> * exp(<b>{np.angle(beam)/np.pi:.2f}</b> pi i)"
+
+        inputs = [widgets.HTML(value=f" ") for _ in range(4)]
+        null_outputs = [widgets.HTML(value=f" ") for _ in range(4)]
+        dark_outputs = [widgets.HTML(value=f" ") for _ in range(6)]
+        kernel_outputs = [widgets.HTML(value=f" ") for _ in range(3)]
+
+        def update_gui(*args):
+
+            ψ = np.array([
+                IA_sliders[i].value * np.exp(1j * IP_sliders[i].value / λ.value * 2 * np.pi)
+                for i in range(4)
+            ])
+
+            self.φ = np.array([x.value for x in P_sliders]) * λ.unit
+            n, d, b = self.propagate_fields(ψ=ψ, λ=λ)
+
+            k = np.array([
+                np.abs(d[2*i])**2 - np.abs(d[2*i+1])**2
+            for i in range(3)])
+
+            for i, beam in enumerate(ψ):
+                inputs[i].value = (
+                    f"<b>Input {i+1} -</b> Amplitude: <code>{beam_repr(beam)}</code> Intensity: <code><b>{np.abs(beam)**2*100:.1f}%</b></code>"
+                )
+            null_outputs[0].value = (
+                f"<b>N3a -</b> Amplitude: <code>{beam_repr(b)}</code> Intensity: <code><b>{np.abs(b)**2*100:.1f}%</b></code> <b><- Bright channel</b>"
+            )
+            for i, beam in enumerate(n):
+                null_outputs[i + 1].value = (
+                    f"<b>N{(i-1)//2+4}{['a','b'][(i+1)%2]} -</b> Amplitude: <code>{beam_repr(beam)}</code> Intensity: <code><b>{np.abs(beam)**2*100:.1f}%</b></code>"
+                )
+            for i, beam in enumerate(d):
+                dark_outputs[i].value = (
+                    f"<b>Dark {i+1} -</b> Amplitude: <code>{beam_repr(beam)}</code> Intensity: <code><b>{np.abs(beam)**2*100:.1f}%</b></code>"
+                )
+            for i, beam in enumerate(k):
+                kernel_outputs[i].value = (
+                    f"<b>Kernel {i+1} -</b> Value: <code>{beam:.2e}</code>"
+                )   
+                
+            # fig, ax = plt.subplots(1, 1, figsize=(5, 5))
+
+            phases.value = self.plot_phase(
+                λ=λ,
+                ψ = ψ,
+                plot = False
+                )
+
+            # Plot intensities
+            for i in range(len(ψ)):
+                plt.imshow([[np.abs(ψ[i])**2,],], cmap="hot", vmin=0, vmax=np.sum(np.abs(ψ)**2))
+                plt.savefig(fname=f"img/tmp.png", format="png")
+                plt.close()
+                with open("img/tmp.png", "rb") as file:
+                    image = file.read()
+                    photometric_cameras[i].value = image
+            for i in range(len(n)+1):
+                if i == 0:
+                    plt.imshow([[np.abs(b)**2,],], cmap="hot", vmin=0, vmax=np.sum(np.abs(n)**2) + np.abs(b)**2)
+                else:
+                    plt.imshow([[np.abs(n[i-1])**2,],], cmap="hot", vmin=0, vmax=np.sum(np.abs(n)**2) + np.abs(b)**2)
+                plt.savefig(fname=f"img/tmp.png", format="png")
+                plt.close()
+                with open("img/tmp.png", "rb") as file:
+                    image = file.read()
+                    null_cameras[i].value = image
+            for i in range(len(d)):
+                plt.imshow([[np.abs(d[i])**2,],], cmap="hot", vmin=0, vmax=np.sum(np.abs(d)**2))
+                plt.savefig(fname=f"img/tmp.png", format="png")
+                plt.close()
+                with open("img/tmp.png", "rb") as file:
+                    image = file.read()
+                    dark_cameras[i].value = image
+            for i in range(len(k)):
+                plt.imshow([[k[i],],], cmap="bwr", vmin=-np.max(np.abs(k)), vmax=np.max(np.abs(k)))
+                plt.savefig(fname=f"img/tmp.png", format="png")
+                plt.close()
+                with open("img/tmp.png", "rb") as file:
+                    image = file.read()
+                    kernel_cameras[i].value = image
+
+            os.remove("img/tmp.png")
+
+            return b, d
+        
+        photometric_cameras = [widgets.Image(width=50,height=50) for _ in range(4)]
+        null_cameras = [widgets.Image(width=50,height=50) for _ in range(4)]
+        dark_cameras = [widgets.Image(width=50,height=50) for _ in range(6)]
+        kernel_cameras = [widgets.Image(width=50,height=50) for _ in range(3)]
+        phases = widgets.Image()
+
+        vbox = widgets.VBox(
+            [
+                widgets.HTML("<h1>Inputs</h1>"),
+                widgets.HTML("Amplitude:"),
+                widgets.HBox(IA_sliders[:4]),
+                widgets.HTML("Phase:"),
+                widgets.HBox(IP_sliders[:4]),
+                *[widgets.HBox([photometric_cameras[i], x]) for i, x in enumerate(inputs)],
+                widgets.HTML("<h1>Phases</h1>"),
+                phases,
+                widgets.HTML("<h1>Nuller</h1>"),
+                widgets.HBox(P_sliders[:4]),
+                widgets.HBox(P_sliders[4:8]),
+                *[widgets.HBox([null_cameras[i], x]) for i, x in enumerate(null_outputs)],
+                widgets.HTML("<h1>Recombiner</h1>"),
+                widgets.HBox(P_sliders[8:11]),
+                widgets.HBox(P_sliders[11:14]),
+                *[widgets.HBox([dark_cameras[i], x]) for i, x in enumerate(dark_outputs)],
+                widgets.HTML("<h1>Kernels</h1>"),
+                *[widgets.HBox([kernel_cameras[i], x]) for i, x in enumerate(kernel_outputs)],
+            ]
+        )
+
+        # Link sliders to update function ------------------------------------------
+
+        for widget in P_sliders:
+            widget.observe(update_gui, "value")
+        for widget in IA_sliders:
+            widget.observe(update_gui, "value")
+        for widget in IP_sliders:
+            widget.observe(update_gui, "value")
+
+        update_gui()
+        return vbox
+        
+
 #==============================================================================
 # Numba functions
 #==============================================================================
 
 # Electric fields propagation -------------------------------------------------
 
-# @nb.njit()
+@nb.njit()
 def propagate_fields_njit(
         ψ: np.ndarray[complex],
         φ: np.ndarray[float],
@@ -228,8 +399,6 @@ def propagate_fields_njit(
     - Bright output electric fields
     """
 
-    print("i:", np.sum(ψ * np.conjugate(ψ)))
-
     φ = phase.bound_njit(φ + σ, λ)
 
     # First layer of pahse shifters
@@ -250,10 +419,6 @@ def propagate_fields_njit(
     nulls = np.array([N3[1], N4[0], N4[1]], dtype=np.complex128)
     bright = N3[0]
 
-    nuller_output = np.array([*N3, *N4], dtype=np.complex128)
-    print(nuller_output.shape, nuller_output)
-    print("n:", np.sum(nuller_output * np.conjugate(nuller_output)))
-
     # Beam splitting
     R_inputs = np.array([N3[1], N3[1], N4[0], N4[0], N4[1], N4[1]]) * 1 / np.sqrt(2)
 
@@ -264,10 +429,6 @@ def propagate_fields_njit(
     R1_output = mmi.cross_recombiner_2x2(np.array([R_inputs[0], R_inputs[2]]))
     R2_output = mmi.cross_recombiner_2x2(np.array([R_inputs[1], R_inputs[4]]))
     R3_output = mmi.cross_recombiner_2x2(np.array([R_inputs[3], R_inputs[5]]))
-
-    recombiner_output = np.array([*R1_output, *R2_output, *R3_output, bright], dtype=np.complex128)
-    print(recombiner_output.shape, recombiner_output)
-    print("r:", np.sum(recombiner_output * np.conjugate(recombiner_output)))
 
     darks = np.array(
         [
@@ -320,7 +481,6 @@ def observe_njit(
     # Add photon noise
     for i in range(3):
         d[i] = np.random.poisson(np.floor(d[i] * Δt))
-    print(np.floor(b * Δt))
     b = np.random.poisson(np.floor(b * Δt))
 
     # Create kernels

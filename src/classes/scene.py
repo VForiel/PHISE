@@ -24,6 +24,7 @@ class Scene:
         - h: Central hourangle of the observation
         - Δh: Hourangle range of the observation
         - f: Star photon flux
+        - Δt:Exposition time
         - companions: List of Body objects
         """
 
