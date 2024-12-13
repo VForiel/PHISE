@@ -120,7 +120,7 @@ def genetic(
         "shifters": np.array(shifters_history),
     }
 
-def plot_genertic_history(history: dict[str, np.ndarray[float]]):
+def plot_genetic_history(history: dict[str, np.ndarray[float]]):
     bright_evol = history["bright"]
     kernel_evol = history["kernel"]
     shifts_evol = history["shifters"]

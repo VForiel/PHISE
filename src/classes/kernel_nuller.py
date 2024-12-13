@@ -9,7 +9,7 @@ import ipywidgets as widgets
 
 from ..modules import mmi
 from ..modules import phase
-from .body import Body
+from .source import Source
 
 class KernelNuller():
     def __init__(self, φ:np.ndarray[u.Quantity], σ:np.ndarray[u.Quantity]):
@@ -479,9 +479,16 @@ def observe_njit(
     b = np.abs(b) ** 2
 
     # Add photon noise
-    for i in range(3):
-        d[i] = np.random.poisson(np.floor(d[i] * Δt))
-    b = np.random.poisson(b * Δt)
+    dp = d * (d <= 2147020237)
+    dn = d * (d > 2147020237)
+
+    d = np.random.poisson(dp * Δt).astype(int)
+    d += np.random.normal(dn, np.sqrt(dn)).astype(int)
+
+    if b <= 2147020237:
+        b = np.random.poisson(b * Δt)
+    else:
+        b = int(np.random.normal(b, np.sqrt(b)))
 
     # Create kernels
     k = np.array([d[0]-d[1], d[2]-d[3], d[4]-d[5]])

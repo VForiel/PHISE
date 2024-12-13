@@ -13,8 +13,8 @@ from ..modules import coordinates
 from ..modules import signals
 from . import kernel_nuller
 from .kernel_nuller import KernelNuller
-from . import body
-from .body import Body
+from . import source
+from .source import Source
 
 class Instrument:
     def __init__(
@@ -49,7 +49,7 @@ class Instrument:
 
     def observe(
             self,
-            sources:list[Body],
+            sources:list[Source],
             δ:u.Quantity,
             h:u.Quantity,
             f:float,
@@ -81,8 +81,8 @@ class Instrument:
         k_tot = np.zeros(3)
         b_tot = 0
         for s in sources:
-            ψ = signals.get_input_fields(f=f*s.c, θ=s.θ, α=s.α, λ=self.λ, p=p)
-            d, k, b = self.kn.observe(ψ, self.km.φ, self.λ, f, Δt)
+            ψ = signals.get_input_fields(a=f*s.c, θ=s.θ, α=s.α, λ=self.λ, p=p)
+            d, k, b = self.kn.observe(ψ, self.kn.φ, self.λ, f, Δt)
             d_tot += d
             k_tot += k
             b_tot += b
@@ -127,18 +127,18 @@ class Instrument:
             N: int,
             h: float,
             δ: float,
-            companions: list[Body],
+            sources: list[Source],
             return_plot=False
         ) -> None:
         
         # Get transmission maps
         n_maps, d_maps, k_maps = self.get_transmission_maps(N=N, h=h, δ=δ)
 
-        # Get companions position to plot them
-        companions_pos = []
-        for c in companions:
+        # Get sources position to plot them
+        sources_pos = []
+        for c in sources:
             x, y = coordinates.αθ_to_xy(α=c.α, θ=c.θ, fov=self.fov)
-            companions_pos.append((x*self.fov, y*self.fov))
+            sources_pos.append((x*self.fov, y*self.fov))
 
         _, axs = plt.subplots(2, 6, figsize=(35, 10))
 
@@ -162,11 +162,11 @@ class Instrument:
             ax.set_xlabel(r"$\theta_x$" + f" ({self.fov.unit})")
             ax.set_ylabel(r"$\theta_y$" + f" ({self.fov.unit})")
             ax.scatter(0, 0, color="yellow", marker="*", edgecolors="black")
-            for x, y in companions_pos:
+            for x, y in sources_pos:
                 ax.scatter(x, y, color="blue", edgecolors="black")
 
         transmissions = ""
-        for i, c in enumerate(companions):
+        for i, c in enumerate(sources):
             α = c.α
             θ = c.θ
             p = telescopes.project_position(r=self.r, h=h, l=self.l, δ=δ)
@@ -201,7 +201,7 @@ class Instrument:
             δ: u.Quantity,
             h: u.Quantity,
             Δh: u.Quantity,
-            companions: list[Body],
+            sources: list[Source],
         ):
 
         # UI elements
@@ -224,7 +224,7 @@ class Instrument:
                 N=N,
                 h=h_slider.value*u.deg,
                 δ=δ_slider.value*u.deg,
-                companions=companions,
+                sources=sources,
                 return_plot=True,
             )
             plot.value = img

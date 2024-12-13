@@ -1,5 +1,5 @@
-from . import body
-from .body import Body
+from . import source
+from .source import Source
 
 from . import instrument
 from .instrument import Instrument

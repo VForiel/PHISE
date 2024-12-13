@@ -2,7 +2,7 @@ import numpy as np
 import astropy.units as u
 
 from .instrument import Instrument
-from .body import Body
+from .source import Source
 from ..modules import telescopes
 
 class Scene:
@@ -14,7 +14,7 @@ class Scene:
             Δh: u.Quantity,
             f:u.Quantity,
             Δt: u.Quantity,
-            companions: list[Body] = None
+            sources: list[Source] = None
         ):
         """
         Parameters
@@ -25,7 +25,7 @@ class Scene:
         - Δh: Hourangle range of the observation
         - f: Star photon flux
         - Δt:Exposition time
-        - companions: List of Body objects
+        - sources: List of Source objects
         """
 
         self.instrument = instrument
@@ -34,7 +34,7 @@ class Scene:
         self.Δh = Δh
         self.f = f
         self.Δt = Δt
-        self.companions = companions if companions else []
+        self.sources = sources if sources else []
 
         self.p = telescopes.project_position(r=self.instrument.r, h=self.h, l=self.instrument.l, δ=self.δ)
 
@@ -43,8 +43,14 @@ class Scene:
     def observe(self):
         """
         Simulate the observation of the scene
+
+        Returns
+        -------
+        - np.ndarray: Dark outputs (6 float values)
+        - np.ndarray: Kernel outputs (3 float values)
+        - float: Bright output
         """
-        self.instrument.observe(companions=self.companions, δ=self.δ, h=self.h, f=self.f, Δt=self.Δt)
+        return self.instrument.observe(sources=self.sources, δ=self.δ, h=self.h, f=self.f, Δt=self.Δt)
 
     def get_trasmission_map(self, N:int) -> np.ndarray[float]:
         """
@@ -63,7 +69,7 @@ class Scene:
         return self.instrument.get_transmission_maps(N=N, h=self.h, δ=self.δ)
     
     def plot_transmission_maps(self, N:int):
-        return self.instrument.plot_transmission_maps(N=N, h=self.h, δ=self.δ, companions=self.companions)
+        return self.instrument.plot_transmission_maps(N=N, h=self.h, δ=self.δ, sources=self.sources)
     
     def iplot_transmission_maps(self, N:int):
-        return self.instrument.iplot_transmission_maps(N=N, δ=self.δ, h=self.h, Δh=self.Δh, companions=self.companions)
+        return self.instrument.iplot_transmission_maps(N=N, δ=self.δ, h=self.h, Δh=self.Δh, sources=self.sources)
