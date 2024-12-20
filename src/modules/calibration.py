@@ -2,6 +2,7 @@ import numpy as np
 import astropy.units as u
 from LRFutils import color
 import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
 
 from . import signals
 from . import phase
@@ -34,7 +35,6 @@ def genetic(
 
     Returns
     -------
-    - Array of optimized phase shifters offsets
     - Dict containing the history of the optimization
     """
 
@@ -161,6 +161,7 @@ def obstruction(
         f: u.Quantity,
         Δt: u.Quantity,
         verbose: bool = False,
+        mode="dichotomy",
     ) -> tuple[u.Quantity, dict[str, np.ndarray[float]]]:
     """
     Optimize the phase shifters offsets to maximize the nulling performance
@@ -181,6 +182,8 @@ def obstruction(
     b_history = []
     k_history = []
     φ_history = []
+
+    N = 1_000_000
 
     def maximize_bright(kn:KernelNuller, ψ, n):
         Δφ = λ/4
@@ -222,6 +225,31 @@ def obstruction(
         
         if verbose:
             print(log)
+
+        y = np.empty(N)
+        φn_backup = kn.φ[n-1]
+        x = np.linspace(0,λ.value,N)
+        for i in range(N):
+            kn.φ[n-1] = i * λ / N
+            _, _, b = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
+            y[i] = b / f.to(1/Δt.unit).value
+        kn.φ[n-1] = φn_backup
+
+        def sin(x, x0):
+            return 1/4 * (np.sin((x-x0)/λ.value*2*np.pi)+1)/2
+        popt, pcov = curve_fit(sin, x, y, p0=[0])
+
+        if mode == "least_squares":
+            kn.φ[n-1] = (np.mod(popt[0]+λ.value/4, λ.value) * λ.unit).to(kn.φ.unit)
+
+        plt.plot(x, y)
+        plt.plot(x, sin(x, *popt))
+        plt.axvline(x=φn_backup.to(λ.unit).value, color='r', linestyle='--')
+        plt.axvline(x=np.mod(popt[0]+λ.value/4, λ.value), color='k', linestyle='--')
+        plt.xlabel(f"Phase shift ({λ.unit})")
+        plt.ylabel("Bright throughput (%)")
+        plt.title(f"Bright($\phi_{n}$)")
+        plt.show()
 
     def minimize_kernel(kn, ψ, n, i):
         Δφ = λ/4
@@ -269,6 +297,31 @@ def obstruction(
         if verbose:
             print(log)
 
+        y = np.empty(N)
+        φn_backup = kn.φ[n-1]
+        for i in range(N):
+            kn.φ[n-1] = i * λ / N
+            _, k, _ = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
+            y[i] = np.sum(np.abs(k)) / f.to(1/Δt.unit).value
+        kn.φ[n-1] = φn_backup
+
+        x = np.linspace(0,λ.value,N)
+        def sin(x, x0):
+            return 1/8 * np.abs(np.sin((x-x0)/λ.value*2*np.pi))
+        popt, pcov = curve_fit(sin, x, y, p0=[0])
+
+        if mode == "least_squares":
+            kn.φ[n-1] = (np.mod(popt[0], λ.value) * λ.unit).to(kn.φ.unit)
+
+        plt.plot(np.linspace(0,λ.value,N), y)
+        plt.plot(x, sin(x, *popt))
+        plt.axvline(x=φn_backup.to(λ.unit).value, color='r', linestyle='--')
+        plt.axvline(x=np.mod(popt[0], λ.value), color='k', linestyle='--')
+        plt.xlabel(f"Phase shift ({λ.unit})")
+        plt.ylabel("Kernel throughput (%)")
+        plt.title(f"Kernels($\phi_{n}$)")
+        plt.show()
+
     def maximize_darks(kn, ψ, n, ds):
         Δφ = λ/4
         ε = 1e-6 * λ
@@ -315,7 +368,32 @@ def obstruction(
         if verbose:
             print(log)
 
-    a = (1+0j) * np.sqrt(f/4)
+        y = np.empty(N)
+        φn_backup = kn.φ[n-1]
+        for i in range(N):
+            kn.φ[n-1] = i * λ / N
+            d, _, _ = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
+            y[i] = np.sum(np.abs(d[ds])) / f.to(1/Δt.unit).value
+        kn.φ[n-1] = φn_backup
+
+        x = np.linspace(0,λ.value,N)
+        def sin(x, x0):
+            return 1/8 + 1/8 * (np.sin((x-x0)/λ.value*2*np.pi)+1)/2
+        popt, pcov = curve_fit(sin, x, y, p0=[0])
+
+        if mode == "least_squares":
+            kn.φ[n-1] = (np.mod(popt[0]+λ.value/4, λ.value) * λ.unit).to(kn.φ.unit)
+
+        plt.plot(x, y)
+        plt.plot(x, sin(x, *popt))
+        plt.axvline(x=φn_backup.to(λ.unit).value, color='r', linestyle='--')
+        plt.axvline(x=np.mod(popt[0]+λ.value/4, λ.value), color='k', linestyle='--')
+        plt.xlabel(f"Phase shift ({λ.unit})")
+        plt.ylabel(f"Dark pair {ds} throughput (%)")
+        plt.title(f"Darks{ds}($\phi_{n}$)")
+        plt.show()
+
+    a = (1+0j) * np.sqrt(f) * np.sqrt(1/4)
 
     # Bright maximization
     ψ = np.array([a, a, 0, 0])

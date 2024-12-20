@@ -82,7 +82,7 @@ class Instrument:
         b_tot = 0
         for s in sources:
             ψ = signals.get_input_fields(a=f*s.c, θ=s.θ, α=s.α, λ=self.λ, p=p)
-            d, k, b = self.kn.observe(ψ, self.kn.φ, self.λ, f, Δt)
+            d, k, b = self.kn.observe(ψ, self.λ, f, Δt)
             d_tot += d
             k_tot += k
             b_tot += b
@@ -178,12 +178,12 @@ class Instrument:
 
             linebreak = '<br>' if return_plot else '\n   '
             transmissions += '<h2>' if return_plot else ''
-            transmissions += f"Companion {i+1} throughputs:"
+            transmissions += f"\n{c.name} throughputs:"
             transmissions += '</h1>' if return_plot else '\n----------' + linebreak
             transmissions += f"B: {np.abs(b)**2*100:.2f}%" + linebreak
-            transmissions += f"N: {' | '.join([f'{np.abs(i)**2*100:.2f}%' for i in n])}" + linebreak
-            transmissions += f"D: {' | '.join([f'{np.abs(i)**2*100:.2f}%' for i in d])}" + linebreak
-            transmissions += f"K: {' | '.join([f'{i*100:.2f}%' for i in k])}" + linebreak
+            transmissions += f"N: {' | '.join([f'{np.abs(i)**2*100:.2f}%' for i in n])}" + f"   Depth: {np.sum(np.abs(d)**2) / np.abs(b)**2:.2e}" + linebreak
+            transmissions += f"D: {' | '.join([f'{np.abs(i)**2*100:.2f}%' for i in d])}" + f"   Depth: {np.sum(np.abs(d)**2) / np.abs(b)**2:.2e}" + linebreak
+            transmissions += f"K: {' | '.join([f'{i*100:.2f}%' for i in k])}" + f"   Depth: {np.sum(np.abs(k)) / np.abs(b)**2:.2e}" + linebreak
 
         if return_plot:
             plot = BytesIO()
