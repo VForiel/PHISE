@@ -162,6 +162,7 @@ def obstruction(
         Δt: u.Quantity,
         verbose: bool = False,
         mode="dichotomy",
+        N = 1_000
     ) -> tuple[u.Quantity, dict[str, np.ndarray[float]]]:
     """
     Optimize the phase shifters offsets to maximize the nulling performance
@@ -173,6 +174,8 @@ def obstruction(
     - f: Flux of the star
     - Δt: Integration time
     - verbose: Boolean, if True, print the optimization process
+    - mode: Optimization mode, either "dichotomy" or "least_squares"
+    - N: Number of points for the least squares optimization
 
     Returns
     -------
@@ -182,8 +185,6 @@ def obstruction(
     b_history = []
     k_history = []
     φ_history = []
-
-    N = 1_000_000
 
     def maximize_bright(kn:KernelNuller, ψ, n):
         Δφ = λ/4
