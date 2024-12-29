@@ -160,9 +160,8 @@ def obstruction(
         λ: u.Quantity,
         f: u.Quantity,
         Δt: u.Quantity,
-        verbose: bool = False,
-        mode="dichotomy",
-        N = 1_000
+        N = 1_000,
+        plot: bool = False,
     ) -> tuple[u.Quantity, dict[str, np.ndarray[float]]]:
     """
     Optimize the phase shifters offsets to maximize the nulling performance
@@ -173,226 +172,87 @@ def obstruction(
     - λ: Wavelength of the observation
     - f: Flux of the star
     - Δt: Integration time
-    - verbose: Boolean, if True, print the optimization process
-    - mode: Optimization mode, either "dichotomy" or "least_squares"
     - N: Number of points for the least squares optimization
-
-    Returns
-    -------
-    - Dict containing the history of the optimization
+    - plot: Boolean, if True, plot the optimization process
     """
 
-    b_history = []
-    k_history = []
-    φ_history = []
-
     def maximize_bright(kn:KernelNuller, ψ, n):
-        Δφ = λ/4
-        ε = 1e-6 * λ
 
-        _, k, b_old = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
-
-        log = ""
-        while Δφ > ε:
-            s = np.zeros(14) * λ.unit
-            s[n-1] = Δφ
-
-            kn.φ += s
-            _, _, b_pos = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
-            kn.φ -= 2*s
-            _, _, b_neg = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
-            kn.φ += s
-            
-            log += "Shift " + color.black(color.on_lightgrey(f"{n}")) + " Bright: " + color.black(color.on_green(f"{b_neg:.2e} | {b_old:.2e} | {b_pos:.2e}")) + " -> "
-
-            if b_pos > b_old and b_pos > b_neg:
-                kn.φ += s
-                log += color.black(color.on_green(" + "))
-            elif b_neg > b_old and b_neg > b_pos:
-                kn.φ -= s
-                log += color.black(color.on_green(" - "))
-            else:
-                log += color.black(color.on_green(" = "))
-            log += '\n'
-
-            kn.φ = phase.bound(kn.φ, λ)
-
-            _, k, b_old = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
-
-            φ_history.append(kn.φ.copy())
-            b_history.append(b_old / f.to(1/Δt.unit).value)
-            k_history.append(np.sum(np.abs(k)) / f.to(1/Δt.unit).value)
-            Δφ /= 2
-        
-        if verbose:
-            print(log)
-
-        y = np.empty(N)
-        φn_backup = kn.φ[n-1]
         x = np.linspace(0,λ.value,N)
+        y = np.empty(N)
+
         for i in range(N):
             kn.φ[n-1] = i * λ / N
             _, _, b = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
             y[i] = b / f.to(1/Δt.unit).value
-        kn.φ[n-1] = φn_backup
 
         def sin(x, x0):
             return 1/4 * (np.sin((x-x0)/λ.value*2*np.pi)+1)/2
         popt, pcov = curve_fit(sin, x, y, p0=[0])
 
-        if mode == "least_squares":
-            kn.φ[n-1] = (np.mod(popt[0]+λ.value/4, λ.value) * λ.unit).to(kn.φ.unit)
+        kn.φ[n-1] = (np.mod(popt[0]+λ.value/4, λ.value) * λ.unit).to(kn.φ.unit)
 
-        plt.plot(x, y)
-        plt.plot(x, sin(x, *popt))
-        plt.axvline(x=φn_backup.to(λ.unit).value, color='r', linestyle='--')
-        plt.axvline(x=np.mod(popt[0]+λ.value/4, λ.value), color='k', linestyle='--')
-        plt.xlabel(f"Phase shift ({λ.unit})")
-        plt.ylabel("Bright throughput (%)")
-        plt.title(f"Bright($\phi_{n}$)")
-        plt.show()
+        if plot:
+            plt.plot(x, y, label='Data')
+            plt.plot(x, sin(x, *popt), label='Fit')
+            plt.axvline(x=np.mod(popt[0]+λ.value/4, λ.value), color='k', linestyle='--', label='Optimal phase shift')
+            plt.xlabel(f"Phase shift ({λ.unit})")
+            plt.ylabel("Bright throughput")
+            plt.title(f"Bright($\phi_{n}$)")
+            plt.legend()
+            plt.show()
 
     def minimize_kernel(kn, ψ, n, i):
-        Δφ = λ/4
-        ε = 1e-6 * λ
-        i = i-1
 
-        _, k, b = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
-        k_old = np.abs(k[i])
-
-        log = ""
-        while Δφ > ε:
-            s = np.zeros(14) * λ.unit
-            s[n-1] = Δφ
-
-            kn.φ += s
-            _, k_pos, _ = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
-            kn.φ -= 2*s
-            _, k_neg, _ = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
-            kn.φ += s
-
-            k_pos = np.abs(k_pos[i])
-            k_neg = np.abs(k_neg[i])
-            
-            log += "Shift " + color.black(color.on_lightgrey(f"{n}")) + " Kernel: " + color.black(color.on_green(f"{k_neg:.2e} | {k_old:.2e} | {k_pos:.2e}")) + " -> "
-            if k_pos < k_old and k_pos < k_neg:
-                kn.φ += s
-                log += color.black(color.on_green(" + "))
-            elif k_neg < k_old and k_neg < k_pos:
-                kn.φ -= s
-                log += color.black(color.on_green(" - "))
-            else:
-                log += color.black(color.on_green(" = "))
-            log += '\n'
-
-            kn.φ = phase.bound(kn.φ, λ)
-
-            _, k, b = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
-            k_old = np.abs(k[i])
-
-            φ_history.append(kn.φ.copy())
-            b_history.append(b / f.to(1/Δt.unit).value)
-            k_history.append(np.sum(np.abs(k)) / f.to(1/Δt.unit).value)
-            Δφ /= 2
-        
-        if verbose:
-            print(log)
-
+        x = np.linspace(0,λ.value,N)
         y = np.empty(N)
-        φn_backup = kn.φ[n-1]
+
         for i in range(N):
             kn.φ[n-1] = i * λ / N
             _, k, _ = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
             y[i] = np.sum(np.abs(k)) / f.to(1/Δt.unit).value
-        kn.φ[n-1] = φn_backup
 
-        x = np.linspace(0,λ.value,N)
         def sin(x, x0):
             return 1/8 * np.abs(np.sin((x-x0)/λ.value*2*np.pi))
         popt, pcov = curve_fit(sin, x, y, p0=[0])
 
-        if mode == "least_squares":
-            kn.φ[n-1] = (np.mod(popt[0], λ.value) * λ.unit).to(kn.φ.unit)
+        kn.φ[n-1] = (np.mod(popt[0], λ.value) * λ.unit).to(kn.φ.unit)
 
-        plt.plot(np.linspace(0,λ.value,N), y)
-        plt.plot(x, sin(x, *popt))
-        plt.axvline(x=φn_backup.to(λ.unit).value, color='r', linestyle='--')
-        plt.axvline(x=np.mod(popt[0], λ.value), color='k', linestyle='--')
-        plt.xlabel(f"Phase shift ({λ.unit})")
-        plt.ylabel("Kernel throughput (%)")
-        plt.title(f"Kernels($\phi_{n}$)")
-        plt.show()
+        if plot:
+            plt.plot(x, y, label='Data')
+            plt.plot(x, sin(x, *popt), label='Fit')
+            plt.axvline(x=np.mod(popt[0], λ.value), color='k', linestyle='--', label='Optimal phase shift')
+            plt.xlabel(f"Phase shift ({λ.unit})")
+            plt.ylabel("Kernel throughput")
+            plt.title(f"Kernels($\phi_{n}$)")
+            plt.legend()
+            plt.show()
 
     def maximize_darks(kn, ψ, n, ds):
-        Δφ = λ/4
-        ε = 1e-6 * λ
-        ds = np.array(ds) - 1
 
-        d, k, b = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
-        d_old = np.sum(np.abs(d[ds]))
-
-        log = ""
-        while Δφ > ε:
-            s = np.zeros(14) * λ.unit
-            s[n-1] = Δφ
-            
-            kn.φ += s
-            d_pos, _, _ = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
-            kn.φ -= 2*s
-            d_neg, _, _ = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
-            kn.φ += s
-
-            d_pos = np.sum(np.abs(d_pos[ds]))
-            d_neg = np.sum(np.abs(d_neg[ds]))
-            
-            log += "Shift " + color.black(color.on_lightgrey(f"{n}")) + f" Darks: " + color.black(color.on_green(f"{d_neg:.2e} | {d_old:.2e} | {d_pos:.2e}")) + " -> "
-            if d_pos > d_old and d_pos > d_neg:
-                kn.φ += s
-                log += color.black(color.on_green(" + "))
-            elif d_neg > d_old and d_neg > d_pos:
-                kn.φ -= s
-                log += color.black(color.on_green(" - "))
-            else:
-                log += color.black(color.on_green(" = "))
-            log += '\n'
-
-            kn.φ = phase.bound(kn.φ, λ)
-
-            d, k, b = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
-            d_old = np.sum(np.abs(d[ds]))
-
-            φ_history.append(kn.φ.copy())
-            b_history.append(b / f.to(1/Δt.unit).value)
-            k_history.append(np.sum(np.abs(k)) / f.to(1/Δt.unit).value)
-            Δφ /= 2
-        
-        if verbose:
-            print(log)
-
+        x = np.linspace(0,λ.value,N)
         y = np.empty(N)
-        φn_backup = kn.φ[n-1]
+    
         for i in range(N):
             kn.φ[n-1] = i * λ / N
             d, _, _ = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
-            y[i] = np.sum(np.abs(d[ds])) / f.to(1/Δt.unit).value
-        kn.φ[n-1] = φn_backup
+            y[i] = np.sum(np.abs(d[np.array(ds)-1])) / f.to(1/Δt.unit).value
 
-        x = np.linspace(0,λ.value,N)
         def sin(x, x0):
-            return 1/8 + 1/8 * (np.sin((x-x0)/λ.value*2*np.pi)+1)/2
-        popt, pcov = curve_fit(sin, x, y, p0=[0])
+            return 1/4 * (np.sin((x-x0)/λ.value*2*np.pi)+1)/2
+        popt, pcov = curve_fit(sin, x, y, p0=[0], maxfev = 100_000)
 
-        if mode == "least_squares":
-            kn.φ[n-1] = (np.mod(popt[0]+λ.value/4, λ.value) * λ.unit).to(kn.φ.unit)
+        kn.φ[n-1] = (np.mod(popt[0]+λ.value/4, λ.value) * λ.unit).to(kn.φ.unit)
 
-        plt.plot(x, y)
-        plt.plot(x, sin(x, *popt))
-        plt.axvline(x=φn_backup.to(λ.unit).value, color='r', linestyle='--')
-        plt.axvline(x=np.mod(popt[0]+λ.value/4, λ.value), color='k', linestyle='--')
-        plt.xlabel(f"Phase shift ({λ.unit})")
-        plt.ylabel(f"Dark pair {ds} throughput (%)")
-        plt.title(f"Darks{ds}($\phi_{n}$)")
-        plt.show()
+        if plot:
+            plt.plot(x, y, label='Data')
+            plt.plot(x, sin(x, *popt), label='Fit')
+            plt.axvline(x=np.mod(popt[0]+λ.value/4, λ.value), color='k', linestyle='--', label='Optimal phase shift')
+            plt.xlabel(f"Phase shift ({λ.unit})")
+            plt.ylabel(f"Dark pair {ds} throughput")
+            plt.title(f"Darks{ds}($\phi_{n}$)")
+            plt.legend()
+            plt.show()
 
     a = (1+0j) * np.sqrt(f) * np.sqrt(1/4)
 
@@ -417,32 +277,3 @@ def obstruction(
     minimize_kernel(kn, ψ, 14, 3)
 
     kn.φ = phase.bound(kn.φ, λ)
-
-    return {'bright':np.array(b_history), 'kernel':np.array(k_history), 'shifts':np.array(φ_history)}
-
-def plot_obstruction_history(history: dict[str, np.ndarray[float]]):
-    bright_evol, kernel_evol, shifts_evol = history["bright"], history["kernel"], history["shifts"]
-
-    _, axs = plt.subplots(3, 1, figsize=(15,15))
-
-    axs[0].plot(bright_evol)
-    axs[0].set_xlabel("Number of iterations")
-    axs[0].set_ylabel("Bright throughput (%)")
-    axs[0].set_yscale("log")
-    axs[0].set_title("Optimization of the bright output")
-
-    axs[1].plot(kernel_evol)
-    axs[1].set_xlabel("Number of iterations")
-    axs[1].set_ylabel("Kernels throughput (%)")
-    axs[1].set_yscale("log")
-    axs[1].set_title("Optimization of the kernels")
-
-    for i in range(shifts_evol.shape[1]):
-        axs[2].plot(shifts_evol[:,i], label=f"Shifter {i+1}")
-    axs[2].set_xlabel("Number of iterations")
-    axs[2].set_ylabel("Phase shift")
-    axs[2].set_yscale("linear")
-    axs[2].set_title("Convergeance of the phase shifters")
-    axs[2].legend(loc='upper right')
-
-    plt.show()
