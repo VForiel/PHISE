@@ -3,6 +3,7 @@ import astropy.units as u
 from LRFutils import color
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
+from scipy.stats import linregress
 
 from . import signals
 from . import phase
@@ -277,3 +278,248 @@ def obstruction(
     minimize_kernel(kn, ψ, 14, 3)
 
     kn.φ = phase.bound(kn.φ, λ)
+
+#==============================================================================
+# Comparison of the two algorithms
+#==============================================================================
+
+def compare_approaches(f:u.Quantity, Δt:u.Quantity, λ:u.Quantity):
+    β_res = 10
+    βs, dβ = np.linspace(0.5, 0.999, β_res, retstep=True)
+    Ns = [10, 100, 1000, 10_000, 100_000]
+    samples = 10
+
+    # fig, axs = plt.subplots(1, 1, figsize=(5, 5))
+
+    shots = []
+    for β in βs:
+        for i in range(samples):
+            print(f'Gen.: β={β:.3f}, sample={i+1}/{samples}          ', end='\r')
+            kn = KernelNuller(φ=np.zeros(14)*λ, σ=np.random.uniform(0, 1, 14)*λ)
+            history = genetic(kn=kn, β=β, λ=λ, f=f, Δt=Δt, verbose=False)
+            ψ = np.ones(4) * (1+0j) * np.sqrt(1/4)
+            _, d, b = kn.propagate_fields(ψ=ψ, λ=λ)
+            di = np.abs(d)**2
+            k = np.array([di[0] - di[1], di[2] - di[3], di[4] - di[5]])
+            depth = np.sum(np.abs(k)) / np.abs(b)**2
+            shots.append((len(history['bright']), depth))
+        
+    x, y = zip(*shots)
+    x = np.array(x); y = np.array(y)
+    plt.scatter(np.random.uniform(x-x/10, x+x/10), y, c='tab:blue', s=5, label='Genetic')
+
+    slope, intercept, r_value, p_value, std_err = linregress(np.log10(x), np.log10(y))
+    print(slope, intercept)
+    x_values = np.linspace(min(x), max(x), 500)
+    y_fit = 10**intercept * x_values**slope
+    plt.plot(x_values, y_fit, 'tab:cyan', linestyle='--', label=f'Gen. fit')
+
+    print("")
+
+    shots = []
+    for j, N in enumerate(Ns):
+        for i in range(samples):
+            print(f'Obs.: N={N}, sample={i+1}/{samples}          ', end='\r')
+            kn = KernelNuller(φ=np.zeros(14)*λ, σ=np.random.uniform(0, 1, 14)*λ)
+            obstruction(kn=kn, λ=λ, f=f, Δt=Δt, N=N, plot=False)
+            ψ = np.ones(4) * (1+0j) * np.sqrt(1/4)
+            _, d, b = kn.propagate_fields(ψ=ψ, λ=λ)
+            di = np.abs(d)**2
+            k = np.array([di[0] - di[1], di[2] - di[3], di[4] - di[5]])
+            depth = np.sum(np.abs(k)) / np.abs(b)**2
+            shots.append((7*N, depth))
+
+    x, y = zip(*shots)
+    x = np.array(x); y = np.array(y)
+    plt.scatter(np.random.uniform(x-x/10, x+x/10), y, c='tab:orange', s=5, label='Obstruction')
+
+    slope, intercept, r_value, p_value, std_err = linregress(np.log10(x), np.log10(y))
+    print(slope, intercept)
+    x_values = np.linspace(min(x), max(x), 500)
+    y_fit = 10**intercept * x_values**slope
+    plt.plot(x_values, y_fit, 'tab:red', linestyle='--', label=f'Obs. fit')
+
+    plt.xlabel('# of iterations')
+    plt.xscale('log')
+    plt.ylabel('Depth')
+    plt.yscale('log')
+    plt.title('Efficiency of the calibration approaches')
+    plt.legend()
+    plt.show()
+
+#==============================================================================
+# Scan parameters
+#==============================================================================
+
+def scan(
+    scan_on,
+    restricted: bool = False,
+):
+    """
+    Scan the parameter space and plot the null depths for each parameter
+    combination.
+
+    Parameters
+    ----------
+    - kn: An instance of the KernelNuller class.
+    - beams: A list of 2D arrays, each representing a beam.
+    - optimized_parameters: A list of 14 floats, the optimized parameters.
+
+    Returns
+    -------
+    - None
+    """
+
+    # Scan shift power parameter space
+    scan = np.linspace(0, λ.value, 101, endpoint=True) * λ.unit
+
+    # Initialize the maps
+    nulls_map = np.zeros((3, len(scan), len(scan)))
+    darks_map = np.zeros((6, len(scan), len(scan)))
+    kernels_map = np.zeros((3, len(scan), len(scan)))
+    bright_map = np.zeros((len(scan), len(scan)))
+
+    # Create the figure
+    _, axs = plt.subplots(3, 5, figsize=(30, 15))
+
+    # Consider only errors & correction on the shifter that are being scanned
+    if restricted:
+        shifts = np.zeros(14) * λ.unit
+        shifts_total_opd = np.zeros(14) * λ.unit
+        shifts_total_opd[scan_on[0] - 1] = σ[scan_on[0] - 1]
+        shifts_total_opd[scan_on[1] - 1] = σ[scan_on[1] - 1]
+
+    # Consider all shifter errors & corrections
+    else:
+        shifts = φ.copy()
+        shifts_total_opd = σ.copy()
+
+    signals = get_input_fields(angular_separation=0*u.mas)
+
+    for i, scan1 in enumerate(scan):
+        for j, scan2 in enumerate(scan):
+            shifts[scan_on[0] - 1] = scan1
+            shifts[scan_on[1] - 1] = scan2
+
+            nulls, darks, bright = kn_fields(beams=signals, shifts=shifts, shifts_total_opd=shifts_total_opd)
+            
+            kernels = np.array([
+                    np.abs(darks[2*i])**2 - np.abs(darks[2*i+1])**2
+                for i in range(3)])
+
+            for k, null in enumerate(nulls):
+                nulls_map[k, i, j] = np.abs(null)**2
+            for k, dark in enumerate(darks):
+                darks_map[k, i, j] = np.abs(dark)**2
+            for k, kernel in enumerate(kernels):
+                kernels_map[k, i, j] = kernel
+            bright_map[i, j] = np.abs(bright)**2
+
+    for k in range(3):
+        p = axs[k, 0]
+        p.set_title(f"Null {k+1}")
+        im = p.imshow(
+            nulls_map[k],
+            extent=[0, L.value, 0, L.value],
+            vmin=np.min(nulls_map),
+            vmax=np.max(nulls_map),
+        )
+        p.scatter(
+            CALIBRATED_SHIFTS[scan_on[1] - 1],
+            CALIBRATED_SHIFTS[scan_on[0] - 1],
+            color="red",
+            edgecolors="white",
+            s=100,
+        )
+        p.scatter(
+            IDEAL_SHIFTS[scan_on[1] - 1],
+            IDEAL_SHIFTS[scan_on[0] - 1],
+            color="green",
+            edgecolors="white",
+            s=100,
+        )
+        p.set_xlabel(f"Parameter {scan_on[1]}")
+        p.set_ylabel(f"Parameter {scan_on[0]}")
+        plt.colorbar(im)
+
+    for k in range(6):
+        p = axs[k // 2, k % 2 + 1]
+        p.set_title(f"Dark {k+1}")
+        im = p.imshow(
+            darks_map[k],
+            extent=[0, L.value, 0, L.value],
+            vmin=np.min(darks_map),
+            vmax=np.max(darks_map),
+            cmap="hot",
+        )
+        p.scatter(
+            CALIBRATED_SHIFTS[scan_on[1] - 1],
+            CALIBRATED_SHIFTS[scan_on[0] - 1],
+            color="red",
+            edgecolors="white",
+            s=100,
+        )
+        p.scatter(
+            IDEAL_SHIFTS[scan_on[1] - 1],
+            IDEAL_SHIFTS[scan_on[0] - 1],
+            color="green",
+            edgecolors="white",
+            s=100,
+        )
+        p.set_xlabel(f"Parameter {scan_on[1]}")
+        p.set_ylabel(f"Parameter {scan_on[0]}")
+        plt.colorbar(im)
+
+    for k in range(3):
+        p = axs[k, 3]
+        p.set_title(f"Kernel {k+1}")
+        im = p.imshow(
+            kernels_map[k],
+            extent=[0, L.value, 0, L.value],
+            vmin=np.min(kernels_map),
+            vmax=np.max(kernels_map),
+            cmap="bwr",
+        )
+        p.scatter(
+            CALIBRATED_SHIFTS[scan_on[1] - 1],
+            CALIBRATED_SHIFTS[scan_on[0] - 1],
+            color="red",
+            edgecolors="white",
+            s=100,
+        )
+        p.scatter(
+            IDEAL_SHIFTS[scan_on[1] - 1],
+            IDEAL_SHIFTS[scan_on[0] - 1],
+            color="green",
+            edgecolors="white",
+            s=100,
+        )
+        p.set_xlabel(f"Parameter {scan_on[1]}")
+        p.set_ylabel(f"Parameter {scan_on[0]}")
+        plt.colorbar(im)
+
+    p = axs[1, 4]
+    p.set_title(f"Bright")
+    im = p.imshow(bright_map, extent=[0, L.value, 0, L.value], cmap="gray")
+    p.scatter(
+        CALIBRATED_SHIFTS[scan_on[1] - 1],
+        CALIBRATED_SHIFTS[scan_on[0] - 1],
+        color="red",
+        edgecolors="white",
+        s=100,
+    )
+    p.scatter(
+        IDEAL_SHIFTS[scan_on[1] - 1],
+        IDEAL_SHIFTS[scan_on[0] - 1],
+        color="green",
+        edgecolors="white",
+        s=100,
+    )
+    p.set_xlabel(f"Parameter {scan_on[1]}")
+    p.set_ylabel(f"Parameter {scan_on[0]}")
+    plt.colorbar(im)
+
+    axs[0, 4].axis("off")
+    axs[2, 4].axis("off")
+
+    plt.show()
