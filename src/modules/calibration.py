@@ -4,6 +4,7 @@ from LRFutils import color
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from scipy.stats import linregress
+from copy import deepcopy as copy
 
 from . import signals
 from . import phase
@@ -353,6 +354,8 @@ def compare_approaches(f:u.Quantity, Δt:u.Quantity, λ:u.Quantity):
 
 def scan(
     scan_on,
+    kn: KernelNuller,
+    λ: u.Quantity,
     restricted: bool = False,
 ):
     """
@@ -361,14 +364,16 @@ def scan(
 
     Parameters
     ----------
-    - kn: An instance of the KernelNuller class.
-    - beams: A list of 2D arrays, each representing a beam.
-    - optimized_parameters: A list of 14 floats, the optimized parameters.
+    - scan_on: List of two integers, the parameters to scan
+    - kn: KernelNuller object
+    - λ: Wavelength of the observation
+    - restricted: Boolean, if True, consider only the errors and corrections
 
     Returns
     -------
     - None
     """
+    kn = copy(kn) # ensure not editing a reference
 
     # Scan shift power parameter space
     scan = np.linspace(0, λ.value, 101, endpoint=True) * λ.unit
@@ -382,26 +387,30 @@ def scan(
     # Create the figure
     _, axs = plt.subplots(3, 5, figsize=(30, 15))
 
+    φ = kn.φ.copy()
+    σ = kn.σ.copy()
+
     # Consider only errors & correction on the shifter that are being scanned
     if restricted:
-        shifts = np.zeros(14) * λ.unit
-        shifts_total_opd = np.zeros(14) * λ.unit
-        shifts_total_opd[scan_on[0] - 1] = σ[scan_on[0] - 1]
-        shifts_total_opd[scan_on[1] - 1] = σ[scan_on[1] - 1]
+        kn.φ = np.zeros(14) * λ.unit
+        kn.σ = np.zeros(14) * λ.unit
+        kn.σ[scan_on[0] - 1] = σ[scan_on[0] - 1]
+        kn.σ[scan_on[1] - 1] = σ[scan_on[1] - 1]
 
-    # Consider all shifter errors & corrections
-    else:
-        shifts = φ.copy()
-        shifts_total_opd = σ.copy()
-
-    signals = get_input_fields(angular_separation=0*u.mas)
+    ψ = signals.get_input_fields(
+        a=1,
+        θ=0 * u.rad,
+        α=0 * u.rad,
+        λ=λ,
+        p=np.array([[0, 0], [0, 0], [0, 0], [0, 0]]) * u.m,
+    )
 
     for i, scan1 in enumerate(scan):
         for j, scan2 in enumerate(scan):
-            shifts[scan_on[0] - 1] = scan1
-            shifts[scan_on[1] - 1] = scan2
+            kn.φ[scan_on[0] - 1] = scan1
+            kn.φ[scan_on[1] - 1] = scan2
 
-            nulls, darks, bright = kn_fields(beams=signals, shifts=shifts, shifts_total_opd=shifts_total_opd)
+            nulls, darks, bright = kn.propagate_fields(ψ=ψ, λ=λ)
             
             kernels = np.array([
                     np.abs(darks[2*i])**2 - np.abs(darks[2*i+1])**2
@@ -420,20 +429,20 @@ def scan(
         p.set_title(f"Null {k+1}")
         im = p.imshow(
             nulls_map[k],
-            extent=[0, L.value, 0, L.value],
+            extent=[0, λ.value, 0, λ.value],
             vmin=np.min(nulls_map),
             vmax=np.max(nulls_map),
         )
         p.scatter(
-            CALIBRATED_SHIFTS[scan_on[1] - 1],
-            CALIBRATED_SHIFTS[scan_on[0] - 1],
+            φ[scan_on[1] - 1],
+            φ[scan_on[0] - 1],
             color="red",
             edgecolors="white",
             s=100,
         )
         p.scatter(
-            IDEAL_SHIFTS[scan_on[1] - 1],
-            IDEAL_SHIFTS[scan_on[0] - 1],
+            phase.bound(-σ, λ)[scan_on[1] - 1],
+            phase.bound(-σ, λ)[scan_on[0] - 1],
             color="green",
             edgecolors="white",
             s=100,
@@ -447,21 +456,21 @@ def scan(
         p.set_title(f"Dark {k+1}")
         im = p.imshow(
             darks_map[k],
-            extent=[0, L.value, 0, L.value],
+            extent=[0, λ.value, 0, λ.value],
             vmin=np.min(darks_map),
             vmax=np.max(darks_map),
             cmap="hot",
         )
         p.scatter(
-            CALIBRATED_SHIFTS[scan_on[1] - 1],
-            CALIBRATED_SHIFTS[scan_on[0] - 1],
+            φ[scan_on[1] - 1],
+            φ[scan_on[0] - 1],
             color="red",
             edgecolors="white",
             s=100,
         )
         p.scatter(
-            IDEAL_SHIFTS[scan_on[1] - 1],
-            IDEAL_SHIFTS[scan_on[0] - 1],
+            phase.bound(-σ, λ)[scan_on[1] - 1],
+            phase.bound(-σ, λ)[scan_on[0] - 1],
             color="green",
             edgecolors="white",
             s=100,
@@ -475,21 +484,21 @@ def scan(
         p.set_title(f"Kernel {k+1}")
         im = p.imshow(
             kernels_map[k],
-            extent=[0, L.value, 0, L.value],
+            extent=[0, λ.value, 0, λ.value],
             vmin=np.min(kernels_map),
             vmax=np.max(kernels_map),
             cmap="bwr",
         )
         p.scatter(
-            CALIBRATED_SHIFTS[scan_on[1] - 1],
-            CALIBRATED_SHIFTS[scan_on[0] - 1],
+            φ[scan_on[1] - 1],
+            φ[scan_on[0] - 1],
             color="red",
             edgecolors="white",
             s=100,
         )
         p.scatter(
-            IDEAL_SHIFTS[scan_on[1] - 1],
-            IDEAL_SHIFTS[scan_on[0] - 1],
+            phase.bound(-σ, λ)[scan_on[1] - 1],
+            phase.bound(-σ, λ)[scan_on[0] - 1],
             color="green",
             edgecolors="white",
             s=100,
@@ -500,17 +509,17 @@ def scan(
 
     p = axs[1, 4]
     p.set_title(f"Bright")
-    im = p.imshow(bright_map, extent=[0, L.value, 0, L.value], cmap="gray")
+    im = p.imshow(bright_map, extent=[0, λ.value, 0, λ.value], cmap="gray")
     p.scatter(
-        CALIBRATED_SHIFTS[scan_on[1] - 1],
-        CALIBRATED_SHIFTS[scan_on[0] - 1],
+        φ[scan_on[1] - 1],
+        φ[scan_on[0] - 1],
         color="red",
         edgecolors="white",
         s=100,
     )
     p.scatter(
-        IDEAL_SHIFTS[scan_on[1] - 1],
-        IDEAL_SHIFTS[scan_on[0] - 1],
+        phase.bound(-σ, λ)[scan_on[1] - 1],
+        phase.bound(-σ, λ)[scan_on[0] - 1],
         color="green",
         edgecolors="white",
         s=100,
