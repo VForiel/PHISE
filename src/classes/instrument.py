@@ -7,14 +7,13 @@ from IPython.display import display
 from io import BytesIO
 from copy import deepcopy as copy
 
-from ..modules import signals
-from ..modules import telescopes
-from ..modules import coordinates
-from ..modules import signals
-from . import kernel_nuller
-from .kernel_nuller import KernelNuller
-from . import source
-from .source import Source
+from src.modules import signals
+from src.modules import telescopes
+from src.modules import coordinates
+from src.modules import signals
+from src.classes import kernel_nuller
+from src.classes.kernel_nuller import KernelNuller
+from src.classes.source import Source
 
 class Instrument:
     def __init__(
@@ -54,6 +53,7 @@ class Instrument:
             h:u.Quantity,
             f:float,
             Δt:u.Quantity,
+            input_ce_rms:u.Quantity,
         ) -> np.ndarray[float]:
         """
         Simulate a 4 telescope Kernel-Nuller observation
@@ -65,6 +65,7 @@ class Instrument:
         - h: Hour angle
         - f: Flux of the star (photons/s)
         - Δt: Integration time
+        - input_ce_rms: RMS of the input complex electric field
 
         Returns
         -------
@@ -80,12 +81,19 @@ class Instrument:
         d_tot = np.zeros(6)
         k_tot = np.zeros(3)
         b_tot = 0
+
+        input_perturbation = np.random.normal(0, input_ce_rms.to(self.λ.unit).value, 4) * self.λ.unit
+
         for s in sources:
             ψ = signals.get_input_fields(a=f*s.c, θ=s.θ, α=s.α, λ=self.λ, p=p)
+            ψ *= np.exp(1j * input_perturbation.value / self.λ.value * 2 * np.pi)
+
             d, k, b = self.kn.observe(ψ, self.λ, f, Δt)
             d_tot += d
             k_tot += k
             b_tot += b
+
+        
 
         return d_tot, k_tot, b_tot
 

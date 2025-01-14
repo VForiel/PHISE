@@ -14,7 +14,8 @@ class Scene:
             Δh: u.Quantity,
             f:u.Quantity,
             Δt: u.Quantity,
-            sources: list[Source] = None
+            input_ce_rms: u.Quantity,
+            sources: list[Source] = None,
         ):
         """
         Parameters
@@ -34,6 +35,7 @@ class Scene:
         self.Δh = Δh
         self.f = f
         self.Δt = Δt
+        self.input_ce_rms = input_ce_rms
         self.sources = sources if sources else []
 
         self.p = telescopes.project_position(r=self.instrument.r, h=self.h, l=self.instrument.l, δ=self.δ)
@@ -50,7 +52,68 @@ class Scene:
         - np.ndarray: Kernel outputs (3 float values)
         - float: Bright output
         """
-        return self.instrument.observe(sources=self.sources, δ=self.δ, h=self.h, f=self.f, Δt=self.Δt)
+        return self.instrument.observe(sources=self.sources, δ=self.δ, h=self.h, f=self.f, Δt=self.Δt, input_ce_rms=self.input_ce_rms)
+    
+    def instant_serie_observation(self, N:int):
+        """
+        Simulate the observation of the scene for a given number of times
+
+        Parameters
+        ----------
+        - N: Number of observations
+
+        Returns
+        -------
+        - dict[str, np.ndarray]
+            - 'darks': Dark outputs for each observation (Nx6)
+            - 'kernels': Kernel outputs for each observation (Nx3)
+            - 'brights': Bright outputs for each observation (N)
+        """
+        
+        darks = np.empty((N, 6))
+        kernels = np.empty((N, 3))
+        brights = np.empty(N)
+
+        for i in range(N):
+            darks[i], kernels[i], brights[i] = self.observe()
+
+        return {"darks": darks, "kernels": kernels, "brights": brights}
+    
+    def time_serie_observation(self, nights:int):
+        """
+        Simulate the observation of the scene over all the observation time and for several nights
+
+        Parameters
+        ----------
+        - nights: Number of nights
+
+        Returns
+        -------
+        - dict[str, np.ndarray]
+            - 'darks': Dark outputs for each observation (Nx6)
+            - 'kernels': Kernel outputs for each observation (Nx3)
+            - 'brights': Bright outputs for each observation (N)
+            with N = nights * Δh/Δt -> Number of observations
+        - np.ndarray: Hourangles of the observations
+        """
+
+        H = self.h
+
+        time_resolution = int(self.Δh.to(u.hourangle).value / self.Δt.to(u.hour).value)
+        hs = np.linspace(self.h-self.Δh/2, self.h+self.Δh/2, time_resolution)
+
+        darks = np.empty((nights, time_resolution, 6))
+        kernels = np.empty((nights, time_resolution, 3))
+        brights = np.empty((nights, time_resolution))
+
+        for n in range(nights):
+            for i, h in enumerate(hs):
+                self.h = h
+                darks[n,i], kernels[n,i], brights[n,i] = self.observe()
+
+        self.h = H
+
+        return {"darks": darks, "kernels": kernels, "brights": brights}, hs
 
     def get_trasmission_map(self, N:int) -> np.ndarray[float]:
         """
