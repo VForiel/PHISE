@@ -180,7 +180,13 @@ def obstruction(
     - plot: Boolean, if True, plot the optimization process
     """
 
-    def maximize_bright(kn:KernelNuller, ψ, n):
+    if plot:
+        fig, axs = plt.subplots(3, 3, figsize=(30, 20))
+        for i in range(7):
+            axs.flatten()[i].set_xlabel("Phase shift")
+            axs.flatten()[i].set_ylabel("Throughput")
+
+    def maximize_bright(kn:KernelNuller, ψ, n, plt_coords=None):
 
         x = np.linspace(0,λ.value,N)
         y = np.empty(N)
@@ -197,16 +203,15 @@ def obstruction(
         kn.φ[n-1] = (np.mod(popt[0]+λ.value/4, λ.value) * λ.unit).to(kn.φ.unit)
 
         if plot:
-            plt.scatter(x, y, label='Data', color='tab:blue')
-            plt.plot(x, sin(x, *popt), label='Fit', color='tab:orange')
-            plt.axvline(x=np.mod(popt[0]+λ.value/4, λ.value), color='k', linestyle='--', label='Optimal phase shift')
-            plt.xlabel(f"Phase shift ({λ.unit})")
-            plt.ylabel("Bright throughput")
-            plt.title(f"Bright($\phi_{n}$)")
-            plt.legend()
-            plt.show()
+            axs[*plt_coords].set_title(f"$|B(\phi{n})|$")
+            axs[*plt_coords].scatter(x, y, label='Data', color='tab:blue')
+            axs[*plt_coords].plot(x, sin(x, *popt), label='Fit', color='tab:orange')
+            axs[*plt_coords].axvline(x=np.mod(popt[0]+λ.value/4, λ.value), color='k', linestyle='--', label='Optimal phase shift')
+            axs[*plt_coords].set_xlabel(f"Phase shift ({λ.unit})")
+            axs[*plt_coords].set_ylabel("Bright throughput")
+            axs[*plt_coords].legend()
 
-    def minimize_kernel(kn, ψ, n, i):
+    def minimize_kernel(kn, ψ, n, m, plt_coords=None):
 
         x = np.linspace(0,λ.value,N)
         y = np.empty(N)
@@ -214,25 +219,24 @@ def obstruction(
         for i in range(N):
             kn.φ[n-1] = i * λ / N
             _, k, _ = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
-            y[i] = np.sum(np.abs(k)) / f.to(1/Δt.unit).value
+            y[i] = np.abs(k[m-1]) / f.to(1/Δt.unit).value
 
         def sin(x, x0):
-            return 1/8 * np.abs(np.sin((x-x0)/λ.value*2*np.pi))
+            return 1/8 * np.abs(np.sin((x-x0)/λ.value*2*np.pi))/2
         popt, pcov = curve_fit(sin, x, y, p0=[0])
 
         kn.φ[n-1] = (np.mod(popt[0], λ.value) * λ.unit).to(kn.φ.unit)
 
         if plot:
-            plt.scatter(x, y, label='Data', color='tab:blue')
-            plt.plot(x, sin(x, *popt), label='Fit', color='tab:orange')
-            plt.axvline(x=np.mod(popt[0], λ.value), color='k', linestyle='--', label='Optimal phase shift')
-            plt.xlabel(f"Phase shift ({λ.unit})")
-            plt.ylabel("Kernel throughput")
-            plt.title(f"Kernels($\phi_{n}$)")
-            plt.legend()
-            plt.show()
+            axs[*plt_coords].set_title(f"$K_{m}(\phi{n})$")
+            axs[*plt_coords].scatter(x, y, label='Data', color='tab:blue')
+            axs[*plt_coords].plot(x, sin(x, *popt), label='Fit', color='tab:orange')
+            axs[*plt_coords].axvline(x=np.mod(popt[0], λ.value), color='k', linestyle='--', label='Optimal phase shift')
+            axs[*plt_coords].set_xlabel(f"Phase shift ({λ.unit})")
+            axs[*plt_coords].set_ylabel("Kernel throughput")
+            axs[*plt_coords].legend()
 
-    def maximize_darks(kn, ψ, n, ds):
+    def maximize_darks(kn, ψ, n, ds, plt_coords=None):
 
         x = np.linspace(0,λ.value,N)
         y = np.empty(N)
@@ -243,44 +247,48 @@ def obstruction(
             y[i] = np.sum(np.abs(d[np.array(ds)-1])) / f.to(1/Δt.unit).value
 
         def sin(x, x0):
-            return 1/4 * (np.sin((x-x0)/λ.value*2*np.pi)+1)/2
+            return 1/8 + 1/8 * (np.sin((x-x0)/λ.value*2*np.pi)+1)/2
         popt, pcov = curve_fit(sin, x, y, p0=[0], maxfev = 100_000)
 
         kn.φ[n-1] = (np.mod(popt[0]+λ.value/4, λ.value) * λ.unit).to(kn.φ.unit)
 
         if plot:
-            plt.scatter(x, y, label='Data', color='tab:blue')
-            plt.plot(x, sin(x, *popt), label='Fit', color='tab:orange')
-            plt.axvline(x=np.mod(popt[0]+λ.value/4, λ.value), color='k', linestyle='--', label='Optimal phase shift')
-            plt.xlabel(f"Phase shift ({λ.unit})")
-            plt.ylabel(f"Dark pair {ds} throughput")
-            plt.title(f"Darks{ds}($\phi_{n}$)")
-            plt.legend()
-            plt.show()
+            axs[*plt_coords].set_title(f"$|D_{ds[0]}(\phi{n})| + |D_{ds[0]}(\phi{n})|$")
+            axs[*plt_coords].scatter(x, y, label='Data', color='tab:blue')
+            axs[*plt_coords].plot(x, sin(x, *popt), label='Fit', color='tab:orange')
+            axs[*plt_coords].axvline(x=np.mod(popt[0]+λ.value/4, λ.value), color='k', linestyle='--', label='Optimal phase shift')
+            axs[*plt_coords].set_xlabel(f"Phase shift ({λ.unit})")
+            axs[*plt_coords].set_ylabel(f"Dark pair {ds} throughput")
+            axs[*plt_coords].legend()
 
     a = (1+0j) * np.sqrt(f) * np.sqrt(1/4)
 
     # Bright maximization
     ψ = np.array([a, a, 0, 0])
-    maximize_bright(kn, ψ, 2)
+    maximize_bright(kn, ψ, 2, plt_coords=(0,0))
 
     ψ = np.array([0, 0, a, a])
-    maximize_bright(kn, ψ, 4)
+    maximize_bright(kn, ψ, 4, plt_coords=(0,1))
 
     ψ = np.array([a, 0, a, 0])
-    maximize_bright(kn, ψ, 7)
+    maximize_bright(kn, ψ, 7, plt_coords=(0,2))
 
     # Darks maximization
     ψ = np.array([a, 0, -a, 0])
-    maximize_darks(kn, ψ, 8, [1,2])
+    maximize_darks(kn, ψ, 8, [1,2], plt_coords=(1,0))
 
     # Kernel minimization
     ψ = np.array([a, 0, 0, 0])
-    minimize_kernel(kn, ψ, 11, 1)
-    minimize_kernel(kn, ψ, 13, 2)
-    minimize_kernel(kn, ψ, 14, 3)
+    minimize_kernel(kn, ψ, 11, 1, plt_coords=(2,0))
+    minimize_kernel(kn, ψ, 13, 2, plt_coords=(2,1))
+    minimize_kernel(kn, ψ, 14, 3, plt_coords=(2,2))
 
     kn.φ = phase.bound(kn.φ, λ)
+
+    if plot:
+        axs[1,1].axis('off')
+        axs[1,2].axis('off')
+        plt.show()
 
 #--------------------------------------------------------------------------------
 
