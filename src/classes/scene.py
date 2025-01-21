@@ -1,5 +1,6 @@
 import numpy as np
 import astropy.units as u
+from copy import deepcopy as copy
 
 from .instrument import Instrument
 from .source import Source
@@ -37,8 +38,52 @@ class Scene:
         self.Δt = Δt
         self.input_ce_rms = input_ce_rms
         self.sources = sources if sources else []
-
         self.p = telescopes.project_position(r=self.instrument.r, h=self.h, l=self.instrument.l, δ=self.δ)
+
+    def copy(self,
+            instrument:Instrument = None,
+            δ:u.Quantity = None,    
+            h:u.Quantity = None,
+            Δh: u.Quantity = None,
+            f:u.Quantity = None,
+            Δt: u.Quantity = None,
+            input_ce_rms: u.Quantity = None,
+            sources: list[Source] = None,
+            **kwargs,
+        ) -> "Scene":
+        """
+        Return a copy of the Scene object with some parameters changed.
+
+        Parameters
+        ----------
+        - instrument: Instrument object
+        - δ: Declination of the star
+        - h: Central hourangle of the observation
+        - Δh: Hourangle range of the observation
+        - f: Star photon flux
+        - Δt:Exposition time
+        - sources: List of Source objects
+        - **kwargs: Additional parameters to edit the instrument, the kernel-nuller or the sources
+        """
+
+        return Scene(
+            instrument = instrument.copy(**kwargs) if instrument is not None else self.instrument.copy(**kwargs),
+            δ = copy(δ) if δ is not None else copy(self.δ),
+            h = copy(h) if h is not None else copy(self.h),
+            Δh = copy(Δh) if Δh is not None else copy(self.Δh),
+            f = copy(f) if f is not None else copy(self.f),
+            Δt = copy(Δt) if Δt is not None else copy(self.Δt),
+            input_ce_rms = copy(input_ce_rms) if input_ce_rms is not None else copy(self.input_ce_rms),
+            sources = copy(sources) if sources is not None else [s.copy(**kwargs) for s in self.sources],
+        )
+    
+    @property
+    def kn(self):
+        return self.instrument.kn
+    
+    @kn.setter
+    def kn(self, kn):
+        self.instrument.kn = kn
 
     # Observation -------------------------------------------------------------
 

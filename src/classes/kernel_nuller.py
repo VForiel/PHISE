@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from io import BytesIO
 import os
 import ipywidgets as widgets
+from copy import deepcopy as copy
 
 from ..modules import mmi
 from ..modules import phase
@@ -22,6 +23,29 @@ class KernelNuller():
         """
         self._φ = φ
         self.σ = σ
+
+    def copy(self,
+            φ:np.ndarray[u.Quantity] = None,
+            σ:np.ndarray[u.Quantity] = None,
+            **kwargs
+        ) -> "KernelNuller":
+        """
+        Create a copy of the Kernel-Nuller object with some parameters changed.
+
+        Parameters
+        ----------
+        - φ: Array of 14 injected OPD
+        - σ: Array of 14 intrasic OPD error
+
+        Returns
+        -------
+        - Copied Kernel-Nuller object
+        """
+
+        return KernelNuller(
+            φ = copy(φ) if φ is not None else copy(self.φ),
+            σ = copy(σ) if σ is not None else copy(self.σ),
+        )
 
     @property
     def φ(self):
@@ -55,7 +79,7 @@ class KernelNuller():
             raise ValueError("σ must have a shape of (14,)")
         self._σ = σ
 
-    # Electric fields propagation -------------------------------------------------
+    # Electric fields propagation ---------------------------------------------
 
     def propagate_fields(
             self,
@@ -82,7 +106,7 @@ class KernelNuller():
 
         return propagate_fields_njit(ψ=ψ, φ=φ, σ=σ, λ=λ)
 
-    # Observation -----------------------------------------------------------------
+    # Observation -------------------------------------------------------------
 
     def observe(
             self,

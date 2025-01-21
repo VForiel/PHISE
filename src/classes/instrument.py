@@ -44,6 +44,39 @@ class Instrument:
         self.fov = fov
         self.kn = kn
 
+    def copy(
+            self,
+            λ:u.quantity=None,
+            Δλ:u.quantity=None,
+            r:np.ndarray[u.Quantity]=None,
+            l:u.quantity=None,
+            fov:u.quantity=None,
+            kn:KernelNuller=None,
+            **kwargs,
+        ) -> "Instrument":
+        """
+        Create a copy of the instrument with some parameters changed.
+
+        Parameters
+        ----------
+        - λ: Wavelength
+        - Δλ: Bandwidth
+        - r: Relative telescope positions (Nx2 array)
+        - l: Latitude of reference telescope
+        - fov: Field of view
+        - kn: Kernel-Nuller object
+        - **kwargs: Parameters to change on the kernel-nuller object (if no new kn is provided)
+        """
+
+        return Instrument(
+            λ = copy(λ) if λ is not None else copy(self.λ),
+            Δλ = copy(Δλ) if Δλ is not None else copy(self.Δλ),
+            r = copy(r) if r is not None else copy(self.r),
+            l = copy(l) if l is not None else copy(self.l),
+            fov = copy(fov) if fov is not None else copy(self.fov),
+            kn = kn.copy(**kwargs) if kn is not None else self.kn.copy(**kwargs),
+        )
+
     # Observation -------------------------------------------------------------
 
     def observe(
