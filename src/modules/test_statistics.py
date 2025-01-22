@@ -20,8 +20,8 @@ def get_vectors(nmc:int, size:int, scene_h1:Scene):
         dists_h0 = scene_h0.instant_serie_observation(size)
         dists_h1 = scene_h1.instant_serie_observation(size)
         for k in range(3):
-            T0[k,i] = dists_h0['kernels'][:,k]
-            T1[k,i] = dists_h1['kernels'][:,k]
+            T0[k,i] = dists_h0['kernels'][:,k] / scene_h0.f / scene_h0.Δt
+            T1[k,i] = dists_h1['kernels'][:,k] / scene_h0.f / scene_h0.Δt
     print(f"Generation complete ✅")
     return T0, T1, TREF
 
@@ -223,4 +223,42 @@ def plot_roc(t0, t1, tref, test_statistics):
             axs[k].legend()
 
     plt.suptitle(f"ROC curves")
+    plt.show()
+
+#==============================================================================
+# P-value
+#==============================================================================
+
+def plot_p_values(test_statistics, T1, TREF):
+
+    col = min(2, len(test_statistics))
+    row = int(np.ceil(len(test_statistics) / col))
+
+    _, axs = plt.subplots(row, col, figsize=(5*col, 5*row))
+    axs = axs.flatten()
+    
+    t = 0
+    for ts_name, ts in test_statistics.items():
+        cumulated_values = np.zeros(T1.shape[1])
+        sup = 0
+        for k in range(4):
+            if k < 3:
+                values = ts(T1[k], TREF[k])
+                cumulated_values += values / 3
+                label = f"Kernel {k+1}"
+            elif k == 3:
+                values = cumulated_values
+                label = "Cumulated"
+            sup = max(sup, np.max(values))
+            thresholds = np.linspace(0, sup, 1000)
+            p_values = np.zeros(len(thresholds))
+            for i, threshold in enumerate(thresholds):
+                p_values[i] = np.sum(values > threshold) / len(values)
+            axs[t].plot(thresholds, p_values, label=label)
+        axs[t].hlines(0.05, 0, sup, color='red', linestyle='dashed')
+        axs[t].set_xlabel("Threshold")
+        axs[t].set_ylabel("P-value")
+        axs[t].set_title(f"P-values for {ts_name}")
+        axs[t].legend()
+        t+=1
     plt.show()
