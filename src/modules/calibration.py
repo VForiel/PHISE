@@ -117,12 +117,16 @@ def genetic(
 
     kn.φ = phase.bound(kn.φ, λ)
 
+    history = {
+        "bright": np.array(bright_history),
+        "kernel": np.array(kernel_history),
+        "shifters": np.array(shifters_history),
+    }
+
     if plot:
-        plot_genetic_history({
-            "bright": np.array(bright_history),
-            "kernel": np.array(kernel_history),
-            "shifters": np.array(shifters_history),
-        })
+        plot_genetic_history(history)
+
+    return kn, history
 
 def plot_genetic_history(history: dict[str, np.ndarray[float]]):
     bright_evol = history["bright"]
@@ -424,7 +428,7 @@ def compare_approaches(f:u.Quantity, Δt:u.Quantity, λ:u.Quantity):
     β_res = 10
     βs, dβ = np.linspace(0.5, 0.999, β_res, retstep=True)
     Ns = [10, 100, 1000, 10_000, 100_000]
-    samples = 10
+    samples = 100
 
     # fig, axs = plt.subplots(1, 1, figsize=(5, 5))
 
@@ -433,7 +437,7 @@ def compare_approaches(f:u.Quantity, Δt:u.Quantity, λ:u.Quantity):
         for i in range(samples):
             print(f'Gen.: β={β:.3f}, sample={i+1}/{samples}          ', end='\r')
             kn = KernelNuller(φ=np.zeros(14)*λ, σ=np.random.uniform(0, 1, 14)*λ)
-            history = genetic(kn=kn, β=β, λ=λ, f=f, Δt=Δt, verbose=False)
+            kn, history = genetic(kn=kn, β=β, λ=λ, f=f, Δt=Δt, verbose=False)
             ψ = np.ones(4) * (1+0j) * np.sqrt(1/4)
             _, d, b = kn.propagate_fields(ψ=ψ, λ=λ)
             di = np.abs(d)**2
