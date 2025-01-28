@@ -68,6 +68,8 @@ class Instrument:
         - **kwargs: Parameters to change on the kernel-nuller object (if no new kn is provided)
         """
 
+        print(kwargs)
+
         return Instrument(
             λ = copy(λ) if λ is not None else copy(self.λ),
             Δλ = copy(Δλ) if Δλ is not None else copy(self.Δλ),
@@ -159,7 +161,7 @@ class Instrument:
         p = telescopes.project_position(r=self.r, h=h, l=self.l, δ=δ).to(u.m).value
         λ = self.λ.to(u.m).value
 
-        return get_transmission_map_njit(N=N, φ=φ, σ=σ, p=p, λ=λ, fov=fov)
+        return get_transmission_map_njit(N=N, φ=φ, σ=σ, p=p, λ=λ, fov=fov, output_order=self.kn.output_order)
     
     # Plotting ----------------------------------------------------------------
 
@@ -305,6 +307,7 @@ def get_transmission_map_njit(
         p: np.ndarray[float],
         λ: float,
         fov: float,
+        output_order: np.ndarray[int]
     ) -> tuple[np.ndarray[complex], np.ndarray[complex], np.ndarray[float]]:
     """
     Generate all the kernel-nuller transmission maps for a given resolution
@@ -317,6 +320,7 @@ def get_transmission_map_njit(
     - p: Projected telescope positions (in meter)
     - λ: Wavelength (in meter)
     - fov: Field of view in mas
+    - output_order: Order of the outputs
 
     Returns
     -------
@@ -342,7 +346,7 @@ def get_transmission_map_njit(
 
             ψ = signals.get_input_fields_njit(a=1, θ=θ, α=α, λ=λ, p=p)
 
-            n, d, _ = kernel_nuller.propagate_fields_njit(ψ, φ, σ, λ)
+            n, d, _ = kernel_nuller.propagate_fields_njit(ψ, φ, σ, λ, output_order)
 
             k = np.array([np.abs(d[2*i])**2 - np.abs(d[2*i+1])**2 for i in range(3)])
 

@@ -13,7 +13,11 @@ from ..modules import phase
 from .source import Source
 
 class KernelNuller():
-    def __init__(self, φ:np.ndarray[u.Quantity], σ:np.ndarray[u.Quantity]):
+    def __init__(
+            self, φ:np.ndarray[u.Quantity],
+            σ:np.ndarray[u.Quantity],
+            output_order:np.ndarray[int]=None
+        ):
         """Kernel-Nuller object.
 
         Parameters
@@ -23,10 +27,12 @@ class KernelNuller():
         """
         self._φ = φ
         self.σ = σ
+        self.output_order = output_order if output_order is not None else np.array([0, 1, 2, 3, 4, 5])
 
     def copy(self,
             φ:np.ndarray[u.Quantity] = None,
             σ:np.ndarray[u.Quantity] = None,
+            output_order:np.ndarray[int] = None,
             **kwargs
         ) -> "KernelNuller":
         """
@@ -36,15 +42,19 @@ class KernelNuller():
         ----------
         - φ: Array of 14 injected OPD
         - σ: Array of 14 intrasic OPD error
+        - output_order: Order of the outputs
 
         Returns
         -------
         - Copied Kernel-Nuller object
         """
 
+        print(kwargs, output_order)
+
         return KernelNuller(
             φ = copy(φ) if φ is not None else copy(self.φ),
             σ = copy(σ) if σ is not None else copy(self.σ),
+            output_order = copy(output_order) if output_order is not None else copy(self.output_order),
         )
 
     @property
@@ -104,7 +114,7 @@ class KernelNuller():
         σ = self.σ.to(λ.unit).value
         λ = λ.value
 
-        return propagate_fields_njit(ψ=ψ, φ=φ, σ=σ, λ=λ)
+        return propagate_fields_njit(ψ=ψ, φ=φ, σ=σ, λ=λ, output_order=self.output_order)
 
     # Observation -------------------------------------------------------------
 
@@ -133,7 +143,7 @@ class KernelNuller():
         φ = self.φ.to(λ.unit).value
         σ = self.σ.to(λ.unit).value
         Δt = Δt.to(u.s).value
-        return observe_njit(ψ, φ, σ, λ.value, Δt)
+        return observe_njit(ψ, φ, σ, λ.value, Δt, self.output_order)
     
     # Plotting --------------------------------------------------------------------
 
@@ -405,6 +415,7 @@ def propagate_fields_njit(
         φ: np.ndarray[float],
         σ: np.ndarray[float],
         λ: float,
+        output_order:np.ndarray[int]
     ) -> tuple[np.ndarray[float], np.ndarray[float], np.ndarray[float], float]:
     """
     Simulate a 4 telescope Kernel-Nuller propagation using a numeric approach
@@ -415,6 +426,7 @@ def propagate_fields_njit(
     - φ: Array of 14 injected OPD (in wavelenght unit)
     - σ: Array of 14 intrasic OPD error (in wavelenght unit)
     - λ: Wavelength of the light
+    - output_order: Order of the outputs
 
     Returns
     -------
@@ -466,6 +478,8 @@ def propagate_fields_njit(
         dtype=np.complex128,
     )
 
+    darks = darks[output_order]
+
     return nulls, darks, bright
 
 # Observation -----------------------------------------------------------------
@@ -476,7 +490,8 @@ def observe_njit(
     φ: u.Quantity,
     σ: u.Quantity,
     λ: u.Quantity,
-    Δt:float = 1,
+    Δt:float,
+    output_order:np.ndarray[int],
 ) -> np.ndarray[float]:
     """
     Simulate a 4 telescope Kernel-Nuller propagation using a numeric approach
@@ -488,6 +503,7 @@ def observe_njit(
     - σ: Array of 14 intrasic OPD
     - λ: Wavelength of the light
     - Δt: Exposure time in seconds
+    - output_order: Order of the outputs
 
     Returns
     -------
@@ -496,7 +512,7 @@ def observe_njit(
     - Bright output intensity
     """
 
-    _, d, b = propagate_fields_njit(ψ, φ, σ, λ)
+    _, d, b = propagate_fields_njit(ψ, φ, σ, λ, output_order)
 
     # Get intensities
     d = np.abs(d) ** 2
