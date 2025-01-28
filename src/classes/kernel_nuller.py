@@ -470,7 +470,7 @@ def propagate_fields_njit(
 
 # Observation -----------------------------------------------------------------
 
-# @nb.njit()
+@nb.njit()
 def observe_njit(
     ψ: np.ndarray[complex],
     φ: u.Quantity,
@@ -506,8 +506,9 @@ def observe_njit(
     dp = d * (d <= 2147020237)
     dn = d * (d > 2147020237)
 
-    d = np.random.poisson(dp * Δt).astype(int)
-    d += np.random.normal(dn, np.sqrt(dn)).astype(int)
+    for i in range(d.shape[0]):
+        d[i] = int(np.random.poisson(dp[i] * Δt))
+        d[i] += int(np.random.normal(dn[i], np.sqrt(dn[i])))
 
     if b <= 2147020237:
         b = np.random.poisson(b * Δt)
