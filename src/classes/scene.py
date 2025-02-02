@@ -69,8 +69,6 @@ class Scene:
         if isinstance(sources, Source):
             sources = [sources] # Allow to pass a single source
 
-        print(kwargs)
-
         return Scene(
             instrument = instrument.copy(**kwargs) if instrument is not None else self.instrument.copy(**kwargs),
             δ = copy(δ) if δ is not None else copy(self.δ),

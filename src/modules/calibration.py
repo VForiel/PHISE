@@ -672,3 +672,72 @@ def scan(
     axs[2, 4].axis("off")
 
     plt.show()
+
+#==============================================================================
+# Correct output order
+#==============================================================================
+
+def rebind_outputs(kn, λ):
+    """
+    Correct the output order of the KernelNuller object
+
+    Parameters
+    ----------
+    - kn: KernelNuller object
+
+    Returns
+    -------
+    - KernelNuller object
+    """
+    kn = kn.copy()
+
+    # I1 + I2*exp(i*pi/4)
+    ψ = np.zeros(4, dtype=complex)
+    ψ[0] = ψ[1] = (1+0j) * np.sqrt(1/2)
+    ψ[1] *= np.exp(1j * np.pi / 4)
+    _, d, _ = kn.propagate_fields(ψ=ψ, λ=λ)
+    di2 = np.argsort((d * np.conj(d)).astype(float))
+    print("Darks I1&2:", (d * np.conj(d)).astype(float))
+    I2_min = di2[:2]
+    I2_max = di2[-2:]
+
+    # I1 + I3*exp(i*pi/2)
+    ψ = np.zeros(4, dtype=complex)
+    ψ[0] = ψ[2] = (1+0j) * np.sqrt(1/2)
+    ψ[2] *= np.exp(1j * np.pi / 4)
+    _, d, _ = kn.propagate_fields(ψ=ψ, λ=λ)
+    di3 = np.argsort((d * np.conj(d)).astype(float))
+    print("Darks I1&3:", (d * np.conj(d)).astype(float))
+    I3_min = di3[:2]
+    I3_max = di3[-2:]
+
+    # I1 + I4*exp(i*3*pi/4)
+    ψ = np.zeros(4, dtype=complex)
+    ψ[0] = ψ[3] = (1+0j) * np.sqrt(1/2)
+    ψ[3] *= np.exp(1j * np.pi / 4)
+    _, d, _ = kn.propagate_fields(ψ=ψ, λ=λ)
+    di4 = np.argsort((d * np.conj(d)).astype(float))
+    print("Darks I1&4:", (d * np.conj(d)).astype(float))
+    I4_min = di4[:2]
+    I4_max = di4[-2:]
+    
+    print(di2, di3, di4)
+
+    try:
+        outputs = np.zeros(6, dtype=int)
+        outputs[0] = np.intersect1d(I2_min, I3_max)[0]
+        outputs[1] = np.intersect1d(I2_max, I3_min)[0]
+        outputs[2] = np.intersect1d(I2_min, I4_max)[0]
+        outputs[3] = np.intersect1d(I2_max, I4_min)[0]
+        outputs[4] = np.intersect1d(I3_min, I4_max)[0]
+        outputs[5] = np.intersect1d(I3_max, I4_min)[0]
+    except IndexError as e:
+        raise e
+    
+    try:
+        kn.output_order = outputs
+    except ValueError as e:
+        print("Error with the new output order")
+        print(e)
+        print("Continuing with the old one")
+    return kn

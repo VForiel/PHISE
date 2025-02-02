@@ -48,9 +48,6 @@ class KernelNuller():
         -------
         - Copied Kernel-Nuller object
         """
-
-        print(kwargs, output_order)
-
         return KernelNuller(
             φ = copy(φ) if φ is not None else copy(self.φ),
             σ = copy(σ) if σ is not None else copy(self.σ),
@@ -88,6 +85,26 @@ class KernelNuller():
         if σ.shape != (14,):
             raise ValueError("σ must have a shape of (14,)")
         self._σ = σ
+
+    @property
+    def output_order(self):
+        return self._output_order
+    
+    @output_order.setter
+    def output_order(self, output_order:np.ndarray[int]):
+        try:
+            output_order = np.array(output_order, dtype=int)
+        except:
+            raise ValueError(f"output_order must be an array of integers, not {type(output_order)}")
+        if output_order.shape != (6,):
+            raise ValueError(f"output_order must have a shape of (6,), not {output_order.shape}")
+        if not np.all(np.sort(output_order) == np.arange(6)):
+            raise ValueError(f"output_order must contain all the integers from 0 to 5, not {output_order}")
+        if output_order[0] - output_order[1] not in [-1, 1] \
+                or output_order[2] - output_order[3] not in [-1, 1] \
+                or output_order[4] - output_order[5] not in [-1, 1]:
+            raise ValueError(f"output_order contain an invalid configuration of output pairs. Found {output_order}")
+        self._output_order = output_order
 
     # Electric fields propagation ---------------------------------------------
 

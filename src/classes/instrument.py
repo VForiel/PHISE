@@ -67,9 +67,6 @@ class Instrument:
         - kn: Kernel-Nuller object
         - **kwargs: Parameters to change on the kernel-nuller object (if no new kn is provided)
         """
-
-        print(kwargs)
-
         return Instrument(
             λ = copy(λ) if λ is not None else copy(self.λ),
             Δλ = copy(Δλ) if Δλ is not None else copy(self.Δλ),
