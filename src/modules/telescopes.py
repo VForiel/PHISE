@@ -156,12 +156,14 @@ def plot_positions(
 # Interactive plot ------------------------------------------------------------
 
 def iplot_positions(
+        r: u.Quantity,
+        h: u.Quantity,
+        Δh: u.quantity,
         l: u.Quantity,
         δ: u.Quantity,
     ):
     
     # GUI elements
-    h_range = np.linspace(-4,4,15) * 2*np.pi / 24 * u.rad
     l_slider = widgets.FloatSlider(
         value=l.to(u.deg).value,
         min=-90,
@@ -182,9 +184,12 @@ def iplot_positions(
     # Callbacks
     def update_plot(*_):
         plot.value = plot_positions(
-            h_range=h_range,
+            r=r,
+            h=h,
+            Δh=Δh,
             l=l_slider.value*u.deg,
             δ=δ_slider.value*u.deg,
+            N=11,
             return_image=True)
 
     def reset_values(*_):

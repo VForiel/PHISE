@@ -426,8 +426,8 @@ def obstruction2(
 
 def compare_approaches(f:u.Quantity, Δt:u.Quantity, λ:u.Quantity):
     β_res = 10
-    βs, dβ = np.linspace(0.5, 0.999, β_res, retstep=True)
-    Ns = [10, 100, 1000, 10_000, 100_000]
+    βs, dβ = np.linspace(0.5, 0.99, β_res, retstep=True)
+    Ns = [10, 100, 1000, 10_000]#, 100_000]
     samples = 100
 
     # fig, axs = plt.subplots(1, 1, figsize=(5, 5))
