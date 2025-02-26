@@ -23,6 +23,7 @@ def genetic(
         Δt: u.Quantity,
         verbose: bool = False,
         plot=False,
+        figsize=(15,15),
     ) -> tuple[u.Quantity, dict[str, np.ndarray[float]]]:
     """
     Optimize the phase shifters offsets to maximize the nulling performance
@@ -124,16 +125,16 @@ def genetic(
     }
 
     if plot:
-        plot_genetic_history(history)
+        plot_genetic_history(history, figsize)
 
     return kn, history
 
-def plot_genetic_history(history: dict[str, np.ndarray[float]]):
+def plot_genetic_history(history: dict[str, np.ndarray[float]], figsize:tuple[int] = (15,15)):
     bright_evol = history["bright"]
     kernel_evol = history["kernel"]
     shifts_evol = history["shifters"]
 
-    _, axs = plt.subplots(3,1, figsize=(15,15))
+    _, axs = plt.subplots(3,1, figsize=figsize)
 
     axs[0].plot(bright_evol)
     axs[0].set_xlabel("Number of iterations")
@@ -170,6 +171,7 @@ def obstruction(
         Δt: u.Quantity,
         N = 1_000,
         plot: bool = False,
+        figsize:tuple[int] = (30,20),
     ) -> tuple[u.Quantity, dict[str, np.ndarray[float]]]:
     """
     Optimize the phase shifters offsets to maximize the nulling performance
@@ -185,7 +187,7 @@ def obstruction(
     """
 
     if plot:
-        fig, axs = plt.subplots(3, 3, figsize=(30, 20))
+        fig, axs = plt.subplots(3, 3, figsize=figsize)
         for i in range(7):
             axs.flatten()[i].set_xlabel("Phase shift")
             axs.flatten()[i].set_ylabel("Throughput")
