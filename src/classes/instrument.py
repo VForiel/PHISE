@@ -125,8 +125,6 @@ class Instrument:
             k_tot += k
             b_tot += b
 
-        
-
         return d_tot, k_tot, b_tot
 
     # Transmission maps -------------------------------------------------------

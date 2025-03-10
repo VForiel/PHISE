@@ -24,6 +24,7 @@ def genetic(
         verbose: bool = False,
         plot=False,
         figsize=(15,15),
+        ψ=None,
     ) -> tuple[u.Quantity, dict[str, np.ndarray[float]]]:
     """
     Optimize the phase shifters offsets to maximize the nulling performance
@@ -42,7 +43,8 @@ def genetic(
     - Dict containing the history of the optimization
     """
 
-    ψ = np.ones(4) * (1 + 0j) * np.sqrt(f.to(1/Δt.unit).value/4) # Perfectly cophased inputs
+    if ψ is None:
+        ψ = np.ones(4) * (1 + 0j) * np.sqrt(f.to(1/Δt.unit).value/4) # Perfectly cophased inputs
 
     ε = 1e-6 * λ.unit # Minimum shift step size
 
@@ -172,6 +174,7 @@ def obstruction(
         N = 1_000,
         plot: bool = False,
         figsize:tuple[int] = (30,20),
+        ψ=None,
     ) -> tuple[u.Quantity, dict[str, np.ndarray[float]]]:
     """
     Optimize the phase shifters offsets to maximize the nulling performance
@@ -267,24 +270,27 @@ def obstruction(
             axs[*plt_coords].set_ylabel(f"Dark pair {ds} throughput")
             axs[*plt_coords].legend()
 
-    a = (1+0j) * np.sqrt(f) * np.sqrt(1/4)
+    if ψ is None:
+        ψi = (1+0j) * np.sqrt(f) * np.sqrt(1/4)
+    else:
+        ψi = ψ
 
     # Bright maximization
-    ψ = np.array([a, a, 0, 0])
+    ψ = np.array([ψi[0], ψi[1], 0, 0])
     maximize_bright(kn, ψ, 2, plt_coords=(0,0))
 
-    ψ = np.array([0, 0, a, a])
+    ψ = np.array([0, 0, ψi[2], ψi[3]])
     maximize_bright(kn, ψ, 4, plt_coords=(0,1))
 
-    ψ = np.array([a, 0, a, 0])
+    ψ = np.array([ψi[0], 0, ψi[2], 0])
     maximize_bright(kn, ψ, 7, plt_coords=(0,2))
 
     # Darks maximization
-    ψ = np.array([a, 0, -a, 0])
+    ψ = np.array([ψi[0], 0, -ψi[2], 0])
     maximize_darks(kn, ψ, 8, [1,2], plt_coords=(1,0))
 
     # Kernel minimization
-    ψ = np.array([a, 0, 0, 0])
+    ψ = np.array([ψi[0], 0, 0, 0])
     minimize_kernel(kn, ψ, 11, 1, plt_coords=(2,0))
     minimize_kernel(kn, ψ, 13, 2, plt_coords=(2,1))
     minimize_kernel(kn, ψ, 14, 3, plt_coords=(2,2))
