@@ -1,7 +1,7 @@
 Ma thèse en 180 secondes
 ========================
 
-Pensez-vous que nous sommes seul dans l'univers ? Moi, depuis tout petit, je suis obsédé par cette question. Rien que dans notre galaxies se trouve 150 milliards d'étoiles ! Et vous allez me dire qu'une seule d'elle abrite la vie ? Je n'ai jamais pu m'y résoudre, alors je me suis mis a chercher.
+Pensez-vous que nous sommes seul dans l'univers ? Pardon, c'est un question vieille comme le monde, mais moi, depuis tout petit, elle m'obsède. Rien que dans notre galaxies se trouve 150 milliards d'étoiles ! Et vous allez me dire qu'une seule d'entre elles abrite la vie ? Je n'ai jamais pu m'y résoudre, alors je me suis mis a chercher.
 
 Mais, pourquoi est-ce si compliqué de trouver de la vie ailleurs ? On pourrait se dire qu'il suffit simplement de pointer un télescope au ciel et regarder les mondes qui nous entourent pour voir si la vie grouille. Ces mondes, ce sont de petits points lumineux dans notre ciel nocturne, comme des lucioles.  
 
@@ -13,4 +13,4 @@ On est plein d'équipes de chasseur de lucioles. Chacun a sa technique. Celle qu
 
 La théorie est belle, mais en pratique, la lumière est capricieuse, le moindre retard dans la prise d'une photo, le moindre coup de vent, le moindre décalage d'un appareil photo et c'est le drame. Les images commencent à avoir plein de petites différences. L'avantage, c'est que nos appareil photos sont en réalité des grands télescopes qui captent la lumière en continu ! On peut alors corriger une partie de ces problèmes en acheminant cette lumière dans un petit composant photonique, une sorte de mini-laboratoire de poche qui manipule la lumière avec une précision incroyable. Ce composant, c'est mon terrain de jeu, et c'est lui qui s'occupe de révéler les différences dans la lumière capté par nos télescopes. Quant à moi je créer en laboratoire un faux phare et une fausse luciole, puis je calibre ce composant, je le teste, je le pousse dans ses retranchements jusqu'à ce qu'il soit le plus efficace possible pour révéler l'invisible !
 
-Alors, la prochaine fois que vous regarderez le ciel, imaginez ces lucioles tournant autour de leur phare. Imaginez ces mondes cachés et la vie qu'ils pourraient abriter. Car un jour prochain, grâce à mon travail et celui de mes collègues, on pourrait bien trouver une luciole qui ne se contentera pas de scintiller, mais qui nous parlera !
+Alors, la prochaine fois que vous lèverez les yeux au ciel, imaginez ces lucioles tournant autour de leur phare. Imaginez ces mondes cachés et la vie qu'ils pourraient abriter. Car un jour prochain, grâce à mon travail et celui de mes collègues, on pourrait bien trouver une luciole qui ne se contentera pas de scintiller, mais qui nous parlera !
