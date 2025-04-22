@@ -16,7 +16,8 @@ class KernelNuller():
     def __init__(
             self, φ:np.ndarray[u.Quantity],
             σ:np.ndarray[u.Quantity],
-            output_order:np.ndarray[int]=None
+            output_order:np.ndarray[int]=None,
+            name:str = "Unnamed",
         ):
         """Kernel-Nuller object.
 
@@ -24,10 +25,13 @@ class KernelNuller():
         ----------
         - φ: Array of 14 injected OPD
         - σ: Array of 14 intrasic OPD error
+        - output_order: Order of the outputs
+        - name: Name of the Kernel-Nuller object
         """
         self._φ = φ
         self.σ = σ
         self.output_order = output_order if output_order is not None else np.array([0, 1, 2, 3, 4, 5])
+        self.name = name
 
     def copy(self,
             φ:np.ndarray[u.Quantity] = None,
@@ -418,6 +422,15 @@ class KernelNuller():
 
         update_gui()
         return vbox
+    
+    def __repr__(self) -> str:
+        return self.__str__()
+    
+    def __str__(self) -> str:
+        return f'Kernel-Nuller "{self.name}":' + '\n' \
+            f" | output_order = {self.output_order}" + '\n' + \
+            f" | φ = {self.φ}" + '\n' + \
+            f" | σ = {self.σ}"
         
 
 #==============================================================================

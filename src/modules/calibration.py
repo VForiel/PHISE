@@ -131,7 +131,7 @@ def genetic(
 
     return kn, history
 
-def plot_genetic_history(history: dict[str, np.ndarray[float]], figsize:tuple[int] = (15,15)):
+def plot_genetic_history(history: dict[str, np.ndarray[float]], figsize:tuple[int] = (5,5)):
     bright_evol = history["bright"]
     kernel_evol = history["kernel"]
     shifts_evol = history["shifters"]
@@ -228,10 +228,10 @@ def obstruction(
         for i in range(N):
             kn.φ[n-1] = i * λ / N
             _, k, _ = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
-            y[i] = np.abs(k[m-1]) / f.to(1/Δt.unit).value
+            y[i] = k[m-1] / f.to(1/Δt.unit).value
 
         def sin(x, x0):
-            return 1/8 * np.abs(np.sin((x-x0)/λ.value*2*np.pi))/2
+            return 1/8 * np.sin((x-x0)/λ.value*2*np.pi)/2
         popt, pcov = curve_fit(sin, x, y, p0=[0])
 
         kn.φ[n-1] = (np.mod(popt[0], λ.value) * λ.unit).to(kn.φ.unit)
