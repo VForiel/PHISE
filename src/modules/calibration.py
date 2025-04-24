@@ -22,9 +22,9 @@ def genetic(
         f: u.Quantity,
         Δt: u.Quantity,
         verbose: bool = False,
-        plot=False,
-        figsize=(15,15),
-        ψ=None,
+        plot: bool = False,
+        figsize: tuple[int] = (15,15),
+        ψ: np.ndarray[complex] = None,
     ) -> tuple[u.Quantity, dict[str, np.ndarray[float]]]:
     """
     Optimize the phase shifters offsets to maximize the nulling performance
@@ -247,7 +247,7 @@ def obstruction(
 
     def maximize_darks(kn, ψ, n, ds, plt_coords=None):
 
-        x = np.linspace(0,λ.value,N)
+        x = np.linspace(0, λ.value, N)
         y = np.empty(N)
     
         for i in range(N):
@@ -271,7 +271,7 @@ def obstruction(
             axs[*plt_coords].legend()
 
     if ψ is None:
-        ψi = (1+0j) * np.sqrt(f) * np.sqrt(1/4)
+        ψi = np.ones(4) * (1+0j) * np.sqrt(f/4)
     else:
         ψi = ψ
 

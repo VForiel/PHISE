@@ -14,10 +14,11 @@ from .source import Source
 
 class KernelNuller():
     def __init__(
-            self, φ:np.ndarray[u.Quantity],
-            σ:np.ndarray[u.Quantity],
-            output_order:np.ndarray[int]=None,
-            name:str = "Unnamed",
+            self,
+            φ: np.ndarray[u.Quantity],
+            σ: np.ndarray[u.Quantity],
+            output_order: np.ndarray[int] = None,
+            name: str = "Unnamed",
         ):
         """Kernel-Nuller object.
 

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.4.30)  23 APR 2025 11:32
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.4.30)  24 APR 2025 09:13
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -923,12 +923,7 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             `lmtt' (encoding: OT1).
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
-
-Underfull \hbox (badness 1158) in paragraph at lines 78--79
-\OT1/lmr/m/n/12 (+20) o-met-ric De-tec-tion of Ex-tra-so-lar Plan-ets". \OT1/lmr/m/it/12 (+20) As-tron-omy & As-tro-physics \OT1/lmr/bx/n/12 (+20) 619 \OT1/lmr/m/n/12 (+20) (2018): A87.
- []
-
-[1
+ [1
 
 {C:/Users/vforiel/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-rm.enc}{C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathit.enc}{C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-rmtt.enc}] (abstract.aux)
  ***********
@@ -939,17 +934,17 @@ Package rerunfilecheck Info: File `abstract.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
  ) 
 Here is how much of TeX's memory you used:
- 19825 strings out of 474424
- 370274 string characters out of 5740795
+ 19835 strings out of 474424
+ 370404 string characters out of 5740795
  1937496 words of memory out of 5000000
- 41831 multiletter control sequences out of 15000+600000
- 614809 words of font info for 133 fonts, out of 8000000 for 9000
+ 41832 multiletter control sequences out of 15000+600000
+ 615202 words of font info for 137 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,5n,80p,1446b,901s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,5n,80p,1467b,901s stack positions out of 10000i,1000n,20000p,200000b,200000s
  <C:\Users\vforiel\AppData\Local\MiKTeX\fonts/pk/ljfour/public/mathabx/dpi600\matha8.pk> <C:\Users\vforiel\AppData\Local\MiKTeX\fonts/pk/ljfour/public/mathabx/dpi600\matha10.pk><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx12.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr10.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr12.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr8.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmri12.pfb><C:/Users/vforiel/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt12.pfb>
-Output written on abstract.pdf (1 page, 154192 bytes).
+Output written on abstract.pdf (1 page, 155702 bytes).
 PDF statistics:
- 66 PDF objects out of 1000 (max. 8388607)
- 6 named destinations out of 1000 (max. 500000)
+ 70 PDF objects out of 1000 (max. 8388607)
+ 7 named destinations out of 1000 (max. 500000)
  27137 words of extra memory for PDF output out of 29859 (max. 10000000)
 

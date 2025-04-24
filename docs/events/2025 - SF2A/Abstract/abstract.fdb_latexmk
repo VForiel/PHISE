@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1745400724.45602 "e:/Tunable-Kernel-Nulling/docs/events/2025 - SF2A/Abstract/abstract.tex" "abstract.pdf" "abstract" 1745400725.50217 0
+["pdflatex"] 1745478816.82462 "e:/Tunable-Kernel-Nulling/docs/events/2025 - SF2A/Abstract/abstract.tex" "abstract.pdf" "abstract" 1745478817.86391 0
   "C:/Users/vforiel/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1731664459 84158 d77284a6843bde1e4b9764f09fb2e89e ""
   "C:/Users/vforiel/AppData/Local/MiKTeX/fonts/pk/ljfour/public/mathabx/dpi600/matha10.pk" 1711632445 24548 7f9e610e1f573d16758d9c7b82639193 ""
   "C:/Users/vforiel/AppData/Local/MiKTeX/fonts/pk/ljfour/public/mathabx/dpi600/matha8.pk" 1711632442 20784 ef83d89e9bcb935623a13d5f69117bcc ""
@@ -144,10 +144,10 @@
   "C:/Users/vforiel/AppData/Local/Programs/MiKTeX/tex/latex/ulem/ulem.sty" 1578651445 15682 94f55b803e160cf7fb6e4d77d07cfe1d ""
   "C:/Users/vforiel/AppData/Local/Programs/MiKTeX/tex/latex/url/url.sty" 1388490452 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
   "C:/Users/vforiel/AppData/Local/Programs/MiKTeX/tex/latex/xcolor/xcolor.sty" 1700127522 55487 80a65caedd3722f4c20a14a69e785d8f ""
-  "abstract.aux" 1745400725 336 5a56f9144b77281302e3727ebd4c4026 "pdflatex"
-  "abstract.out" 1745400725 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
-  "abstract.tex" 1745400724 3798 e53b4c0a93f340d3c031fd2d3989850b ""
-  "e:/Tunable-Kernel-Nulling/docs/events/2025 - SF2A/Abstract/abstract.tex" 1745400724 3798 e53b4c0a93f340d3c031fd2d3989850b ""
+  "abstract.aux" 1745478817 390 244902b1255d5fb5801a48919f9ae6d0 "pdflatex"
+  "abstract.out" 1745478817 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
+  "abstract.tex" 1745478816 3985 f8623a27b32e5a7dde2b0cc89745011d ""
+  "e:/Tunable-Kernel-Nulling/docs/events/2025 - SF2A/Abstract/abstract.tex" 1745478816 3985 f8623a27b32e5a7dde2b0cc89745011d ""
   (generated)
   "abstract.aux"
   "abstract.log"
