@@ -687,7 +687,7 @@ def scan(
 
 def rebind_outputs(kn, λ):
     """
-    Correct the output order of the KernelNuller object
+    Correct the output order of the KernelNuller object. To do so, we successively obstruct two inputs and add a π/4 phase over one of the two remaining inputs. Doing so, 
 
     Parameters
     ----------
@@ -703,19 +703,20 @@ def rebind_outputs(kn, λ):
     ψ = np.zeros(4, dtype=complex)
     ψ[0] = ψ[1] = (1+0j) * np.sqrt(1/2)
     ψ[1] *= np.exp(1j * np.pi / 4)
+
     _, d, _ = kn.propagate_fields(ψ=ψ, λ=λ)
-    di2 = np.argsort((d * np.conj(d)).astype(float))
-    print("Darks I1&2:", (d * np.conj(d)).astype(float))
+    di2 = np.argsort((d * np.conj(d)).real)
+    print("Darks I1&2:", (d * np.conj(d)).real)
     I2_min = di2[:2]
     I2_max = di2[-2:]
 
-    # I1 + I3*exp(i*pi/2)
+    # I1 + I3*exp(i*pi/4)
     ψ = np.zeros(4, dtype=complex)
     ψ[0] = ψ[2] = (1+0j) * np.sqrt(1/2)
     ψ[2] *= np.exp(1j * np.pi / 4)
     _, d, _ = kn.propagate_fields(ψ=ψ, λ=λ)
-    di3 = np.argsort((d * np.conj(d)).astype(float))
-    print("Darks I1&3:", (d * np.conj(d)).astype(float))
+    di3 = np.argsort((d * np.conj(d)).real)
+    print("Darks I1&3:", (d * np.conj(d)).real)
     I3_min = di3[:2]
     I3_max = di3[-2:]
 
@@ -724,8 +725,8 @@ def rebind_outputs(kn, λ):
     ψ[0] = ψ[3] = (1+0j) * np.sqrt(1/2)
     ψ[3] *= np.exp(1j * np.pi / 4)
     _, d, _ = kn.propagate_fields(ψ=ψ, λ=λ)
-    di4 = np.argsort((d * np.conj(d)).astype(float))
-    print("Darks I1&4:", (d * np.conj(d)).astype(float))
+    di4 = np.argsort((d * np.conj(d)).real)
+    print("Darks I1&4:", (d * np.conj(d)).real)
     I4_min = di4[:2]
     I4_max = di4[-2:]
     
