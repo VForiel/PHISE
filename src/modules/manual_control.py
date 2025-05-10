@@ -3,9 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import ipywidgets as widgets
 import astropy.units as u
-from ..classes.scene import Scene
+from .. import Context
 
-def start(scene:Scene):
+def start(scene:Context):
 
     scene = scene.copy()
     λ = scene.instrument.λ

@@ -2,7 +2,7 @@ import astropy.units as u
 import numpy as np
 import matplotlib.pyplot as plt
 
-from src.classes.scene import Scene
+from src.classes.context import Scene
 
 def plot(scene_ideal:Scene, scene_perturbed:Scene, scene_obs:Scene, scene_gen:Scene, limit:u.Quantity):
     """

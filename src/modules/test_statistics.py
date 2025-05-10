@@ -3,7 +3,7 @@ import numba as nb
 import matplotlib.pyplot as plt
 from copy import deepcopy as copy
 
-from src.classes.scene import Scene
+from src.classes.context import Scene
 
 def get_vectors(nmc:int, size:int, scene_h1:Scene):
 
