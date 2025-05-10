@@ -3,9 +3,9 @@ import numba as nb
 import matplotlib.pyplot as plt
 from copy import deepcopy as copy
 
-from src.classes.context import Scene
+from src.classes.context import Context
 
-def get_vectors(nmc:int, size:int, scene_h1:Scene):
+def get_vectors(nmc:int, size:int, scene_h1:Context):
 
     T0 = np.zeros((3, nmc, size))
     T1 = np.zeros((3, nmc, size))

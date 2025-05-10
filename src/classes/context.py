@@ -1,199 +1,257 @@
+# External libs
 import numpy as np
 import astropy.units as u
+import numba as nb
 from copy import deepcopy as copy
+import matplotlib.pyplot as plt
+from io import BytesIO
 
+# Internal libs
 from .interferometer import Interferometer
-from .source import Source
-from ..modules import telescopes
+from .target import Target
 
 class Context:
     def __init__(
             self,
-            instrument:Interferometer,
-            δ:u.Quantity,
+            interferometer:Interferometer,
+            target:Target,
             h:u.Quantity,
             Δh: u.Quantity,
-            f:u.Quantity,
-            Δt: u.Quantity,
-            input_ce_rms: u.Quantity,
-            sources: list[Source] = None,
+            e: u.Quantity,
+            Γ: u.Quantity,
             name:str = "Unnamed",
         ):
         """
         Parameters
         ----------
         - instrument: Instrument object
-        - δ: Declination of the star
         - h: Central hourangle of the observation
         - Δh: Hourangle range of the observation
-        - f: Star photon flux
-        - Δt:Exposition time
-        - sources: List of Source objects
+        - e: Exposition time
+        - Γ: Input cophasing error (rms)
         - name: Name of the scene
         """
 
-        self.instrument = instrument
-        self.δ = δ
+        self._initialized = False
+
+        self.interferometer = copy(interferometer)
+        self.interferometer._ctx = self
+        self.target = copy(target)
+        self.target._ctx = self
         self.h = h
         self.Δh = Δh
-        self.f = f
-        self.Δt = Δt
-        self.input_ce_rms = input_ce_rms
-        self.sources = sources if sources else []
-        self.p = telescopes.project_position(r=self.instrument.r, h=self.h, l=self.instrument.l, δ=self.δ)
+        self.e= e
+        self.Γ = Γ
         self.name = name
+        
+        self.project_telescopes_position()
 
-    def copy(self,
-            instrument:Interferometer = None,
-            δ:u.Quantity = None,    
-            h:u.Quantity = None,
-            Δh: u.Quantity = None,
-            f:u.Quantity = None,
-            Δt: u.Quantity = None,
-            input_ce_rms: u.Quantity = None,
-            sources: list[Source] = None,
-            **kwargs,
-        ) -> "Context":
-        """
-        Return a copy of the Scene object with some parameters changed.
+        self._initialized = True
 
-        Parameters
-        ----------
-        - instrument: Instrument object
-        - δ: Declination of the star
-        - h: Central hourangle of the observation
-        - Δh: Hourangle range of the observation
-        - f: Star photon flux
-        - Δt:Exposition time
-        - sources: List of Source objects
-        - **kwargs: Additional parameters to edit the instrument, the kernel-nuller or the sources
-        """
+    # Interferometer property -------------------------------------------------
 
-        if isinstance(sources, Source):
-            sources = [sources] # Allow to pass a single source
+    @property
+    def interferometer(self) -> Interferometer:
+        return self._interferometer
+    
+    @interferometer.setter
+    def interferometer(self, interferometer:Interferometer):
+        if not isinstance(interferometer, Interferometer):
+            raise TypeError("interferometer must be an Interferometer object")
+        self._interferometer = copy(interferometer)
+        self.interferometer._ctx = self
+        if self._initialized:
+            self.project_telescopes_position()
 
-        return Context(
-            instrument = instrument.copy(**kwargs) if instrument is not None else self.instrument.copy(**kwargs),
-            δ = copy(δ) if δ is not None else copy(self.δ),
-            h = copy(h) if h is not None else copy(self.h),
-            Δh = copy(Δh) if Δh is not None else copy(self.Δh),
-            f = copy(f) if f is not None else copy(self.f),
-            Δt = copy(Δt) if Δt is not None else copy(self.Δt),
-            input_ce_rms = copy(input_ce_rms) if input_ce_rms is not None else copy(self.input_ce_rms),
-            sources = copy(sources) if sources is not None else [s.copy(**kwargs) for s in self.sources],
-        )
+    # Target property ---------------------------------------------------------
     
     @property
-    def kn(self):
-        return self.instrument.kn
+    def target(self) -> Target:
+        return self._target
     
-    @kn.setter
-    def kn(self, kn):
-        self.instrument.kn = kn
+    @target.setter
+    def target(self, target: Target):
+        if not isinstance(target, Target):
+            raise TypeError("target must be a Target object")
+        self._target = copy(target)
+        self.target._ctx = self
+        if self._initialized:
+            self.project_telescopes_position()
 
-    # Observation -------------------------------------------------------------
+    # h property --------------------------------------------------------------
 
-    def observe(self):
-        """
-        Simulate the observation of the scene
-
-        Returns
-        -------
-        - np.ndarray: Dark outputs (6 float values)
-        - np.ndarray: Kernel outputs (3 float values)
-        - float: Bright output
-        """
-        return self.instrument.observe(sources=self.sources, δ=self.δ, h=self.h, f=self.f, Δt=self.Δt, input_ce_rms=self.input_ce_rms)
+    @property
+    def h(self) -> u.Quantity:
+        return self._h
     
-    def instant_serie_observation(self, N:int):
-        """
-        Simulate the observation of the scene for a given number of times
+    @h.setter
+    def h(self, h: u.Quantity):
+        if type(h) != u.Quantity:
+            raise TypeError("h must be a Quantity")
+        try:
+            h = h.to(u.hourangle)
+        except u.UnitConversionError:
+            raise ValueError("h must be in a hourangle unit")
+        self._h = h
+        if self._initialized:
+            self.project_telescopes_position()
 
-        Parameters
-        ----------
-        - N: Number of observations
+    # Δh property -------------------------------------------------------------
 
-        Returns
-        -------
-        - dict[str, np.ndarray]
-            - 'darks': Dark outputs for each observation (Nx6)
-            - 'kernels': Kernel outputs for each observation (Nx3)
-            - 'brights': Bright outputs for each observation (N)
-        """
+    @property
+    def Δh(self) -> u.Quantity:
+        return self._Δh
+    
+    @Δh.setter
+    def Δh(self, Δh: u.Quantity):
+        if type(Δh) != u.Quantity:
+            raise TypeError("Δh must be a Quantity")
+        try:
+            Δh = Δh.to(u.hourangle)
+        except u.UnitConversionError:
+            raise ValueError("Δh must be in a hourangle unit")
+        self._Δh = Δh
+
+    # e property --------------------------------------------------------------
+
+    @property
+    def e(self) -> u.Quantity:
+        return self._e
+    
+    @e.setter
+    def e(self, e: u.Quantity):
+        if type(e) != u.Quantity:
+            raise TypeError("e must be a Quantity")
+        try:
+            e = e.to(u.s)
+        except u.UnitConversionError:
+            raise ValueError("e must be in a time unit")
+        self._e = e
+
+    # Γ property --------------------------------------------------------------
+
+    @property
+    def Γ(self) -> u.Quantity:
+        return self._Γ
+    
+    @Γ.setter
+    def Γ(self, Γ: u.Quantity):
+        if type(Γ) != u.Quantity:
+            raise TypeError("Γ must be a Quantity")
+        try:
+            Γ = Γ.to(u.m)
+        except u.UnitConversionError:
+            raise ValueError("Γ must be in a distance unit")
+        self._Γ = Γ
+
+    # p property --------------------------------------------------------------
+    
+    @property
+    def p(self) -> u.Quantity:
+        return self._p
         
-        darks = np.empty((N, 6))
-        kernels = np.empty((N, 3))
-        brights = np.empty(N)
+    @p.setter
+    def p(self, p: u.Quantity):
+        raise ValueError("p is a read-only property. Use project_telescopes_position() to set it accordingly to the other parameters in this context.")
 
-        for i in range(N):
-            darks[i], kernels[i], brights[i] = self.observe()
+    # Projected position ------------------------------------------------------
 
-        return {"darks": darks, "kernels": kernels, "brights": brights}
-    
-    def time_serie_observation(self, nights:int):
+    def project_telescopes_position(self):
         """
-        Simulate the observation of the scene over all the observation time and for several nights
+        Project the telescopes position in a plane perpendicular to the line of sight.
+        """
+        h = self.h.to(u.rad).value
+        l = self.interferometer.l.to(u.rad).value
+        δ = self.target.δ.to(u.rad).value
+
+        r = np.array([i.r.to(u.m).value for i in self.interferometer.telescopes])
+        
+        self._p = project_position_njit(r, h, l, δ) * u.m
+
+        return self.p
+    
+    # Plot projected positions over the time ----------------------------------
+
+    def plot_projected_positions(
+            self,
+            N:int = 11,
+            return_image = False,
+        ):
+        """
+        Plot the telescope positions over the time.
 
         Parameters
         ----------
-        - nights: Number of nights
+        - N: Number of positions to plot
+        - return_image: Return the image buffer instead of displaying it
 
         Returns
         -------
-        - dict[str, np.ndarray]
-            - 'darks': Dark outputs for each observation (Nx6)
-            - 'kernels': Kernel outputs for each observation (Nx3)
-            - 'brights': Bright outputs for each observation (N)
-            with N = nights * Δh/Δt -> Number of observations
-        - np.ndarray: Hourangles of the observations
+        - None | Image buffer if return_image is True
         """
+        _, ax = plt.subplots()
 
-        H = self.h
+        h_range = np.linspace(self.h - self.Δh/2, self.h + self.Δh/2, N, endpoint=True)
 
-        time_resolution = int(self.Δh.to(u.hourangle).value / self.Δt.to(u.hour).value) 
-        hs = np.linspace(self.h-self.Δh/2, self.h+self.Δh/2, time_resolution)
+        # Plot UT trajectory
+        for i, h in enumerate(h_range):
+            ctx = copy(self)
+            ctx.h = h
+            for j, (x, y) in enumerate(ctx.p):
+                ax.scatter(x, y, label=f"Telescope {j+1}" if i==len(h_range)-1 else None, color=f"C{j}", s=1+14*i/len(h_range))
 
-        darks = np.empty((nights, time_resolution, 6))
-        kernels = np.empty((nights, time_resolution, 3))
-        brights = np.empty((nights, time_resolution))
+        print(self.interferometer.l)
+        for (x, y) in self.p:
+            ax.scatter(x, y, color="black", marker="+")
 
-        for n in range(nights):
-            for i, h in enumerate(hs):
-                self.h = h
-                darks[n,i], kernels[n,i], brights[n,i] = self.observe()
+        ax.set_aspect("equal")
+        ax.set_xlabel(f"x [{self.p.unit}]")
+        ax.set_ylabel(f"y [{self.p.unit}]")
+        ax.set_title(f"Projected telescope positions over the time (8h long)")
+        plt.legend()
 
-        self.h = H
-
-        return {"darks": darks, "kernels": kernels, "brights": brights}, hs
-
-    def get_trasmission_map(self, N:int) -> np.ndarray[float]:
-        """
-        Generate all the kernel-nuller transmission maps for a given resolution
-
-        Parameters
-        ----------
-        - N: Resolution of the map
-
-        Returns
-        -------
-        - Null outputs map (3 x resolution x resolution)
-        - Dark outputs map (6 x resolution x resolution)
-        - Kernel outputs map (3 x resolution x resolution)
-        """
-        return self.instrument.get_transmission_maps(N=N, h=self.h, δ=self.δ)
+        if return_image:
+            buffer = BytesIO()
+            plt.savefig(buffer,format='png')
+            plt.close()
+            return buffer.getvalue()
+        plt.show()
     
-    def plot_transmission_maps(self, N:int):
-        return self.instrument.plot_transmission_maps(N=N, h=self.h, δ=self.δ, sources=self.sources)
-    
-    def iplot_transmission_maps(self, N:int):
-        return self.instrument.iplot_transmission_maps(N=N, δ=self.δ, h=self.h, Δh=self.Δh, sources=self.sources)
-    
-    def __repr__(self) -> str:
-        return self.__str__()
-    
-    def __str__(self) -> str:
-        sources = "\n | - ".join([str(s) for s in self.sources])
-        return f'Scene: "{self.name}" \n' + \
-            f' | δ = {self.δ}, h = {self.h}, Δh = {self.Δh}, f = {self.f}, Δt = {self.Δt} input_ce_rms = {self.input_ce_rms}' + "\n" \
-            ' | ' + '\n | '.join(str(self.instrument).split('\n')) + \
-            '\n | Sources : \n' + f' | - {sources}'
+#==============================================================================
+# Number functions
+#==============================================================================
+
+# Projected position ----------------------------------------------------------
+
+@nb.njit()
+def project_position_njit(
+        r: np.ndarray[float],
+        h: float,
+        l: float,
+        δ: float,
+    ) -> np.ndarray[float]:
+    """
+    Project the telescope position in a plane perpendicular to the line of sight.
+
+    Parameters
+    ----------
+    - r: Array of telescope positions (in meters)
+    - h: Hour angle (in radian)
+    - l: Latitude (in radian)
+    - δ: Declination (in radian)
+
+    Returns
+    -------
+    - Array of projected telescope positions (same shape and unit as p)
+    """
+
+    M = np.array([
+        [ -np.sin(l)*np.sin(h),                                np.cos(h)          ],
+        [ np.sin(l)*np.cos(h)*np.sin(δ) + np.cos(l)*np.cos(δ), np.sin(h)*np.sin(δ)],
+    ])
+
+    p = np.empty_like(r)
+    for i, (x,y) in enumerate(r):
+        p[i] = M @ np.array([y, x])
+
+    return p

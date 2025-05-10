@@ -1,12 +1,12 @@
-from .. import Scene
+from ..classes.context import Context
 
 def plot(context, n:int=100):
     """
-    Plot the transmission maps of the scene.
+    Plot the transmission maps of the context.
     
     Parameters
     ----------
-    - context: Scene object
+    - context: Context object
     - n: Resolution of the map
     """
 

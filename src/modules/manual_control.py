@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import ipywidgets as widgets
 import astropy.units as u
-from .. import Context
+from ..classes.context import Context
 
 def start(scene:Context):
 

@@ -1,8 +1,8 @@
-from . import source
-from .source import Source
+from . import companion
+from .companion import Companion
 
 from . import interferometer
-from .interferometer import Instrument
+from .interferometer import Interferometer
 
 from . import kernel_nuller
 from .kernel_nuller import KernelNuller

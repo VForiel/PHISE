@@ -6,7 +6,6 @@ from scipy.optimize import curve_fit
 from scipy.stats import linregress
 from copy import deepcopy as copy
 
-from src.modules import signals
 from src.modules import phase
 from src.classes import kernel_nuller
 from src.classes.kernel_nuller import KernelNuller

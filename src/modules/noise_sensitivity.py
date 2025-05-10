@@ -2,18 +2,18 @@ import astropy.units as u
 import numpy as np
 import matplotlib.pyplot as plt
 
-from src.classes.context import Scene
+from src.classes.context import Context
 
-def plot(scene_ideal:Scene, scene_perturbed:Scene, scene_obs:Scene, scene_gen:Scene, limit:u.Quantity):
+def plot(scene_ideal:Context, scene_perturbed:Context, scene_obs:Context, scene_gen:Context, limit:u.Quantity):
     """
     Plot the sensitivity to input noise
 
     Parameters
     ----------
-    - scene_ideal: Scene without shift perturbation
-    - scene_perturbed: Scene with shift perturbation
-    - scene_obs: Scene with calibrated shifters using obstruction algorithm
-    - scene_gen: Scene with calibrated shifters using genetic algorithm
+    - scene_ideal: Context without shift perturbation
+    - scene_perturbed: Context with shift perturbation
+    - scene_obs: Context with calibrated shifters using obstruction algorithm
+    - scene_gen: Context with calibrated shifters using genetic algorithm
     - limit: Maximum input OPD RMS
 
     Returns
