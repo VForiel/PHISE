@@ -23,7 +23,8 @@ class Instrument:
             r:np.ndarray[u.Quantity],
             l:u.Quantity,
             fov:u.Quantity,
-            kn:KernelNuller
+            kn:KernelNuller,
+            name:str = "Unnamed",
         ):
         """Instrument object.
 
@@ -35,6 +36,7 @@ class Instrument:
         - l: Latitude of reference telescope
         - fov: Field of view
         - kn: Kernel-Nuller object
+        - name: Name of the instrument
         """
 
         self.λ = λ
@@ -43,6 +45,7 @@ class Instrument:
         self.l = l
         self.fov = fov
         self.kn = kn
+        self.name = name
 
     def copy(
             self,
@@ -287,6 +290,15 @@ class Instrument:
         run.on_click(update_plot)
         display(widgets.VBox([h_slider, l_slider, δ_slider, widgets.HBox([reset, run]), plot, transmission]))
         update_plot()
+
+    def __repr(self) -> str:
+        return self.__str__()
+    
+    def __str__(self) -> str:
+        return f'Instrument "{self.name}":\n' + \
+            " | " + f"λ = {self.λ}, Δλ = {self.Δλ}, l = {self.l}, fov = {self.fov}" + \
+            "\n | " + f"r = {[str(i) for i in self.r]}" + \
+            "\n | " + "\n | ".join(str(self.kn).split('\n'))
 
 #==============================================================================
 # Numba functions

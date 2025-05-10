@@ -22,9 +22,9 @@ def genetic(
         f: u.Quantity,
         Δt: u.Quantity,
         verbose: bool = False,
-        plot=False,
-        figsize=(15,15),
-        ψ=None,
+        plot: bool = False,
+        figsize: tuple[int] = (15,15),
+        ψ: np.ndarray[complex] = None,
     ) -> tuple[u.Quantity, dict[str, np.ndarray[float]]]:
     """
     Optimize the phase shifters offsets to maximize the nulling performance
@@ -131,7 +131,7 @@ def genetic(
 
     return kn, history
 
-def plot_genetic_history(history: dict[str, np.ndarray[float]], figsize:tuple[int] = (15,15)):
+def plot_genetic_history(history: dict[str, np.ndarray[float]], figsize:tuple[int] = (5,5)):
     bright_evol = history["bright"]
     kernel_evol = history["kernel"]
     shifts_evol = history["shifters"]
@@ -149,8 +149,6 @@ def plot_genetic_history(history: dict[str, np.ndarray[float]], figsize:tuple[in
     axs[1].set_ylabel("Kernels throughput (%)")
     axs[1].set_yscale("log")
     axs[1].set_title("Optimization of the kernels")
-
-    print(np.mean(kernel_evol[-2000:]))
 
     for i in range(shifts_evol.shape[1]):
         axs[2].plot(shifts_evol[:,i], label=f"Shifter {i+1}")
@@ -228,10 +226,10 @@ def obstruction(
         for i in range(N):
             kn.φ[n-1] = i * λ / N
             _, k, _ = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
-            y[i] = np.abs(k[m-1]) / f.to(1/Δt.unit).value
+            y[i] = k[m-1] / f.to(1/Δt.unit).value
 
         def sin(x, x0):
-            return 1/8 * np.abs(np.sin((x-x0)/λ.value*2*np.pi))/2
+            return 1/8 * np.sin((x-x0)/λ.value*2*np.pi)/2
         popt, pcov = curve_fit(sin, x, y, p0=[0])
 
         kn.φ[n-1] = (np.mod(popt[0], λ.value) * λ.unit).to(kn.φ.unit)
@@ -247,7 +245,7 @@ def obstruction(
 
     def maximize_darks(kn, ψ, n, ds, plt_coords=None):
 
-        x = np.linspace(0,λ.value,N)
+        x = np.linspace(0, λ.value, N)
         y = np.empty(N)
     
         for i in range(N):
@@ -271,7 +269,7 @@ def obstruction(
             axs[*plt_coords].legend()
 
     if ψ is None:
-        ψi = (1+0j) * np.sqrt(f) * np.sqrt(1/4)
+        ψi = np.ones(4) * (1+0j) * np.sqrt(f/4)
     else:
         ψi = ψ
 
@@ -687,11 +685,12 @@ def scan(
 
 def rebind_outputs(kn, λ):
     """
-    Correct the output order of the KernelNuller object
+    Correct the output order of the KernelNuller object. To do so, we successively obstruct two inputs and add a π/4 phase over one of the two remaining inputs. Doing so, 
 
     Parameters
     ----------
     - kn: KernelNuller object
+    - λ: Wavelength of the observation
 
     Returns
     -------
@@ -699,53 +698,60 @@ def rebind_outputs(kn, λ):
     """
     kn = kn.copy()
 
-    # I1 + I2*exp(i*pi/4)
-    ψ = np.zeros(4, dtype=complex)
-    ψ[0] = ψ[1] = (1+0j) * np.sqrt(1/2)
-    ψ[1] *= np.exp(1j * np.pi / 4)
-    _, d, _ = kn.propagate_fields(ψ=ψ, λ=λ)
-    di2 = np.argsort((d * np.conj(d)).astype(float))
-    print("Darks I1&2:", (d * np.conj(d)).astype(float))
-    I2_min = di2[:2]
-    I2_max = di2[-2:]
+    # Identify kernels (correct kernel swapping) ------------------------------
 
-    # I1 + I3*exp(i*pi/2)
-    ψ = np.zeros(4, dtype=complex)
-    ψ[0] = ψ[2] = (1+0j) * np.sqrt(1/2)
-    ψ[2] *= np.exp(1j * np.pi / 4)
-    _, d, _ = kn.propagate_fields(ψ=ψ, λ=λ)
-    di3 = np.argsort((d * np.conj(d)).astype(float))
-    print("Darks I1&3:", (d * np.conj(d)).astype(float))
-    I3_min = di3[:2]
-    I3_max = di3[-2:]
-
-    # I1 + I4*exp(i*3*pi/4)
+    # E1 + E4 -> D1 & D2 should be dark (K1)
     ψ = np.zeros(4, dtype=complex)
     ψ[0] = ψ[3] = (1+0j) * np.sqrt(1/2)
-    ψ[3] *= np.exp(1j * np.pi / 4)
-    _, d, _ = kn.propagate_fields(ψ=ψ, λ=λ)
-    di4 = np.argsort((d * np.conj(d)).astype(float))
-    print("Darks I1&4:", (d * np.conj(d)).astype(float))
-    I4_min = di4[:2]
-    I4_max = di4[-2:]
-    
-    print(di2, di3, di4)
 
-    try:
-        outputs = np.zeros(6, dtype=int)
-        outputs[0] = np.intersect1d(I2_min, I3_max)[0]
-        outputs[1] = np.intersect1d(I2_max, I3_min)[0]
-        outputs[2] = np.intersect1d(I2_min, I4_max)[0]
-        outputs[3] = np.intersect1d(I2_max, I4_min)[0]
-        outputs[4] = np.intersect1d(I3_min, I4_max)[0]
-        outputs[5] = np.intersect1d(I3_max, I4_min)[0]
-    except IndexError as e:
-        raise e
-    
-    try:
-        kn.output_order = outputs
-    except ValueError as e:
-        print("Error with the new output order")
-        print(e)
-        print("Continuing with the old one")
+    _, d, _ = kn.propagate_fields(ψ=ψ, λ=λ)
+    k1 = np.argsort((d * np.conj(d)).real)[:2]
+
+    # E1 + E3 -> D3 & D4 should be dark (K2)
+    ψ = np.zeros(4, dtype=complex)
+    ψ[0] = ψ[2] = (1+0j) * np.sqrt(1/2)
+
+    _, d, _ = kn.propagate_fields(ψ=ψ, λ=λ)
+    k2 = np.argsort((d * np.conj(d)).real)[:2]
+
+    # E1 + E2 -> D5 & D6 should be dark (K3)
+    ψ = np.zeros(4, dtype=complex)
+    ψ[0] = ψ[1] = (1+0j) * np.sqrt(1/2)
+
+    _, d, _ = kn.propagate_fields(ψ=ψ, λ=λ)
+    k3 = np.argsort((d * np.conj(d)).real)[:2]
+
+    # Check kernel sign (correc kernel inversion) -----------------------------
+
+    # E1 + E2*exp(-iπ/4) -> K1 and K2 should be positive
+    ψ = np.zeros(4, dtype=complex)
+    ψ[0] = ψ[1] = (1+0j) * np.sqrt(1/2)
+    ψ[1] *= np.exp(- 1j * np.pi / 2)
+    _, d, _ = kn.propagate_fields(ψ=ψ, λ=λ)
+
+    dk1 = d[k1]
+    diff = np.abs(dk1[0] - dk1[1])
+    if diff < 0:
+        k1 = np.flip(k1)
+
+    dk2 = d[k2]
+    diff = np.abs(dk2[0] - dk2[1])
+    if diff < 0:
+        k2 = np.flip(k2)
+
+    # E1 + E3*exp(-iπ/4) -> K3 should be positive
+    ψ = np.zeros(4, dtype=complex)
+    ψ[0] = ψ[1] = (1+0j) * np.sqrt(1/2)
+    ψ[2] *= np.exp(- 1j * np.pi / 2)
+    _, d, _ = kn.propagate_fields(ψ=ψ, λ=λ)
+
+    dk3 = d[k3]
+    diff = np.abs(dk3[0] - dk3[1])
+    if diff < 0:
+        k3 = np.flip(k3)
+
+    # Reconstruct the kernel order --------------------------------------------
+
+    kn.output_order = np.concatenate([k1, k2, k3])
+
     return kn

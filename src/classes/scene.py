@@ -17,6 +17,7 @@ class Scene:
             Δt: u.Quantity,
             input_ce_rms: u.Quantity,
             sources: list[Source] = None,
+            name:str = "Unnamed",
         ):
         """
         Parameters
@@ -28,6 +29,7 @@ class Scene:
         - f: Star photon flux
         - Δt:Exposition time
         - sources: List of Source objects
+        - name: Name of the scene
         """
 
         self.instrument = instrument
@@ -39,6 +41,7 @@ class Scene:
         self.input_ce_rms = input_ce_rms
         self.sources = sources if sources else []
         self.p = telescopes.project_position(r=self.instrument.r, h=self.h, l=self.instrument.l, δ=self.δ)
+        self.name = name
 
     def copy(self,
             instrument:Instrument = None,
@@ -184,3 +187,13 @@ class Scene:
     
     def iplot_transmission_maps(self, N:int):
         return self.instrument.iplot_transmission_maps(N=N, δ=self.δ, h=self.h, Δh=self.Δh, sources=self.sources)
+    
+    def __repr__(self) -> str:
+        return self.__str__()
+    
+    def __str__(self) -> str:
+        sources = "\n | - ".join([str(s) for s in self.sources])
+        return f'Scene: "{self.name}" \n' + \
+            f' | δ = {self.δ}, h = {self.h}, Δh = {self.Δh}, f = {self.f}, Δt = {self.Δt} input_ce_rms = {self.input_ce_rms}' + "\n" \
+            ' | ' + '\n | '.join(str(self.instrument).split('\n')) + \
+            '\n | Sources : \n' + f' | - {sources}'

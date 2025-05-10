@@ -39,3 +39,9 @@ class Source():
             θ = copy(θ) if θ is not None else copy(self.θ),
             α = copy(α) if α is not None else copy(self.α),
         )
+    
+    def __repr__(self) -> str:
+        return self.__str__()
+    
+    def __str__(self) -> str:
+        return f'Source "{self.name}": contrast = {self.c:.2e}, θ = {self.θ}, α = {self.α}'
