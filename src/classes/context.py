@@ -9,6 +9,10 @@ from io import BytesIO
 # Internal libs
 from .interferometer import Interferometer
 from .target import Target
+from . import kernel_nuller
+
+from ..modules import coordinates
+from ..modules import signals
 
 class Context:
     def __init__(
@@ -216,6 +220,109 @@ class Context:
             plt.close()
             return buffer.getvalue()
         plt.show()
+
+    # Transmission maps -------------------------------------------------------
+
+    def get_transmission_maps(self, N:int) -> np.ndarray[float]:
+        """
+        Generate all the kernel-nuller transmission maps for a given resolution
+
+        Parameters
+        ----------
+        - N: Resolution of the map
+
+        Returns
+        -------
+        - Null outputs map (3 x resolution x resolution)
+        - Dark outputs map (6 x resolution x resolution)
+        - Kernel outputs map (3 x resolution x resolution)
+        """
+
+        N=N
+        φ=self.interferometer.kn.φ.to(u.m).value
+        σ=self.interferometer.kn.σ.to(u.m).value
+        p=self.p.value
+        λ=self.interferometer.λ.to(u.m).value
+        fov=self.interferometer.fov
+        output_order=self.interferometer.kn.output_order
+        
+        return get_transmission_map_njit(N=N, φ=φ, σ=σ, p=p, λ=λ, fov=fov, output_order=output_order)
+    
+    def plot_transmission_maps(self, N:int, return_plot:bool = False) -> None:
+        
+        # Get transmission maps
+        n_maps, d_maps, k_maps = self.get_transmission_maps(N=N)
+
+        # Get companions position to plot them
+        companions_pos = []
+        for c in self.target.companions:
+            x, y = coordinates.αθ_to_xy(α=c.α, θ=c.θ, fov=self.fov)
+            companions_pos.append((x*self.fov, y*self.fov))
+
+        _, axs = plt.subplots(2, 6, figsize=(35, 10))
+
+        fov = self.interferometer.fov
+        extent = (-fov.value, fov.value, -fov.value, fov.value)
+
+        for i in range(3):
+            im = axs[0, i].imshow(n_maps[i], aspect="equal", cmap="hot", extent=extent)
+            axs[0, i].set_title(f"Nuller output {i+1}")
+            plt.colorbar(im, ax=axs[0, i])
+
+        for i in range(6):
+            im = axs[1, i].imshow(d_maps[i], aspect="equal", cmap="hot", extent=extent)
+            axs[1, i].set_title(f"Dark output {i+1}")
+            axs[1, i].set_aspect("equal")
+            plt.colorbar(im, ax=axs[1, i])
+
+        for i in range(3):
+            im = axs[0, i + 3].imshow(k_maps[i], aspect="equal", cmap="bwr", extent=extent)
+            axs[0, i + 3].set_title(f"Kernel {i+1}")
+            plt.colorbar(im, ax=axs[0, i + 3])
+
+        for ax in axs.flatten():
+            ax.set_xlabel(r"$\theta_x$" + f" ({fov.unit})")
+            ax.set_ylabel(r"$\theta_y$" + f" ({fov.unit})")
+            ax.scatter(0, 0, color="yellow", marker="*", edgecolors="black")
+            for x, y in companions_pos:
+                ax.scatter(x, y, color="blue", edgecolors="black")
+
+        # Display companions positions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        for ax in axs.flatten():
+            ax.set_xlabel(r"$\theta_x$" + f" ({fov.unit})")
+            ax.set_ylabel(r"$\theta_y$" + f" ({fov.unit})")
+            ax.scatter(0, 0, color="yellow", marker="*", edgecolors="black", s=100)
+            for x, y in companions_pos:
+                ax.scatter(x, y, color="blue", edgecolors="black")
+
+        transmissions = ""
+        for i, c in enumerate(self.target.companions):
+            α = c.α
+            θ = c.θ
+            p = self.p
+            ψ = signals.get_input_fields(a=1, θ=θ, α=α, λ=self.λ, p=p)
+
+            n, d, b = self.kn.propagate_fields(ψ=ψ, λ=self.λ)
+
+            k = np.array([np.abs(d[2*i])**2 - np.abs(d[2*i+1])**2 for i in range(3)])
+
+            linebreak = '<br>' if return_plot else '\n   '
+            transmissions += '<h2>' if return_plot else ''
+            transmissions += f"\n{c.name} throughputs:"
+            transmissions += '</h1>' if return_plot else '\n----------' + linebreak
+            transmissions += f"B: {np.abs(b)**2*100:.2f}%" + linebreak
+            transmissions += f"N: {' | '.join([f'{np.abs(i)**2*100:.2f}%' for i in n])}" + f"   Depth: {np.sum(np.abs(d)**2) / np.abs(b)**2:.2e}" + linebreak
+            transmissions += f"D: {' | '.join([f'{np.abs(i)**2*100:.2f}%' for i in d])}" + f"   Depth: {np.sum(np.abs(d)**2) / np.abs(b)**2:.2e}" + linebreak
+            transmissions += f"K: {' | '.join([f'{i*100:.2f}%' for i in k])}" + f"   Depth: {np.sum(np.abs(k)) / np.abs(b)**2:.2e}" + linebreak
+
+        if return_plot:
+            plot = BytesIO()
+            plt.savefig(plot, format='png')
+            plt.close()
+            return plot.getvalue(), transmissions
+        plt.show()
+        print(transmissions)
     
 #==============================================================================
 # Number functions
@@ -255,3 +362,68 @@ def project_position_njit(
         p[i] = M @ np.array([y, x])
 
     return p
+
+# Transmission maps -----------------------------------------------------------
+
+@nb.njit()
+def get_transmission_map_njit(
+        N: int,
+        φ: np.ndarray[float],
+        σ: np.ndarray[float],
+        p: np.ndarray[float],
+        λ: float,
+        fov: float,
+        output_order: np.ndarray[int]
+    ) -> tuple[np.ndarray[complex], np.ndarray[complex], np.ndarray[float]]:
+    """
+    Generate the transmission maps of this context with a given resolution
+
+    Parameters
+    ----------
+    - N: Resolution of the map
+    - φ: Array of 14 injected OPD (in meter)
+    - σ: Array of 14 intrasic OPD (in meter)
+    - p: Projected telescope positions (in meter)
+    - λ: Wavelength (in meter)
+    - fov: Field of view in mas
+    - output_order: Order of the outputs
+
+    Returns
+    -------
+    - Null outputs map (3 x resolution x resolution)
+    - Dark outputs map (6 x resolution x resolution)
+    - Kernel outputs map (3 x resolution x resolution)
+    """
+
+    # Get the coordinates of the map
+    _, _, α_map, θ_map = coordinates.get_maps_njit(N=N, fov=fov)
+
+    # mas to radian
+    θ_map = θ_map / 1000 / 3600 / 180 * np.pi
+
+    n_maps = np.zeros((3, N, N), dtype=np.complex128)
+    d_maps = np.zeros((6, N, N), dtype=np.complex128)
+    k_maps = np.zeros((3, N, N), dtype=float)
+
+    for x in range(N):
+        for y in range(N):
+            
+            α = α_map[x, y]
+            θ = θ_map[x, y]
+
+            ψ = signals.get_input_fields_njit(a=1, θ=θ, α=α, λ=λ, p=p)
+
+            n, d, _ = kernel_nuller.propagate_fields_njit(ψ, φ, σ, λ, output_order)
+
+            k = np.array([np.abs(d[2*i])**2 - np.abs(d[2*i+1])**2 for i in range(3)])
+
+            for i in range(3):
+                n_maps[i, x, y] = n[i]
+
+            for i in range(6):
+                d_maps[i, x, y] = d[i]
+
+            for i in range(3):
+                k_maps[i, x, y] = k[i]
+
+    return np.abs(n_maps) ** 2, np.abs(d_maps) ** 2, k_maps

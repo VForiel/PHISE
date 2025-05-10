@@ -11,6 +11,7 @@ class Interferometer:
             l:u.Quantity,
             λ:u.Quantity,
             Δλ:u.Quantity,
+            fov:u.Quantity,
             telescopes:list[Telescope],
             kn:KernelNuller,
             name:str = "Unnamed",
@@ -23,6 +24,7 @@ class Interferometer:
         - l: Latitude of baseline center
         - λ: Central wavelength
         - Δλ: Bandwidth
+        - fov: Field of view
         - telescopes: List of telescope in the array
         - kn: Kernel-Nuller object
         - name: Name of the instrument
@@ -33,6 +35,7 @@ class Interferometer:
         self.l = l
         self.λ = λ
         self.Δλ = Δλ
+        self.fov = fov
         self.telescopes = telescopes
         self.kn = kn
         self.name = name
@@ -90,6 +93,22 @@ class Interferometer:
         except u.UnitConversionError:
             raise ValueError("Δλ must be in meters")
         self._Δλ = Δλ
+
+    # fov property ------------------------------------------------------------
+
+    @property
+    def fov(self) -> u.Quantity:
+        return self._fov
+    
+    @fov.setter
+    def fov(self, fov:u.Quantity):
+        if not isinstance(fov, u.Quantity):
+            raise TypeError("fov must be an astropy Quantity")
+        try:
+            fov = fov.to(u.mas)
+        except u.UnitConversionError:
+            raise ValueError("fov must be in milliarcseconds")
+        self._fov = fov
 
     # telescopes property -----------------------------------------------------
 

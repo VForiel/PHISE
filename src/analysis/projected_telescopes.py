@@ -7,11 +7,7 @@ from io import BytesIO
 from copy import deepcopy as copy
 
 # Internal libs
-from ..classes import context
-from ..classes.interferometer import Interferometer
-from ..classes.kernel_nuller import KernelNuller
-from ..classes.target import Target
-from ..classes import telescope
+from .. import *
 
 def gui(
         r:u.Quantity = None,
@@ -42,7 +38,8 @@ def gui(
             l=l,
             λ=0 * u.m, # Unused
             Δλ=0 * u.m, # Unused
-            telescopes=telescope.get_VLTI_UTs(), # Unused
+            fov=0 * u.mas, # Unused
+            telescopes=telescope.get_VLTI_UTs(),
             kn=KernelNuller(
                 φ=np.zeros(14) * u.m, # Unused
                 σ=np.zeros(14) * u.m, # Unused

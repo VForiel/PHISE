@@ -3,16 +3,55 @@ import numpy as np
 import matplotlib.pyplot as plt
 import ipywidgets as widgets
 import astropy.units as u
-from ..classes.context import Context
+from copy import deepcopy as copy
 
-def start(scene:Context):
+from .. import *
 
-    scene = scene.copy()
-    λ = scene.instrument.λ
+def gui(
+        λ:u.Quantity = None,
+        φ:u.Quantity = None,
+        Γ:u.Quantity = None, # Input error RMS
+    ):
     
+    # Set default values ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    if λ is None:
+        λ = 1.65 * u.um
+    if φ is None:
+        φ = np.zeros(14) * u.nm
+    if Γ is None:
+        Γ = 100 * u.nm
+    
+    σ = np.abs(np.random.normal(0, Γ.value, size=len(φ))) * Γ.unit
+
     step = 1e-20
 
-    # Build sliders -----------------------------------------------------------
+    # Context ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    ref_ctx = Context(
+        interferometer=Interferometer(
+            l=0 * u.deg, # Unused
+            λ=λ,
+            Δλ=0 * u.m, # Unused
+            fov=0 * u.mas, # Unused
+            telescopes=telescope.get_VLTI_UTs(), # Unused
+            kn=KernelNuller(
+                φ=φ, # Unused
+                σ=σ, # Unused
+            ),
+        ),
+        target=Target(
+            m=0 * u.mag, # Unused
+            δ=0 * u.deg, # Unused
+            companions=[], # Unused
+        ),
+        h=0 * u.hourangle, # Unused
+        Δh=0 * u.hourangle, # Unused
+        e=0*u.s, # Unused
+        Γ=0*u.nm, # Unused
+    )
+
+    # Build sliders ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     # Input amplitude
     IA_sliders = [
@@ -42,10 +81,10 @@ def start(scene:Context):
     ]
 
     for i in range(14):
-        P_sliders[i].value = scene.kn.φ[i].to(λ.unit).value
+        P_sliders[i].value = ref_ctx.interferometer.kn.φ[i].to(λ.unit).value
 
 
-    # Build GUI ---------------------------------------------------------------
+    # Build GUI ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     def beam_repr(beam: complex) -> str:
         return f"<b>{np.abs(beam):.2e}</b> * exp(<b>{np.angle(beam)/np.pi:.2f}</b> pi i)"
@@ -57,15 +96,17 @@ def start(scene:Context):
 
     def update_gui(*args):
 
+        ctx = copy(ref_ctx)
+
         ψ = np.array([
             IA_sliders[i].value * np.exp(1j * IP_sliders[i].value / λ.value * 2 * np.pi)
             for i in range(4)
         ])
 
         for i in range(14):
-            scene.kn.φ[i] = P_sliders[i].value * λ.unit
+            ctx.interferometer.kn.φ[i] = P_sliders[i].value * λ.unit
 
-        n, d, b = scene.kn.propagate_fields(ψ=ψ, λ=λ)
+        n, d, b = ctx.interferometer.kn.propagate_fields(ψ=ψ, λ=λ)
 
         k = np.array([
             np.abs(d[2*i])**2 - np.abs(d[2*i+1])**2
@@ -91,9 +132,10 @@ def start(scene:Context):
                 f"<b>Kernel {i+1} -</b> Value: <code>{beam:.2e}</code>  KN depth: <code>{beam / np.abs(b)**2:.2e}</code>"
             )   
 
-        phases.value = scene.kn.plot_phase(λ=λ, plot=False, ψ=ψ)
+        phases.value = ctx.interferometer.kn.plot_phase(λ=λ, plot=False, ψ=ψ)
 
-        # Plot intensities
+        # Plot intensities ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
         for i in range(len(ψ)):
             plt.imshow([[np.abs(ψ[i])**2,],], cmap="hot", vmin=0, vmax=np.sum(np.abs(ψ)**2))
             plt.savefig(fname=f"img/tmp.png", format="png")
@@ -159,7 +201,7 @@ def start(scene:Context):
         ]
     )
 
-    # Link sliders to update function ------------------------------------------
+    # Link sliders to update function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     for widget in P_sliders:
         widget.observe(update_gui, "value")
