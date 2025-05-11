@@ -15,3 +15,6 @@ from .interferometer import Interferometer
 
 from . import context
 from .context import Context
+
+from . import camera
+from .camera import Camera

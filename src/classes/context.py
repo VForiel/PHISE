@@ -1,6 +1,7 @@
 # External libs
 import numpy as np
 import astropy.units as u
+import astropy.constants as const
 import numba as nb
 from copy import deepcopy as copy
 import matplotlib.pyplot as plt
@@ -48,7 +49,8 @@ class Context:
         self.Γ = Γ
         self.name = name
         
-        self.project_telescopes_position()
+        self.project_telescopes_position() # define self.p
+        self.update_photon_flux() # define self.pf
 
         self._initialized = True
 
@@ -63,7 +65,7 @@ class Context:
         if not isinstance(interferometer, Interferometer):
             raise TypeError("interferometer must be an Interferometer object")
         self._interferometer = copy(interferometer)
-        self.interferometer._ctx = self
+        self.interferometer._parent_ctx = self
         if self._initialized:
             self.project_telescopes_position()
 
@@ -78,7 +80,7 @@ class Context:
         if not isinstance(target, Target):
             raise TypeError("target must be a Target object")
         self._target = copy(target)
-        self.target._ctx = self
+        self.target._parent_ctx = self
         if self._initialized:
             self.project_telescopes_position()
 
@@ -157,8 +159,60 @@ class Context:
     @p.setter
     def p(self, p: u.Quantity):
         raise ValueError("p is a read-only property. Use project_telescopes_position() to set it accordingly to the other parameters in this context.")
+    
+
+    # Photon flux -------------------------------------------------------------
+
+    @property
+    def pf(self) -> u.Quantity:
+        """
+        Photon flux in the context
+        """
+        if not hasattr(self, "_ph"):
+            raise AttributeError("pf is not defined. Call update_photon_flux() first.")
+        return self._ph
+    
+    @pf.setter
+    def pf(self, pf: u.Quantity):
+        """
+        Set the photon flux in the context
+        """
+        raise ValueError("pf is a read-only property. Use update_photon_flux() to set it accordingly to the other parameters in this context.")
+
+    def update_photon_flux(self):
+        """
+        Update the photon flux in the context.
+        ❗ Assumption: the spectral flux is constant over the bandwidth.
+        """
+
+        f = self.target.f.to(u.W / u.m**2 / u.nm)
+        λ = self.interferometer.λ.to(u.m)
+        Δλ = self.interferometer.Δλ.to(u.nm)
+        a = np.array([i.a.to(u.m**2).value for i in self.interferometer.telescopes]) * u.m**2
+        h = const.h
+        c = const.c
+
+        p = f * a * Δλ # Optical power [W]
+
+        self._ph = p * λ / (h*c) # Photon flux [photons/s]
 
     # Projected position ------------------------------------------------------
+
+    @property
+    def p(self) -> u.Quantity:
+        """
+        Projected position of the telescopes in a plane perpendicular to the line of sight.
+        """
+        if not hasattr(self, "_p"):
+            raise AttributeError("p is not defined. Call project_telescopes_position() first.")
+        return self._p
+    
+    @p.setter
+    def p(self, p: u.Quantity):
+        """
+        Set the projected position of the telescopes in a plane perpendicular to the line of sight.
+        """
+        raise ValueError("p is a read-only property. Use project_telescopes_position() to set it accordingly to the other parameters in this context.")
 
     def project_telescopes_position(self):
         """
@@ -171,8 +225,6 @@ class Context:
         r = np.array([i.r.to(u.m).value for i in self.interferometer.telescopes])
         
         self._p = project_position_njit(r, h, l, δ) * u.m
-
-        return self.p
     
     # Plot projected positions over the time ----------------------------------
 
@@ -323,6 +375,26 @@ class Context:
             return plot.getvalue(), transmissions
         plt.show()
         print(transmissions)
+
+    # Observation -------------------------------------------------------------
+
+    def observe(
+            self,
+            n:int = 1,
+        ) -> np.ndarray[int]:
+        """
+        Generate a series of observations in this context.
+
+        Parameters
+        ----------
+        - n: Number of nights (= number of observations for a given hour angle)
+
+        Returns
+        -------
+        - Array of observations
+        """
+
+        # TODO
     
 #==============================================================================
 # Number functions

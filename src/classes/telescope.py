@@ -13,6 +13,9 @@ class Telescope():
         - r: Relative position to the baseline center
         - name: Name of the telescope
         """
+
+        self._parent_interferometer = None
+
         self.a = a
         self.r = r
         self.name = name
@@ -33,6 +36,9 @@ class Telescope():
             raise ValueError("a must be in a surface area unit")
         self._a = a
 
+        if self.parent_interferometer is not None:
+            self.parent_interferometer.parent_ctx.update_photon_flux(self)
+
     # r property --------------------------------------------------------------
 
     @property
@@ -51,6 +57,9 @@ class Telescope():
             raise ValueError("r must have a shape of (2,)")
         self._r = r
 
+        if self.parent_interferometer is not None:
+            self.parent_interferometer.parent_ctx.update_telescope_position(self)
+
     # name property -----------------------------------------------------------
 
     @property
@@ -63,6 +72,15 @@ class Telescope():
             raise TypeError("name must be a string")
         self._name = name
 
+    # parent_interferometer property ------------------------------------------
+
+    @property
+    def parent_interferometer(self):
+        return self._parent_interferometer
+    
+    @parent_interferometer.setter
+    def parent_interferometer(self, parent_interferometer):
+        raise ValueError("parent_interferometer is read-only")
 
 #==============================================================================
 # Other functions
@@ -76,7 +94,7 @@ def get_VLTI_UTs() -> list[Telescope]:
 
     Returns
     -------
-    - Array of the 4 UT positions in the plane perpendicular to the line of sight (4,2) [m]
+    - List containing the 4 VLTI UTs as Telescope objects.
     """
 
     # UT coordinates... obtained on Google map 😅 <- TODO: update with precise positions

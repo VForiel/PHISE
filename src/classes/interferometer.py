@@ -1,9 +1,11 @@
 # External libs
 from astropy import units as u
+from copy import deepcopy as copy
 
 # Internal libs
 from .kernel_nuller import KernelNuller
 from .telescope import Telescope
+from .camera import Camera
 
 class Interferometer:
     def __init__(
@@ -14,6 +16,7 @@ class Interferometer:
             fov:u.Quantity,
             telescopes:list[Telescope],
             kn:KernelNuller,
+            camera:Camera,
             name:str = "Unnamed",
         ):
         """
@@ -30,14 +33,19 @@ class Interferometer:
         - name: Name of the instrument
         """
         
-        self._ctx = None
+        self._parent_ctx = None
         
         self.l = l
         self.λ = λ
         self.Δλ = Δλ
         self.fov = fov
-        self.telescopes = telescopes
-        self.kn = kn
+        self.telescopes = copy(telescopes)
+        for telescope in self.telescopes:
+            telescope._parent_interferometer = self
+        self.kn = copy(kn)
+        self.kn._parent_interferometer = self
+        self.camera = copy(camera)
+        self.camera._parent_interferometer = self
         self.name = name
 
 
@@ -58,8 +66,8 @@ class Interferometer:
         self._l = l
 
         # If latitude is set, project the telescopes position
-        if self.ctx is not None:
-            self.ctx.project_telescopes_position()
+        if self.parent_ctx is not None:
+            self.parent_ctx.project_telescopes_position()
 
 
     # λ property --------------------------------------------------------------
@@ -122,7 +130,9 @@ class Interferometer:
             raise TypeError("telescopes must be a list")
         if not all(isinstance(telescope, Telescope) for telescope in telescopes):
             raise TypeError("telescopes must be a list of Telescope objects")
-        self._telescopes = telescopes
+        self._telescopes = copy(telescopes)
+        for telescope in self._telescopes:
+            telescope._parent_interferometer = self
 
     # kn property -------------------------------------------------------------
 
@@ -134,7 +144,21 @@ class Interferometer:
     def kn(self, kn:KernelNuller):
         if not isinstance(kn, KernelNuller):
             raise TypeError("kn must be a KernelNuller object")
-        self._kn = kn
+        self._kn = copy(kn)
+        self._kn._parent_interferometer = self
+
+    # camera property ---------------------------------------------------------
+
+    @property
+    def camera(self) -> Camera:
+        return self._camera
+    
+    @camera.setter
+    def camera(self, camera:Camera):
+        if not isinstance(camera, Camera):
+            raise TypeError("camera must be a Camera object")
+        self._camera = copy(camera)
+        self._camera._parent_interferometer = self
 
     # name property -----------------------------------------------------------
 
@@ -148,16 +172,16 @@ class Interferometer:
             raise TypeError("name must be a string")
         self._name = name
 
-    # ctx property ------------------------------------------------------------
+    # parent_ctx property -----------------------------------------------------
 
     @property
-    def ctx(self) -> list:
-        return self._ctx
+    def parent_ctx(self) -> list:
+        return self._parent_ctx
     
-    @ctx.setter
-    def ctx(self, ctx):
-        if self._ctx is not None:
-            raise AttributeError("ctx is read-only")
+    @parent_ctx.setter
+    def parent_ctx(self, parent_ctx):
+        if self._parent_ctx is not None:
+            raise AttributeError("parent_ctx is read-only")
         else:
-            self._ctx = ctx
+            self._parent_ctx = parent_ctx
     

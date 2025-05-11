@@ -4,6 +4,8 @@ import numba as nb
 import astropy.units as u
 import matplotlib.pyplot as plt
 from io import BytesIO
+from LRFutils import color
+from copy import deepcopy as copy
 
 # Internal libs
 from ..modules import mmi
@@ -30,6 +32,9 @@ class KernelNuller():
         - output_order: Order of the outputs
         - name: Name of the Kernel-Nuller object
         """
+
+        self._parent_interferometer = None
+
         self.φ = φ
         self.σ = σ
         self.output_order = output_order if output_order is not None else np.array([0, 1, 2, 3, 4, 5])
@@ -106,6 +111,16 @@ class KernelNuller():
         if not isinstance(name, str):
             raise ValueError("name must be a string")
         self._name = name
+
+    # Parent interferometer property ------------------------------------------
+
+    @property
+    def parent_interferometer(self):
+        return self._parent_interferometer
+    
+    @parent_interferometer.setter
+    def parent_interferometer(self, parent_interferometer):
+        raise ValueError("parent_interferometer is read-only")
 
     # Electric fields propagation ---------------------------------------------
 
@@ -222,6 +237,78 @@ class KernelNuller():
             plt.close()
             return plot.getvalue()
         plt.show()
+
+    # Rebind outputs ----------------------------------------------------------
+
+    def rebind_outputs(self, λ):
+        """
+        Correct the output order of the KernelNuller object. To do so, we successively obstruct two inputs and add a π/4 phase over one of the two remaining inputs. Doing so, 
+
+        Parameters
+        ----------
+        - self: KernelNuller object
+        - λ: Wavelength of the observation
+
+        Returns
+        -------
+        - KernelNuller object
+        """
+
+        # Identify kernels (correct kernel swapping) ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        # E1 + E4 -> D1 & D2 should be dark (K1)
+        ψ = np.zeros(4, dtype=complex)
+        ψ[0] = ψ[3] = (1+0j) * np.sqrt(1/2)
+
+        _, d, _ = self.propagate_fields(ψ=ψ, λ=λ)
+        k1 = np.argsort((d * np.conj(d)).real)[:2]
+
+        # E1 + E3 -> D3 & D4 should be dark (K2)
+        ψ = np.zeros(4, dtype=complex)
+        ψ[0] = ψ[2] = (1+0j) * np.sqrt(1/2)
+
+        _, d, _ = self.propagate_fields(ψ=ψ, λ=λ)
+        k2 = np.argsort((d * np.conj(d)).real)[:2]
+
+        # E1 + E2 -> D5 & D6 should be dark (K3)
+        ψ = np.zeros(4, dtype=complex)
+        ψ[0] = ψ[1] = (1+0j) * np.sqrt(1/2)
+
+        _, d, _ = self.propagate_fields(ψ=ψ, λ=λ)
+        k3 = np.argsort((d * np.conj(d)).real)[:2]
+
+        # Check kernel sign (correc kernel inversion) ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        # E1 + E2*exp(-iπ/4) -> K1 and K2 should be positive
+        ψ = np.zeros(4, dtype=complex)
+        ψ[0] = ψ[1] = (1+0j) * np.sqrt(1/2)
+        ψ[1] *= np.exp(- 1j * np.pi / 2)
+        _, d, _ = self.propagate_fields(ψ=ψ, λ=λ)
+
+        dk1 = d[k1]
+        diff = np.abs(dk1[0] - dk1[1])
+        if diff < 0:
+            k1 = np.flip(k1)
+
+        dk2 = d[k2]
+        diff = np.abs(dk2[0] - dk2[1])
+        if diff < 0:
+            k2 = np.flip(k2)
+
+        # E1 + E3*exp(-iπ/4) -> K3 should be positive
+        ψ = np.zeros(4, dtype=complex)
+        ψ[0] = ψ[1] = (1+0j) * np.sqrt(1/2)
+        ψ[2] *= np.exp(- 1j * np.pi / 2)
+        _, d, _ = self.propagate_fields(ψ=ψ, λ=λ)
+
+        dk3 = d[k3]
+        diff = np.abs(dk3[0] - dk3[1])
+        if diff < 0:
+            k3 = np.flip(k3)
+
+        # Reconstruct the kernel order ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        self.output_order = np.concatenate([k1, k2, k3])
 
 #==============================================================================
 # Numba functions

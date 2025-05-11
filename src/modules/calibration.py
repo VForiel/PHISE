@@ -1,51 +1,47 @@
+# External libs
 import numpy as np
-import astropy.units as u
-from LRFutils import color
 import matplotlib.pyplot as plt
+import astropy.units as u
 from scipy.optimize import curve_fit
-from scipy.stats import linregress
 from copy import deepcopy as copy
+from LRFutils import color
 
-from src.modules import phase
-from src.classes import kernel_nuller
-from src.classes.kernel_nuller import KernelNuller
+# Internal libs
+from ..classes.context import Context
+from . import phase
 
 #==============================================================================
-# Deterministic genetic algorithm
+# Genetic method
 #==============================================================================
 
 def genetic(
-        kn: KernelNuller,
+        ctx:Context,
         β: float,
-        λ: u.Quantity,
-        f: u.Quantity,
-        Δt: u.Quantity,
         verbose: bool = False,
-        plot: bool = False,
-        figsize: tuple[int] = (15,15),
-        ψ: np.ndarray[complex] = None,
-    ) -> tuple[u.Quantity, dict[str, np.ndarray[float]]]:
+        plot:bool = False,
+        figsize:tuple = (10, 5),
+        ret_history:bool = False,
+    ) -> Context:
     """
     Optimize the phase shifters offsets to maximize the nulling performance
 
     Parameters
     ----------
-    - kn: Kernel nuller object
+    - ctx: Context of the calibration process
     - β: Decay factor for the step size (0.5 <= β < 1)
-    - λ: Wavelength of the observation
-    - f: Flux of the star
-    - Δt: Integration time
     - verbose: Boolean, if True, print the optimization process
 
     Returns
     -------
-    - Dict containing the history of the optimization
+    - Context: New context with the optimized kernel nuller
+    - Dict: Dictionary with the optimization history (optional)
     """
 
-    if ψ is None:
-        ψ = np.ones(4) * (1 + 0j) * np.sqrt(f.to(1/Δt.unit).value/4) # Perfectly cophased inputs
+    ctx = copy(ctx)
 
-    ε = 1e-6 * λ.unit # Minimum shift step size
+    ψ = ctx.ph.to(1/ctx.e.unit).value * (1 + 0j) # Perfectly cophased inputs
+
+    ε = 1e-6 * ctx.interferometer.λ.unit # Minimum shift step size
 
     # Shifters that contribute to redirecting light to the bright output
     φb = [1, 2, 3, 4, 5, 7]
@@ -54,11 +50,10 @@ def genetic(
     φk = [6, 8, 9, 10, 11, 12, 13, 14]
 
     # History of the optimization
-    bright_history = []
-    kernel_history = []
+    depth_history = []
     shifters_history = []
 
-    Δφ = λ / 4
+    Δφ = ctx.interferometer.λ / 4
     while Δφ > ε:
 
         if verbose:
@@ -68,23 +63,49 @@ def genetic(
             log = ""
 
             # Step vector
-            s = np.zeros(14) * λ.unit
+            s = np.zeros(14) * ctx.interferometer.λ.unit
             s[i-1] = Δφ
 
+            kn_pos = copy(ctx.interferometer.kn)
+            kn_pos.φ += s
+
+            kn_old = copy(ctx.interferometer.kn)
+
+            kn_neg = copy(ctx.interferometer.kn)
+            kn_neg.φ -= s
+
             # Apply the step
-            _, k_neg, b_neg = kernel_nuller.observe_njit(ψ=ψ, φ=kn.φ-s, σ=kn.σ, λ=λ, Δt=Δt.value, output_order=kn.output_order)
-            _, k_old, b_old = kernel_nuller.observe_njit(ψ=ψ, φ=kn.φ,   σ=kn.σ, λ=λ, Δt=Δt.value, output_order=kn.output_order)
-            _, k_pos, b_pos = kernel_nuller.observe_njit(ψ=ψ, φ=kn.φ+s, σ=kn.σ, λ=λ, Δt=Δt.value, output_order=kn.output_order)
+            _, d_pos, b_pos = kn_pos.propagate_fields(ψ, ctx.interferometer.λ)
+            _, d_old, b_old = kn_old.propagate_fields(ψ, ctx.interferometer.λ)
+            _, d_neg, b_neg = kn_neg.propagate_fields(ψ, ctx.interferometer.λ)
 
-            # Total Kernels relative intensity
-            k_neg = np.sum(np.abs(k_neg))
-            k_old = np.sum(np.abs(k_old))
-            k_pos = np.sum(np.abs(k_pos))
+            # Build kernels
+            k_pos = np.array([
+                np.abs(d_pos[0])**2 + np.abs(d_pos[1])**2,
+                np.abs(d_pos[2])**2 + np.abs(d_pos[3])**2,
+                np.abs(d_pos[4])**2 + np.abs(d_pos[5])**2,
+            ])
 
+            k_old = np.array([
+                np.abs(d_old[0])**2 + np.abs(d_old[1])**2,
+                np.abs(d_old[2])**2 + np.abs(d_old[3])**2,
+                np.abs(d_old[4])**2 + np.abs(d_old[5])**2,
+            ])
+
+            k_neg = np.array([
+                np.abs(d_neg[0])**2 + np.abs(d_neg[1])**2,
+                np.abs(d_neg[2])**2 + np.abs(d_neg[3])**2,
+                np.abs(d_neg[4])**2 + np.abs(d_neg[5])**2,
+            ])
+
+            # Get bright intensity
+            b_pos = np.abs(b_pos)**2
+            b_old = np.abs(b_old)**2
+            b_neg = np.abs(b_neg)**2
+            
             # Save the history
-            bright_history.append(b_old / f.to(1/Δt.unit).value)
-            kernel_history.append(k_old / f.to(1/Δt.unit).value)
-            shifters_history.append(np.copy(kn.φ))
+            depth_history.append(np.sum(k_old) / np.sum(b_old))
+            shifters_history.append(np.copy(kn_old.φ))
 
             # Maximize the bright metric for group 1 shifters
             if i in φb:
@@ -92,10 +113,10 @@ def genetic(
 
                 if b_pos > b_old and b_pos > b_neg:
                     log += color.black(color.on_green(" + "))
-                    kn.φ += s
+                    ctx.interferometer.kn.φ += s
                 elif b_neg > b_old and b_neg > b_pos:
                     log += color.black(color.on_green(" - "))
-                    kn.φ -= s
+                    ctx.interferometer.kn.φ -= s
                 else:
                     log += color.black(color.on_green(" = "))
 
@@ -104,10 +125,10 @@ def genetic(
                 log += "Shift " + color.black(color.on_lightgrey(f"{i}")) + " Kernel: " + color.black(color.on_blue(f"{k_neg:.2e} | {k_old:.2e} | {k_pos:.2e}")) + " -> "
 
                 if k_pos < k_old and k_pos < k_neg:
-                    kn.φ += s
+                    ctx.interferometer.kn.φ += s
                     log += color.black(color.on_blue(" + "))
                 elif k_neg < k_old and k_neg < k_pos:
-                    kn.φ -= s
+                    ctx.interferometer.kn.φ -= s
                     log += color.black(color.on_blue(" - "))
                 else:
                     log += color.black(color.on_blue(" = "))
@@ -117,74 +138,66 @@ def genetic(
 
         Δφ *= β
 
-    kn.φ = phase.bound(kn.φ, λ)
-
-    history = {
-        "bright": np.array(bright_history),
-        "kernel": np.array(kernel_history),
-        "shifters": np.array(shifters_history),
-    }
+    ctx.interferometer.kn.φ = phase.bound(ctx.interferometer.kn.φ, ctx.interferometer.λ)
 
     if plot:
-        plot_genetic_history(history, figsize)
 
-    return kn, history
+        _, axs = plt.subplots(2,1, figsize=figsize)
 
-def plot_genetic_history(history: dict[str, np.ndarray[float]], figsize:tuple[int] = (5,5)):
-    bright_evol = history["bright"]
-    kernel_evol = history["kernel"]
-    shifts_evol = history["shifters"]
+        axs[0].plot(depth_history)
+        axs[0].set_xlabel("Iterations")
+        axs[0].set_ylabel("Kernel-Null depth")
+        axs[0].set_yscale("log")
+        axs[0].set_title("Performance of the Kernel-Nuller")
 
-    _, axs = plt.subplots(3,1, figsize=figsize)
+        for i in range(len(shifters_history)):
+            axs[1].plot(shifters_history[:,i], label=f"Shifter {i+1}")
+        axs[1].set_xlabel("Iterations")
+        axs[1].set_ylabel("Phase shift")
+        axs[1].set_yscale("linear")
+        axs[1].set_title("Convergence of the phase shifters")
+        axs[1].legend(loc='upper right')
 
-    axs[0].plot(bright_evol)
-    axs[0].set_xlabel("Number of iterations")
-    axs[0].set_ylabel("Bright throughput (%)")
-    axs[0].set_yscale("log")
-    axs[0].set_title("Optimization of the bright output")
+        plt.show()
 
-    axs[1].plot(kernel_evol)
-    axs[1].set_xlabel("Number of iterations")
-    axs[1].set_ylabel("Kernels throughput (%)")
-    axs[1].set_yscale("log")
-    axs[1].set_title("Optimization of the kernels")
-
-    for i in range(shifts_evol.shape[1]):
-        axs[2].plot(shifts_evol[:,i], label=f"Shifter {i+1}")
-    axs[2].set_xlabel("Number of iterations")
-    axs[2].set_ylabel("Phase shift")
-    axs[2].set_yscale("linear")
-    axs[2].set_title("Convergeance of the phase shifters")
-    axs[2].legend(loc='upper right')
-
-    plt.show()
+    if ret_history:
+        return ctx, {
+            "depth": depth_history,
+            "shifters": shifters_history,
+        }
+    else:
+        return ctx
 
 #==============================================================================
-# Input obstruction algorithm
+# Obstruction method
 #==============================================================================
 
 def obstruction(
-        kn: KernelNuller,
-        λ: u.Quantity,
-        f: u.Quantity,
-        Δt: u.Quantity,
-        N = 1_000,
+        ctx:Context,
+        N: int = 1_000,
         plot: bool = False,
         figsize:tuple[int] = (30,20),
-        ψ=None,
-    ) -> tuple[u.Quantity, dict[str, np.ndarray[float]]]:
+    ) -> Context:
     """
     Optimize the phase shifters offsets to maximize the nulling performance
 
     Parameters
     ----------
-    - kn: KernelNuller object
+    - ctx: Context of the calibration process
     - λ: Wavelength of the observation
-    - f: Flux of the star
-    - Δt: Integration time
     - N: Number of points for the least squares optimization
     - plot: Boolean, if True, plot the optimization process
+
+    Returns
+    -------
+    - Context: New context with the optimized kernel nuller
     """
+
+    ctx = copy(ctx)
+    kn = ctx.interferometer.kn
+    λ = ctx.interferometer.λ
+    e = ctx.interferometer.e
+    f = ctx.target.f
 
     if plot:
         fig, axs = plt.subplots(3, 3, figsize=figsize)
@@ -192,15 +205,15 @@ def obstruction(
             axs.flatten()[i].set_xlabel("Phase shift")
             axs.flatten()[i].set_ylabel("Throughput")
 
-    def maximize_bright(kn:KernelNuller, ψ, n, plt_coords=None):
+    def maximize_bright(kn, ψ, n, plt_coords=None):
 
-        x = np.linspace(0,λ.value,N)
+        x = np.linspace(0, λ.value,N)
         y = np.empty(N)
 
         for i in range(N):
             kn.φ[n-1] = i * λ / N
-            _, _, b = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
-            y[i] = b / f.to(1/Δt.unit).value
+            _, _, b = kn.observe(ψ=ψ, λ=λ, e=e)
+            y[i] = b / f.to(1/e.unit).value
 
         def sin(x, x0):
             return 1/4 * (np.sin((x-x0)/λ.value*2*np.pi)+1)/2
@@ -224,8 +237,8 @@ def obstruction(
 
         for i in range(N):
             kn.φ[n-1] = i * λ / N
-            _, k, _ = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
-            y[i] = k[m-1] / f.to(1/Δt.unit).value
+            _, k, _ = kn.observe(ψ=ψ, λ=λ, e=e)
+            y[i] = k[m-1] / f.to(1/e.unit).value
 
         def sin(x, x0):
             return 1/8 * np.sin((x-x0)/λ.value*2*np.pi)/2
@@ -249,8 +262,8 @@ def obstruction(
     
         for i in range(N):
             kn.φ[n-1] = i * λ / N
-            d, _, _ = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
-            y[i] = np.sum(np.abs(d[np.array(ds)-1])) / f.to(1/Δt.unit).value
+            d, _, _ = kn.observe(ψ=ψ, λ=λ, e=e)
+            y[i] = np.sum(np.abs(d[np.array(ds)-1])) / f.to(1/e.unit).value
 
         def sin(x, x0):
             return 1/8 + 1/8 * (np.sin((x-x0)/λ.value*2*np.pi)+1)/2
@@ -267,10 +280,7 @@ def obstruction(
             axs[*plt_coords].set_ylabel(f"Dark pair {ds} throughput")
             axs[*plt_coords].legend()
 
-    if ψ is None:
-        ψi = np.ones(4) * (1+0j) * np.sqrt(f/4)
-    else:
-        ψi = ψ
+    ψi = ctx.ph.to(1/e.unit) * (1+0j)
 
     # Bright maximization
     ψ = np.array([ψi[0], ψi[1], 0, 0])
@@ -299,273 +309,4 @@ def obstruction(
         axs[1,2].axis('off')
         plt.show()
 
-#--------------------------------------------------------------------------------
-
-def obstruction2(
-        kn: KernelNuller,
-        λ: u.Quantity,
-        f: u.Quantity,
-        Δt: u.Quantity,
-        N = 1_000,
-        plot: bool = False,
-    ) -> tuple[u.Quantity, dict[str, np.ndarray[float]]]:
-    """
-    Optimize the phase shifters offsets to maximize the nulling performance
-
-    Parameters
-    ----------
-    - kn: KernelNuller object
-    - λ: Wavelength of the observation
-    - f: Flux of the star
-    - Δt: Integration time
-    - N: Number of points for the least squares optimization
-    - plot: Boolean, if True, plot the optimization process
-    """
-
-    def maximize_bright(kn:KernelNuller, ψ, n):
-
-        x = np.array([0]*N + [λ.value/4]*N + [λ.value/2]*N + [3*λ.value/4]*N)
-        y = np.empty(4*N)
-
-        for i in range(N):
-            kn.φ[n-1] = x[i] * λ.unit
-            _, _, b = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
-            y[i] = b / f.to(1/Δt.unit).value
-
-        def sin(x, x0):
-            return 1/4 * (np.sin((x-x0)/λ.value*2*np.pi)+1)/2
-        popt, pcov = curve_fit(sin, x, y, p0=[0])
-
-        kn.φ[n-1] = (np.mod(popt[0]+λ.value/4, λ.value) * λ.unit).to(kn.φ.unit)
-
-        if plot:
-            plt.scatter(x, y, label='Data')
-            plt.plot(np.linspace(0, λ.value, N*4), sin(np.linspace(0, λ.value, N*4), *popt), label='Fit')
-            plt.axvline(x=np.mod(popt[0]+λ.value/4, λ.value), color='k', linestyle='--', label='Optimal phase shift')
-            plt.xlabel(f"Phase shift ({λ.unit})")
-            plt.ylabel("Bright throughput")
-            plt.title(f"Bright($\phi_{n}$)")
-            plt.legend()
-            plt.show()
-
-    def minimize_kernel(kn, ψ, n, i):
-
-        x = np.array([0]*N + [λ.value/4]*N + [λ.value/2]*N + [3*λ.value/4]*N)
-        y = np.empty(4*N)
-
-        for i in range(N):
-            kn.φ[n-1] = x[i] * λ.unit
-            _, k, _ = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
-            y[i] = np.sum(np.abs(k)) / f.to(1/Δt.unit).value
-
-        def sin(x, x0):
-            return 1/8 * np.abs(np.sin((x-x0)/λ.value*2*np.pi))
-        popt, pcov = curve_fit(sin, x, y, p0=[0])
-
-        kn.φ[n-1] = (np.mod(popt[0], λ.value) * λ.unit).to(kn.φ.unit)
-
-        if plot:
-            plt.scatter(x, y, label='Data')
-            plt.plot(np.linspace(0, λ.value, N*4), sin(np.linspace(0, λ.value, N*4), *popt), label='Fit')
-            plt.axvline(x=np.mod(popt[0], λ.value), color='k', linestyle='--', label='Optimal phase shift')
-            plt.xlabel(f"Phase shift ({λ.unit})")
-            plt.ylabel("Kernel throughput")
-            plt.title(f"Kernels($\phi_{n}$)")
-            plt.legend()
-            plt.show()
-
-    def maximize_darks(kn, ψ, n, ds):
-
-        x = np.array([0]*N + [λ.value/4]*N + [λ.value/2]*N + [3*λ.value/4]*N)
-        y = np.empty(4*N)
-    
-        for i in range(N):
-            kn.φ[n-1] = x[i] * λ.unit
-            d, _, _ = kn.observe(ψ=ψ, λ=λ, Δt=Δt)
-            y[i] = np.sum(np.abs(d[np.array(ds)-1])) / f.to(1/Δt.unit).value
-
-        def sin(x, x0):
-            return 1/4 * (np.sin((x-x0)/λ.value*2*np.pi)+1)/2
-        popt, pcov = curve_fit(sin, x, y, p0=[0], maxfev = 100_000)
-
-        kn.φ[n-1] = (np.mod(popt[0]+λ.value/4, λ.value) * λ.unit).to(kn.φ.unit)
-
-        if plot:
-            plt.scatter(x, y, label='Data')
-            plt.plot(np.linspace(0, λ.value, N*4), sin(np.linspace(0, λ.value, N*4), *popt), label='Fit')
-            plt.axvline(x=np.mod(popt[0]+λ.value/4, λ.value), color='k', linestyle='--', label='Optimal phase shift')
-            plt.xlabel(f"Phase shift ({λ.unit})")
-            plt.ylabel(f"Dark pair {ds} throughput")
-            plt.title(f"Darks{ds}($\phi_{n}$)")
-            plt.legend()
-            plt.show()
-            
-
-    a = (1+0j) * np.sqrt(f) * np.sqrt(1/4)
-
-    # Bright maximization
-    ψ = np.array([a, a, 0, 0])
-    maximize_bright(kn, ψ, 2)
-
-    ψ = np.array([0, 0, a, a])
-    maximize_bright(kn, ψ, 4)
-
-    ψ = np.array([a, 0, a, 0])
-    maximize_bright(kn, ψ, 7)
-
-    # Darks maximization
-    ψ = np.array([a, 0, -a, 0])
-    maximize_darks(kn, ψ, 8, [1,2])
-
-    # Kernel minimization
-    ψ = np.array([a, 0, 0, 0])
-    minimize_kernel(kn, ψ, 11, 1)
-    minimize_kernel(kn, ψ, 13, 2)
-    minimize_kernel(kn, ψ, 14, 3)
-
-    kn.φ = phase.bound(kn.φ, λ)
-
-#==============================================================================
-# Comparison of the two algorithms
-#==============================================================================
-
-def compare_approaches(f:u.Quantity, Δt:u.Quantity, λ:u.Quantity):
-    β_res = 10
-    βs, dβ = np.linspace(0.5, 0.99, β_res, retstep=True)
-    Ns = [10, 100, 1000, 10_000]#, 100_000]
-    samples = 100
-
-    # fig, axs = plt.subplots(1, 1, figsize=(5, 5))
-
-    shots = []
-    for β in βs:
-        for i in range(samples):
-            print(f'Gen.: β={β:.3f}, sample={i+1}/{samples}          ', end='\r')
-            kn = KernelNuller(φ=np.zeros(14)*λ, σ=np.random.uniform(0, 1, 14)*λ)
-            kn, history = genetic(kn=kn, β=β, λ=λ, f=f, Δt=Δt, verbose=False)
-            ψ = np.ones(4) * (1+0j) * np.sqrt(1/4)
-            _, d, b = kn.propagate_fields(ψ=ψ, λ=λ)
-            di = np.abs(d)**2
-            k = np.array([di[0] - di[1], di[2] - di[3], di[4] - di[5]])
-            depth = np.sum(np.abs(k)) / np.abs(b)**2
-            shots.append((len(history['bright']), depth))
-        
-    x, y = zip(*shots)
-    x = np.array(x); y = np.array(y)
-    plt.scatter(np.random.uniform(x-x/10, x+x/10), y, c='tab:blue', s=5, label='Genetic')
-
-    slope, intercept, r_value, p_value, std_err = linregress(np.log10(x), np.log10(y))
-    print(slope, intercept)
-    x_values = np.linspace(min(x), max(x), 500)
-    y_fit = 10**intercept * x_values**slope
-    plt.plot(x_values, y_fit, 'tab:cyan', linestyle='--', label=f'Gen. fit')
-
-    print("")
-
-    shots = []
-    for j, N in enumerate(Ns):
-        for i in range(samples):
-            print(f'Obs.: N={N}, sample={i+1}/{samples}          ', end='\r')
-            kn = KernelNuller(φ=np.zeros(14)*λ, σ=np.random.uniform(0, 1, 14)*λ)
-            obstruction(kn=kn, λ=λ, f=f, Δt=Δt, N=N, plot=False)
-            ψ = np.ones(4) * (1+0j) * np.sqrt(1/4)
-            _, d, b = kn.propagate_fields(ψ=ψ, λ=λ)
-            di = np.abs(d)**2
-            k = np.array([di[0] - di[1], di[2] - di[3], di[4] - di[5]])
-            depth = np.sum(np.abs(k)) / np.abs(b)**2
-            shots.append((7*N, depth))
-
-    x, y = zip(*shots)
-    x = np.array(x); y = np.array(y)
-    plt.scatter(np.random.uniform(x-x/10, x+x/10), y, c='tab:orange', s=5, label='Obstruction')
-
-    slope, intercept, r_value, p_value, std_err = linregress(np.log10(x), np.log10(y))
-    print(slope, intercept)
-    x_values = np.linspace(min(x), max(x), 500)
-    y_fit = 10**intercept * x_values**slope
-    plt.plot(x_values, y_fit, 'tab:red', linestyle='--', label=f'Obs. fit')
-
-    plt.xlabel('# of iterations')
-    plt.xscale('log')
-    plt.ylabel('Depth')
-    plt.yscale('log')
-    plt.title('Efficiency of the calibration approaches')
-    plt.legend()
-    plt.show()
-
-#==============================================================================
-# Correct output order
-#==============================================================================
-
-def rebind_outputs(kn, λ):
-    """
-    Correct the output order of the KernelNuller object. To do so, we successively obstruct two inputs and add a π/4 phase over one of the two remaining inputs. Doing so, 
-
-    Parameters
-    ----------
-    - kn: KernelNuller object
-    - λ: Wavelength of the observation
-
-    Returns
-    -------
-    - KernelNuller object
-    """
-    kn = kn.copy()
-
-    # Identify kernels (correct kernel swapping) ------------------------------
-
-    # E1 + E4 -> D1 & D2 should be dark (K1)
-    ψ = np.zeros(4, dtype=complex)
-    ψ[0] = ψ[3] = (1+0j) * np.sqrt(1/2)
-
-    _, d, _ = kn.propagate_fields(ψ=ψ, λ=λ)
-    k1 = np.argsort((d * np.conj(d)).real)[:2]
-
-    # E1 + E3 -> D3 & D4 should be dark (K2)
-    ψ = np.zeros(4, dtype=complex)
-    ψ[0] = ψ[2] = (1+0j) * np.sqrt(1/2)
-
-    _, d, _ = kn.propagate_fields(ψ=ψ, λ=λ)
-    k2 = np.argsort((d * np.conj(d)).real)[:2]
-
-    # E1 + E2 -> D5 & D6 should be dark (K3)
-    ψ = np.zeros(4, dtype=complex)
-    ψ[0] = ψ[1] = (1+0j) * np.sqrt(1/2)
-
-    _, d, _ = kn.propagate_fields(ψ=ψ, λ=λ)
-    k3 = np.argsort((d * np.conj(d)).real)[:2]
-
-    # Check kernel sign (correc kernel inversion) -----------------------------
-
-    # E1 + E2*exp(-iπ/4) -> K1 and K2 should be positive
-    ψ = np.zeros(4, dtype=complex)
-    ψ[0] = ψ[1] = (1+0j) * np.sqrt(1/2)
-    ψ[1] *= np.exp(- 1j * np.pi / 2)
-    _, d, _ = kn.propagate_fields(ψ=ψ, λ=λ)
-
-    dk1 = d[k1]
-    diff = np.abs(dk1[0] - dk1[1])
-    if diff < 0:
-        k1 = np.flip(k1)
-
-    dk2 = d[k2]
-    diff = np.abs(dk2[0] - dk2[1])
-    if diff < 0:
-        k2 = np.flip(k2)
-
-    # E1 + E3*exp(-iπ/4) -> K3 should be positive
-    ψ = np.zeros(4, dtype=complex)
-    ψ[0] = ψ[1] = (1+0j) * np.sqrt(1/2)
-    ψ[2] *= np.exp(- 1j * np.pi / 2)
-    _, d, _ = kn.propagate_fields(ψ=ψ, λ=λ)
-
-    dk3 = d[k3]
-    diff = np.abs(dk3[0] - dk3[1])
-    if diff < 0:
-        k3 = np.flip(k3)
-
-    # Reconstruct the kernel order --------------------------------------------
-
-    kn.output_order = np.concatenate([k1, k2, k3])
-
-    return kn
+    return ctx

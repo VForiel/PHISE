@@ -10,7 +10,7 @@ from .. import *
 def gui(
         λ:u.Quantity = None,
         φ:u.Quantity = None,
-        Γ:u.Quantity = None, # Input error RMS
+        γ:u.Quantity = None, # Manufacturing OPD RMS
     ):
     
     # Set default values ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -19,10 +19,10 @@ def gui(
         λ = 1.65 * u.um
     if φ is None:
         φ = np.zeros(14) * u.nm
-    if Γ is None:
-        Γ = 100 * u.nm
+    if γ is None:
+        γ = 100 * u.nm
     
-    σ = np.abs(np.random.normal(0, Γ.value, size=len(φ))) * Γ.unit
+    σ = np.abs(np.random.normal(0, γ.value, size=len(φ))) * γ.unit
 
     step = 1e-20
 

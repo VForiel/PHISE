@@ -1,6 +1,8 @@
 # External libs
 from astropy import units as u
 
+from . import Target
+
 class Companion():
     def __init__(self, c:float, θ:u.Quantity, α:u.Quantity, name:str = "Unnamed"):
         """Any light source in the sky (unresolved).
@@ -12,6 +14,8 @@ class Companion():
         - α: Parallactic angle
         """
 
+        self._parent_target = None
+
         self.θ = θ.to(u.mas)
         self.α = α.to(u.rad)
         self.c = float(c)
@@ -22,3 +26,59 @@ class Companion():
     
     def __str__(self) -> str:
         return f'Companion "{self.name}": contrast = {self.c:.2e}, θ = {self.θ}, α = {self.α}'
+    
+    # c property --------------------------------------------------------------
+
+    @property
+    def c(self) -> float:
+        return self._c
+    
+    @c.setter
+    def c(self, c:float):
+        if not isinstance(c, (int, float)):
+            raise TypeError("c must be a float")
+        if c < 0:
+            raise ValueError("c must be positive")
+        self._c = float(c)
+
+    # θ property --------------------------------------------------------------
+
+    @property
+    def θ(self) -> u.Quantity:
+        return self._θ
+    
+    @θ.setter
+    def θ(self, θ:u.Quantity):
+        if not isinstance(θ, u.Quantity):
+            raise TypeError("θ must be an astropy Quantity")
+        try:
+            θ = θ.to(u.mas)
+        except u.UnitConversionError:
+            raise ValueError("θ must be an angle")
+        self._θ = θ
+
+    # α property --------------------------------------------------------------
+
+    @property
+    def α(self) -> u.Quantity:
+        return self._α
+    
+    @α.setter
+    def α(self, α:u.Quantity):
+        if not isinstance(α, u.Quantity):
+            raise TypeError("α must be an astropy Quantity")
+        try:
+            α = α.to(u.rad)
+        except u.UnitConversionError:
+            raise ValueError("α must be an angle")
+        self._α = α
+
+    # parent_target property --------------------------------------------------
+
+    @property
+    def parent_target(self) -> Target:
+        return self._parent_target
+    
+    @parent_target.setter
+    def parent_target(self, target:Target):
+        raise ValueError("parent_target is read-only")

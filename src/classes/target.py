@@ -1,5 +1,6 @@
 # External libs
 import astropy.units as u
+from copy import deepcopy as copy
 
 # Internal libs
 from .companion import Companion
@@ -10,14 +11,14 @@ from .companion import Companion
 
 class Target():
 
-    def __init__(self, m:u.Quantity, δ:u.Quantity, companions:list[Companion], name:str = "Unnamed"):
+    def __init__(self, f:u.Quantity, δ:u.Quantity, companions:list[Companion], name:str = "Unnamed"):
         """
         A target star with a given magnitude and declination, and a list of companions.
 
         Parameters
         ----------
-        m : `astropy.units.Quantity`
-            Magnitude of the star.
+        f : `astropy.units.Quantity`
+            Spectral flux of the star.
         δ : `astropy.units.Quantity`
             Declination of the star.
         companions : list of `Companion`
@@ -26,30 +27,33 @@ class Target():
             Name of the scene (default is "Unnamed").
         """
         
-        self._ctx = None
+        self._parent_ctx = None
 
-        self.m = m
+        self.f = f
         self.δ = δ
-        self.companions = companions
+        self.companions = copy(companions)
+        for companion in self.companions:
+            companion._parent_target = self
         self.name = name
 
-
     # m property --------------------------------------------------------------
-
     
     @property
-    def m(self) -> u.Quantity:
-        return self._m
+    def f(self) -> u.Quantity:
+        return self._f
     
-    @m.setter
-    def m(self, m:u.Quantity):
-        if not isinstance(m, u.Quantity):
-            raise TypeError("m must be an astropy Quantity")
+    @f.setter
+    def f(self, f:u.Quantity):
+        if not isinstance(f, u.Quantity):
+            raise TypeError("f must be an astropy Quantity")
         try:
-            m = m.to(u.mag)
+            f = f.to(u.W * u.m**-2 * u.nm**-1)
         except u.UnitConversionError:
-            raise ValueError("m must be in magnitudes")
-        self._m = m
+            raise ValueError("f must be in spectral flux units (equivalent to W/m^2/nm)")
+        self._f = f
+
+        if self.parent_ctx is not None:
+            self.parent_ctx.update_photon_flux(self)
     
     # δ property --------------------------------------------------------------
 
@@ -68,8 +72,8 @@ class Target():
         self._δ = δ
 
         # If declination is set, project the telescopes position
-        if self.ctx is not None:
-            self.ctx.project_telescopes_position()
+        if self.parent_ctx is not None:
+            self.parent_ctx.project_telescopes_position()
 
     # companions property -----------------------------------------------------
     
@@ -85,7 +89,10 @@ class Target():
             companions = list(companions)
         except TypeError:
             raise TypeError("companions must be a list of Companion objects")
-        self._companions = companions
+            
+        self._companions = copy(companions)
+        for companion in self._companions:
+            companion._parent_target = self
 
     # name property -----------------------------------------------------------
 
@@ -100,13 +107,13 @@ class Target():
             raise TypeError("name must be a string")
         self._name = name
 
-    # ctx property ------------------------------------------------------------
+    # parent_ctx property -----------------------------------------------------
 
     @property
-    def ctx(self) -> list:
-        return self._ctx
+    def parent_ctx(self) -> list:
+        return self._parent_ctx
     
-    @ctx.setter
-    def ctx(self, ctx):
-        raise AttributeError("ctx is read-only")
+    @parent_ctx.setter
+    def parent_ctx(self, parent_ctx):
+        raise AttributeError("parent_ctx is read-only")
 
