@@ -38,6 +38,7 @@ def genetic(
     """
 
     ctx = copy(ctx)
+    ctx.Δh = ctx.interferometer.camera.e.to(u.hour).value * u.hourangle
 
     ψ = ctx.ph.to(1/ctx.e.unit).value * (1 + 0j) # Perfectly cophased inputs
 
@@ -62,50 +63,19 @@ def genetic(
         for i in φb + φk:
             log = ""
 
-            # Step vector
-            s = np.zeros(14) * ctx.interferometer.λ.unit
-            s[i-1] = Δφ
+            # Getting observation with different phase shifts
+            ctx.interferometer.kn.φ[i-1] += Δφ
+            _, k_pos, b_pos = ctx.observe()
 
-            kn_pos = copy(ctx.interferometer.kn)
-            kn_pos.φ += s
+            ctx.interferometer.kn.φ[i-1] -= 2*Δφ
+            _, k_neg, b_neg = ctx.observe()
 
-            kn_old = copy(ctx.interferometer.kn)
-
-            kn_neg = copy(ctx.interferometer.kn)
-            kn_neg.φ -= s
-
-            # Apply the step
-            _, d_pos, b_pos = kn_pos.propagate_fields(ψ, ctx.interferometer.λ)
-            _, d_old, b_old = kn_old.propagate_fields(ψ, ctx.interferometer.λ)
-            _, d_neg, b_neg = kn_neg.propagate_fields(ψ, ctx.interferometer.λ)
-
-            # Build kernels
-            k_pos = np.array([
-                np.abs(d_pos[0])**2 + np.abs(d_pos[1])**2,
-                np.abs(d_pos[2])**2 + np.abs(d_pos[3])**2,
-                np.abs(d_pos[4])**2 + np.abs(d_pos[5])**2,
-            ])
-
-            k_old = np.array([
-                np.abs(d_old[0])**2 + np.abs(d_old[1])**2,
-                np.abs(d_old[2])**2 + np.abs(d_old[3])**2,
-                np.abs(d_old[4])**2 + np.abs(d_old[5])**2,
-            ])
-
-            k_neg = np.array([
-                np.abs(d_neg[0])**2 + np.abs(d_neg[1])**2,
-                np.abs(d_neg[2])**2 + np.abs(d_neg[3])**2,
-                np.abs(d_neg[4])**2 + np.abs(d_neg[5])**2,
-            ])
-
-            # Get bright intensity
-            b_pos = np.abs(b_pos)**2
-            b_old = np.abs(b_old)**2
-            b_neg = np.abs(b_neg)**2
+            ctx.interferometer.kn.φ[i-1] += Δφ
+            _, k_old, b_old = ctx.observe()
             
             # Save the history
             depth_history.append(np.sum(k_old) / np.sum(b_old))
-            shifters_history.append(np.copy(kn_old.φ))
+            shifters_history.append(np.copy(ctx.interferometer.kn.φ.value))
 
             # Maximize the bright metric for group 1 shifters
             if i in φb:
@@ -113,10 +83,10 @@ def genetic(
 
                 if b_pos > b_old and b_pos > b_neg:
                     log += color.black(color.on_green(" + "))
-                    ctx.interferometer.kn.φ += s
+                    ctx.interferometer.kn.φ[i-1] += Δφ
                 elif b_neg > b_old and b_neg > b_pos:
                     log += color.black(color.on_green(" - "))
-                    ctx.interferometer.kn.φ -= s
+                    ctx.interferometer.kn.φ[i-1] -= Δφ
                 else:
                     log += color.black(color.on_green(" = "))
 
@@ -125,10 +95,10 @@ def genetic(
                 log += "Shift " + color.black(color.on_lightgrey(f"{i}")) + " Kernel: " + color.black(color.on_blue(f"{k_neg:.2e} | {k_old:.2e} | {k_pos:.2e}")) + " -> "
 
                 if k_pos < k_old and k_pos < k_neg:
-                    ctx.interferometer.kn.φ += s
+                    ctx.interferometer.kn.φ[i-1] += Δφ
                     log += color.black(color.on_blue(" + "))
                 elif k_neg < k_old and k_neg < k_pos:
-                    ctx.interferometer.kn.φ -= s
+                    ctx.interferometer.kn.φ[i-1] -= Δφ
                     log += color.black(color.on_blue(" - "))
                 else:
                     log += color.black(color.on_blue(" = "))

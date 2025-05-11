@@ -51,6 +51,9 @@ def gui(
                 φ=np.zeros(14) * u.m, # Unused
                 σ=np.zeros(14) * u.m, # Unused
             ),
+            camera=Camera(
+                e=0 * u.s, # Unused
+            ),
         ),
         target=Target(
             m=0 * u.mag, # Unused
@@ -59,7 +62,6 @@ def gui(
         ),
         h=h,
         Δh=24 * u.hourangle,
-        e=0*u.s, # Unused
         Γ=0*u.nm, # Unused
     )
 

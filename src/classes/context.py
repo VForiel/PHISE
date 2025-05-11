@@ -116,6 +116,8 @@ class Context:
             Δh = Δh.to(u.hourangle)
         except u.UnitConversionError:
             raise ValueError("Δh must be in a hourangle unit")
+        if Δh < (e := self.interferometer.camera.e.to(u.hour) * u.hourangle):
+            Δh = e
         self._Δh = Δh
 
     # e property --------------------------------------------------------------
@@ -376,6 +378,26 @@ class Context:
         plt.show()
         print(transmissions)
 
+    # Input fields ------------------------------------------------------------
+
+    def get_input_fields(self) -> np.ndarray[complex]:
+        """
+        Get the complexe amplitude of the signals acquired by the telescopes.
+
+        Returns
+        -------
+        - Array of acquired signals (complex amplitudes)
+        """
+
+        raise NotImplementedError("This function is not implemented yet.")
+
+        α = self.target.α.to(u.rad).value
+        θ = self.target.θ.to(u.rad).value
+        λ = self.interferometer.λ.to(u.m).value
+        p = self.p.to(u.m).value
+        
+        return get_input_fields_njit(a=1, θ=θ, α=α, λ=λ, p=p)
+
     # Observation -------------------------------------------------------------
 
     def observe(
@@ -394,7 +416,11 @@ class Context:
         - Array of observations
         """
 
-        # TODO
+        raise NotImplementedError("This function is not implemented yet.")
+
+        ψ = self.interferometer.kn.propagate_fields(ψ=self.target.ψ, λ=self.interferometer.λ)
+        i = self.interferometer.camera.acquire(ψ=ψ)
+
     
 #==============================================================================
 # Number functions
@@ -499,3 +525,45 @@ def get_transmission_map_njit(
                 k_maps[i, x, y] = k[i]
 
     return np.abs(n_maps) ** 2, np.abs(d_maps) ** 2, k_maps
+
+# Input fields ----------------------------------------------------------------
+
+@nb.njit()
+def get_input_fields_njit(
+    a: float,
+    θ: float,
+    α: float,
+    λ: float,
+    p: np.ndarray[float],
+) -> np.ndarray[complex]:
+    """
+    Get the complexe amplitude of the input signals according to the object and telescopes positions.
+
+    Parameters
+    ----------
+    - a: Amplitude of the signal (prop. to #photons/s)
+    - θ: Angular separation (in radian)
+    - α: Parallactic angle (in radian)
+    - λ: Wavelength (in meter)
+    - p: Projected telescope positions (in meter)
+
+    Returns
+    -------
+    - Array of acquired signals (complex amplitudes).
+    """
+
+    # Array of complex signals
+    s = np.empty(p.shape[0], dtype=np.complex128)
+
+    for i, t in enumerate(p):
+
+        # Rotate the projected telescope positions by the parallactic angle
+        p_rot = t[0] * np.cos(-α) - t[1] * np.sin(-α)
+
+        # Compute the phase delay according to the object position
+        Φ = 2 * np.pi * p_rot * np.sin(θ) / λ
+
+        # Build the complex amplitude of the signal
+        s[i] = np.exp(1j * Φ)
+
+    return s * np.sqrt(a / p.shape[0])

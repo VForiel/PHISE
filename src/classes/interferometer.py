@@ -81,9 +81,9 @@ class Interferometer:
         if not isinstance(λ, u.Quantity):
             raise TypeError("λ must be an astropy Quantity")
         try:
-            λ = λ.to(u.m)
+            λ = λ.to(u.nm)
         except u.UnitConversionError:
-            raise ValueError("λ must be in meters")
+            raise ValueError("λ must be in nanometers")
         self._λ = λ
 
     # Δλ property -------------------------------------------------------------
@@ -97,9 +97,13 @@ class Interferometer:
         if not isinstance(Δλ, u.Quantity):
             raise TypeError("Δλ must be an astropy Quantity")
         try:
-            Δλ = Δλ.to(u.m)
+            Δλ = Δλ.to(u.nm)
         except u.UnitConversionError:
-            raise ValueError("Δλ must be in meters")
+            raise ValueError("Δλ must be in nanometers")
+        
+        if Δλ <= 0*u.nm:
+            raise ValueError("Δλ must be positive")
+        
         self._Δλ = Δλ
 
     # fov property ------------------------------------------------------------
