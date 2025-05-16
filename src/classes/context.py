@@ -196,7 +196,7 @@ class Context:
 
         p = f * a * Δλ # Optical power [W]
 
-        self._ph = p * λ / (h*c) # Photon flux [photons/s]
+        self._ph = p * λ / (h*c) # Photon flux [photons/s] (array of (n_telescopes,))
 
     # Projected position ------------------------------------------------------
 
@@ -386,17 +386,23 @@ class Context:
 
         Returns
         -------
-        - Array of acquired signals (complex amplitudes)
+        - (nb_companions + 1, nb_telescope) array of acquired signals (complex amplitudes)
         """
-
-        raise NotImplementedError("This function is not implemented yet.")
-
-        α = self.target.α.to(u.rad).value
-        θ = self.target.θ.to(u.rad).value
+    
+        input_fields = []
         λ = self.interferometer.λ.to(u.m).value
-        p = self.p.to(u.m).value
+        p = self.p.to(u.m).value # Projected telescope positions
+        pf = self.pf.to(1/u.s).value # Photon flux from the star for each telescope
         
-        return get_input_fields_njit(a=1, θ=θ, α=α, λ=λ, p=p)
+        # Star input fields
+        input_fields.append(get_unique_source_input_fields_njit(pf=pf, θ=0, α=0, λ=λ, p=p))
+
+        # Companion input fields
+        for c in self.target.companions:
+            pf_c = pf * c.c # Photon flux from the companion for each telescope
+            input_fields.append(get_unique_source_input_fields_njit(pf=pf_c, θ=c.θ.to(u.rad).value, α=c.α.to(u.rad).value, λ=λ, p=p))
+        
+        return np.array(input_fields, dtype=np.complex128)
 
     # Observation -------------------------------------------------------------
 
@@ -529,7 +535,7 @@ def get_transmission_map_njit(
 # Input fields ----------------------------------------------------------------
 
 @nb.njit()
-def get_input_fields_njit(
+def get_unique_source_input_fields_njit(
     a: float,
     θ: float,
     α: float,
