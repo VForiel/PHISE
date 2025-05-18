@@ -1,0 +1,85 @@
+\documentclass[12pt]{article}
+\parindent 0mm
+\usepackage{amssymb,amsmath,amsfonts,latexsym,graphicx,amsthm,amstext}
+\usepackage{microtype} % Improve typography
+\usepackage{lmodern}
+\usepackage{longtable}
+\usepackage{color}
+% \usepackage{scrhack}
+\usepackage{placeins}
+% \usepackage{lipsum}
+\usepackage{lmodern}
+%\usepackage{indentfirst}
+\usepackage{ulem}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage{listings}
+\usepackage{comment}
+\usepackage{empheq}
+\usepackage{mathabx}
+\usepackage{siunitx}
+\usepackage{lscape}
+\usepackage{calc} 
+\usepackage{nopageno} %pour retirer la numerotation des pages
+\usepackage{hyperref} 
+
+\let\OLDthebibliography\thebibliography
+\renewcommand\thebibliography[1]{
+  \OLDthebibliography{#1}
+  \setlength{\parskip}{0pt}
+  \setlength{\itemsep}{0pt plus 0.3ex}
+}
+\usepackage[
+	top=1cm, % Top margin
+	bottom=1cm, % Bottom margin
+	inner=1.6cm, % Inner margin
+	outer=1.6cm, % Outer margin
+]{geometry}
+ 			
+\pagestyle{empty}
+
+\begin{document}
+WITSO 2025
+\hfill
+Spin in: Non-Space Technologies for Space Optics
+
+\smallskip
+\hrule
+
+\bigskip
+
+\begin{center}
+\LARGE \bf Tunable Kernel-Nulling interferometry for direct exoplanet detection\rm
+
+\vspace{0.5cm}
+
+\large  \underline{Vincent Foriel}$\,^{1,*}$, \large Frantz Martinache$\,^1$, \large David Mary$\,^1$, \large Nick Cvetojevic$\,^1$, \large Romain Laugier$\,^2$, Marc-Antoine Martinod$\,^1$, \large Sylvie Robbe-Dubois$\,^1$ and  \large Roxanne Ligi$\,^1$
+
+\vspace{0.5cm}
+
+\normalsize
+
+$^1$ \textit{Université Côte d’Azur, Observatoire de la Côte d’Azur Nice, CNRS, Laboratoire Lagrange, France}\\
+$^2$ \textit{KU Leuven university, Leuven, Belgium}
+
+\vspace{0.3cm}
+$^*$E-mail: {\tt vincent.foriel@oca.eu}
+
+\end{center}
+\vspace{-0.8cm}
+\subsection*{\Large Abstract}
+
+Nulling interferometry\cite{Bracewell 1979} is a promising technique for direct detection of exoplanets. However, the performance of current devices is limited by the sensitivity to phase aberrations. This project attempts to improve this technique by using the world first active photonic component applied to astronomy. This component allow to build tunable Kernel-Nulls\cite{Martinache et al. 2018} with 14 electro-optic phase shifters, used to compensate optical path differences that would be induced by manufacturing defects. The first part of the study consists in the development of an algorithm providing the delays to be injected into the component to optimize the performance of that device. This technique is first evaluated via numerical simulations, then in lab. It is then envisaged to leverage the Nuller mode, soon to be installed on the VLTI as part of the ASGARD project, to test this architecture under real conditions of observation. The next step of this study deals with the analysis of the intensity distributions produced at the output of the Kernel-Nuller\cite{Martinache et al. 2018, Cvetojevic et al. 2022} through a series of observations, against which statistical tests and machine learning techniques will be applied to detect the presence of exoplanets. The preliminary results of this study are presented in this presentation.
+
+\begin{thebibliography}{60}
+
+\bibitem{Bracewell 1979} Bracewell R.N., MacPhie R.H., "Searching for nonsolar planets". {\it Icarus} \textbf{38} (1979): 136–147. https://doi.org/10.1016/0019-1035(79)90093-9
+
+\bibitem{Martinache et al. 2018}  Martinache F. and Ireland M., "Kernel-Nulling for a Robust Direct Interferometric Detection of Extrasolar Planets". {\it Astronomy \& Astrophysics} \textbf{619} (2018): A87. https://doi.org/10.1051/0004-6361/201832847.
+
+\bibitem{Cvetojevic et al. 2022} Cvetojevic N. et al. 3-beam self-calibrated Kernel nulling photonic interferometer (2022). Preprint at http://arxiv.org/abs/2206.04977.
+
+\end{thebibliography}
+
+\end{document}
+
