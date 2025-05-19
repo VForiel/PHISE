@@ -1,10 +1,14 @@
+# Trick to import Target but avoiding circular import
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from target import Target
+
 # External libs
 from astropy import units as u
 
-from . import Target
-
 class Companion():
-    def __init__(self, c:float, θ:u.Quantity, α:u.Quantity, name:str = "Unnamed"):
+    def __init__(self, c:float, θ:u.Quantity, α:u.Quantity, name:str = "Unnamed Companion"):
         """Any light source in the sky (unresolved).
 
         Parameters

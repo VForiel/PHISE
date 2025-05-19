@@ -21,7 +21,7 @@ class KernelNuller():
             φ: np.ndarray[u.Quantity],
             σ: np.ndarray[u.Quantity],
             output_order: np.ndarray[int] = None,
-            name: str = "Unnamed",
+            name: str = "Unnamed Kernel-Nuller",
         ):
         """Kernel-Nuller object.
 

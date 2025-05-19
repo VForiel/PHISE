@@ -17,7 +17,7 @@ class Interferometer:
             telescopes:list[Telescope],
             kn:KernelNuller,
             camera:Camera,
-            name:str = "Unnamed",
+            name:str = "Unnamed Interferometer",
         ):
         """
         Instrument object.

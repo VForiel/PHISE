@@ -1,13 +1,16 @@
+# Trick to import Target but avoiding circular import
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .interferometer import Interferometer
+
 # External libs
 import numpy as np
 import astropy.units as u
 import numba as nb
 
-# Internal libs
-from .interferometer import Interferometer
-
 class Camera:
-    def __init__(self, e:u.Quantity, name:str = "Unnamed"):
+    def __init__(self, e:u.Quantity, name:str = "Unnamed Camera"):
         """
         Initialize the camera object.
 
@@ -50,49 +53,52 @@ class Camera:
     
     # Acquire -----------------------------------------------------------------
 
-    def acquire(self, ψ:np.ndarray[complex]) -> np.ndarray[int]:
+    def acquire_pixel(self, ψ:np.ndarray[complex]) -> int:
         """
         Acquire the image from the interferometer.
 
         Parameters
         ----------
-        - ψ: Complex visibility [s^(-1/2)]
+        ψ: np.ndarray[complex]
+            Complex visibilities [s^(-1/2)]
 
         Returns
         -------
-        - Image
+        int
+            Number of photons detected
         """
 
-        return acquire_njit(ψ, self.e.to(u.s).value)
+        return acquire_pixel_njit(ψ, self.e.to(u.s).value)
 
 #==============================================================================
 # Numba functions
 #==============================================================================
 
 @nb.njit()
-def acquire_njit(ψ: np.ndarray[complex], e: float) -> np.ndarray[int]:
+def acquire_pixel_njit(ψ: np.ndarray[complex], e: float) -> int:
     """
     Acquire the intensities from the complex visibilities.
 
     Parameters
     ----------
-    - ψ: Complex visibilities [s^(-1/2)]
-    - e: Exposure time [s]
+    ψ: np.ndarray[complex]
+        Complex visibilities [s^(-1/2)]
+    - e: float
+        Exposure time [s]
 
     Returns
     -------
-    - np.ndarray[int]: Intensities
+    int
+        Number of photons detected
     """
 
     # Get intensities
-    I = np.abs(ψ)**2 * e
+    I = int(np.sum(np.abs(ψ)**2) * e)
 
     # Add photon noise
-    Ip = I * (I <= 2147020237) # Using poisson noise
-    In = I * (I > 2147020237) # Using normal noise (I too high to use poisson)
-
-    for i in range(I.shape[0]):
-        I[i] = int(np.random.poisson(Ip[i]))
-        I[i] += int(np.random.normal(In[i], np.sqrt(In[i])))
+    if I <= 2147020237: # Using poisson noise
+        I = int(np.random.poisson(I))
+    else: # Using gaussian noise
+        I = int(np.random.normal(I, np.sqrt(I)))
 
     return I

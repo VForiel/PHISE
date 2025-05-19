@@ -1,3 +1,4 @@
+# External libs
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -5,53 +6,28 @@ import ipywidgets as widgets
 import astropy.units as u
 from copy import deepcopy as copy
 
+# Internal libs
 from .. import *
+from . import default_context
 
 def gui(
         λ:u.Quantity = None,
         φ:u.Quantity = None,
-        γ:u.Quantity = None, # Manufacturing OPD RMS
+        σ:u.Quantity = None,
     ):
     
     # Set default values ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    ref_ctx = default_context.get()
     
-    if λ is None:
-        λ = 1.65 * u.um
-    if φ is None:
-        φ = np.zeros(14) * u.nm
-    if γ is None:
-        γ = 100 * u.nm
-    
-    σ = np.abs(np.random.normal(0, γ.value, size=len(φ))) * γ.unit
+    if λ is not None:
+        ref_ctx.interferometer.λ = λ
+    if φ is not None:
+        ref_ctx.interferometer.kn.φ = φ
+    if σ is not None:
+        ref_ctx.interferometer.kn.σ = σ
 
     step = 1e-20
-
-    # Context ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    ref_ctx = Context(
-        interferometer=Interferometer(
-            l=0 * u.deg, # Unused
-            λ=λ,
-            Δλ=0 * u.m, # Unused
-            fov=0 * u.mas, # Unused
-            telescopes=telescope.get_VLTI_UTs(), # Unused
-            kn=KernelNuller(
-                φ=φ, # Unused
-                σ=σ, # Unused
-            ),
-            camera=Camera(
-                e=0 * u.s, # Unused
-            ),
-        ),
-        target=Target(
-            m=0 * u.mag, # Unused
-            δ=0 * u.deg, # Unused
-            companions=[], # Unused
-        ),
-        h=0 * u.hourangle, # Unused
-        Δh=0 * u.hourangle, # Unused
-        Γ=0*u.nm, # Unused
-    )
 
     # Build sliders ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -8,6 +8,7 @@ from copy import deepcopy as copy
 
 # Internal libs
 from .. import *
+from . import default_context
 
 def gui(
         r:u.Quantity = None,
@@ -15,48 +16,39 @@ def gui(
         Δh:u.Quantity = None,
         l:u.Quantity = None,
         δ:u.Quantity = None,
-    ):
+    ) -> None:
+    """
+    GUI to visualize the projected positions of the telescopes in the array.
+
+    Parameters
+    ----------
+    r : `astropy.units.Quantity`, optional
+        Positions of the telescopes in the array. If None, the default positions
+        are used.
+    h : `astropy.units.Quantity`, optional
+        Hour angle of the target. If None, the default value is used.
+    Δh : `astropy.units.Quantity`, optional
+        Range of hour angles to plot. If None, the default value is used.
+    l : `astropy.units.Quantity`, optional
+        Latitude of the target. If None, the default value is used.
+    δ : `astropy.units.Quantity`, optional
+        Declination of the target. If None, the default value is used.
+    """
 
     # Set default values ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    if r is None:
-        telescopes = telescope.get_VLTI_UTs()
-        r = np.array([t.r for t in telescopes]) * u.m
-    if h is None:
-        h = 0 * u.hourangle
-    if Δh is None:
-        Δh = 8 * u.hourangle
-    if l is None:
-        l = -24.6275 * u.deg # Cerro Paranal
-    if δ is None:
-        δ = -64.71 * u.deg # Vega
+    ref_ctx = default_context.get()
 
-    # Context ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    ref_ctx = context.Context(
-        interferometer=Interferometer(
-            l=l,
-            λ=0 * u.m, # Unused
-            Δλ=0 * u.m, # Unused
-            fov=0 * u.mas, # Unused
-            telescopes=telescope.get_VLTI_UTs(),
-            kn=KernelNuller(
-                φ=np.zeros(14) * u.m, # Unused
-                σ=np.zeros(14) * u.m, # Unused
-            ),
-            camera=Camera(
-                e=0 * u.s, # Unused
-            ),
-        ),
-        target=Target(
-            m=0 * u.mag, # Unused
-            δ=δ,
-            companions=[], # Unused
-        ),
-        h=h,
-        Δh=Δh,
-        Γ=0*u.nm, # Unused
-    )
+    if r is not None:
+        ref_ctx.interferometer.telescopes = [Telescope(a=1*u.m**2, r=pos) for pos in r]
+    if h is not None:
+        ref_ctx.h = h
+    if Δh is not None:
+        ref_ctx.Δh = Δh
+    if l is not None:
+        ref_ctx.interferometer.l = l
+    if δ is not None:
+        ref_ctx.target.δ = δ
     
     # GUI elements ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

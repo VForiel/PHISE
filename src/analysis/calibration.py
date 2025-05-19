@@ -9,6 +9,7 @@ from copy import deepcopy as copy
 # Internal libs
 from .. import Context
 from .. import calibration
+from . import default_context
 
 #==============================================================================
 # Calibration approaches
@@ -17,7 +18,7 @@ from .. import calibration
 def genetic_approach(ctx:Context = None, β:float = 0.9):
 
     if ctx is None:
-        from .default_context import ctx
+         ctx = default_context.get()
 
     # Introduce random noise
     ctx = copy(ctx)

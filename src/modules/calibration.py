@@ -65,13 +65,13 @@ def genetic(
 
             # Getting observation with different phase shifts
             ctx.interferometer.kn.φ[i-1] += Δφ
-            _, k_pos, b_pos = ctx.observe()
+            _, k_pos, b_pos = ctx.observe()[0,0]
 
             ctx.interferometer.kn.φ[i-1] -= 2*Δφ
-            _, k_neg, b_neg = ctx.observe()
+            _, k_neg, b_neg = ctx.observe()[0,0]
 
             ctx.interferometer.kn.φ[i-1] += Δφ
-            _, k_old, b_old = ctx.observe()
+            _, k_old, b_old = ctx.observe()[0,0]
             
             # Save the history
             depth_history.append(np.sum(k_old) / np.sum(b_old))

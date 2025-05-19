@@ -11,7 +11,7 @@ from .companion import Companion
 
 class Target():
 
-    def __init__(self, f:u.Quantity, δ:u.Quantity, companions:list[Companion], name:str = "Unnamed"):
+    def __init__(self, f:u.Quantity, δ:u.Quantity, companions:list[Companion], name:str = "Unnamed Target"):
         """
         A target star with a given magnitude and declination, and a list of companions.
 

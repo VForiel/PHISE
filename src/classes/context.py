@@ -10,6 +10,7 @@ from io import BytesIO
 # Internal libs
 from .interferometer import Interferometer
 from .target import Target
+from .companion import Companion
 from . import kernel_nuller
 
 from ..modules import coordinates
@@ -22,17 +23,16 @@ class Context:
             target:Target,
             h:u.Quantity,
             Δh: u.Quantity,
-            e: u.Quantity,
             Γ: u.Quantity,
-            name:str = "Unnamed",
+            name:str = "Unnamed Context",
         ):
         """
         Parameters
         ----------
         - instrument: Instrument object
+        - target: Target object
         - h: Central hourangle of the observation
         - Δh: Hourangle range of the observation
-        - e: Exposition time
         - Γ: Input cophasing error (rms)
         - name: Name of the scene
         """
@@ -45,7 +45,6 @@ class Context:
         self.target._ctx = self
         self.h = h
         self.Δh = Δh
-        self.e= e
         self.Γ = Γ
         self.name = name
         
@@ -116,7 +115,7 @@ class Context:
             Δh = Δh.to(u.hourangle)
         except u.UnitConversionError:
             raise ValueError("Δh must be in a hourangle unit")
-        if Δh < (e := self.interferometer.camera.e.to(u.hour) * u.hourangle):
+        if Δh < (e := self.interferometer.camera.e.to(u.hour).value * u.hourangle):
             Δh = e
         self._Δh = Δh
 
@@ -310,8 +309,8 @@ class Context:
         # Get companions position to plot them
         companions_pos = []
         for c in self.target.companions:
-            x, y = coordinates.αθ_to_xy(α=c.α, θ=c.θ, fov=self.fov)
-            companions_pos.append((x*self.fov, y*self.fov))
+            x, y = coordinates.αθ_to_xy(α=c.α, θ=c.θ, fov=self.interferometer.fov)
+            companions_pos.append((x*self.interferometer.fov, y*self.interferometer.fov))
 
         _, axs = plt.subplots(2, 6, figsize=(35, 10))
 
@@ -351,13 +350,15 @@ class Context:
                 ax.scatter(x, y, color="blue", edgecolors="black")
 
         transmissions = ""
-        for i, c in enumerate(self.target.companions):
-            α = c.α
-            θ = c.θ
-            p = self.p
-            ψ = signals.get_input_fields(a=1, θ=θ, α=α, λ=self.λ, p=p)
+        companions = [Companion(name=self.target.name + " Star", c=1, α=0*u.deg, θ=0*u.mas)] + self.target.companions
+        for i, c in enumerate(companions):
+            α = c.α.to(u.rad)
+            θ = c.θ.to(u.rad)
+            p = self.p.to(u.m)
+            λ = self.interferometer.λ.to(u.m)
+            ψ = get_unique_source_input_fields_njit(a=1, θ=θ.value, α=α.value, λ=λ.value, p=p.value)
 
-            n, d, b = self.kn.propagate_fields(ψ=ψ, λ=self.λ)
+            n, d, b = self.interferometer.kn.propagate_fields(ψ=ψ, λ=self.interferometer.λ)
 
             k = np.array([np.abs(d[2*i])**2 - np.abs(d[2*i+1])**2 for i in range(3)])
 
@@ -395,18 +396,63 @@ class Context:
         pf = self.pf.to(1/u.s).value # Photon flux from the star for each telescope
         
         # Star input fields
-        input_fields.append(get_unique_source_input_fields_njit(pf=pf, θ=0, α=0, λ=λ, p=p))
+        input_fields.append(get_unique_source_input_fields_njit(a=pf, θ=0, α=0, λ=λ, p=p))
 
         # Companion input fields
         for c in self.target.companions:
             pf_c = pf * c.c # Photon flux from the companion for each telescope
-            input_fields.append(get_unique_source_input_fields_njit(pf=pf_c, θ=c.θ.to(u.rad).value, α=c.α.to(u.rad).value, λ=λ, p=p))
+            input_fields.append(get_unique_source_input_fields_njit(a=pf_c, θ=c.θ.to(u.rad).value, α=c.α.to(u.rad).value, λ=λ, p=p))
         
+        # Add the cophasing error
+        raise NotImplementedError("Cophasing error not implemented")
+
         return np.array(input_fields, dtype=np.complex128)
+    
+    # H range -----------------------------------------------------------------
+
+    def get_h_range(self) -> np.ndarray[float]:
+        """
+        Get the hour angle range of the observation.
+
+        Returns
+        -------
+        - Hour angle range (in radian)
+        """
+        
+        nb_obs_per_night = self.Δh.to(u.hourangle).value // self.interferometer.camera.e.to(u.hour).value
+        if nb_obs_per_night < 1:
+            nb_obs_per_night = 1
+        
+        h_range = np.linspace(self.h - self.Δh/2, self.h + self.Δh/2, nb_obs_per_night)
+        return h_range
 
     # Observation -------------------------------------------------------------
 
-    def observe(
+    def observe(self):
+        
+        nb_objects = len(self.target.companions) + 1
+        ds = np.empty((6, nb_objects), dtype=np.complex128)
+        bs = np.empty(nb_objects, dtype=np.complex128)
+
+        for ψ_i, ψ in enumerate(self.get_input_fields()):
+
+            _, d, b = self.interferometer.kn.propagate_fields(ψ=self.target.ψ, λ=self.interferometer.λ)
+            ds[ψ_i] = d
+            bs[ψ_i] = b
+
+        bright = self.interferometer.camera.acquire_pixel(bs)
+
+        darks = np.empty(6)
+        for i in range(6):
+            darks[i] = self.interferometer.camera.acquire_pixel(ds[i])
+
+        kernels = np.empty(3)
+        for i in range(3):
+            kernels[i] = darks[2*i] - darks[2*i+1]
+
+        return darks, kernels, bright
+    
+    def observation_serie(
             self,
             n:int = 1,
         ) -> np.ndarray[int]:
@@ -419,15 +465,32 @@ class Context:
 
         Returns
         -------
-        - Array of observations
+        - Bright data (n, n_h)
+        - Dark data (n, n_h, 6)
+        - Kernel data (n, n_h, 3)
         """
 
-        raise NotImplementedError("This function is not implemented yet.")
+        h_range = self.get_h_range()
 
-        ψ = self.interferometer.kn.propagate_fields(ψ=self.target.ψ, λ=self.interferometer.λ)
-        i = self.interferometer.camera.acquire(ψ=ψ)
+        brights = np.empty((n, len(h_range)))
+        darks = np.empty((n, len(h_range), 6))
+        kernels = np.empty((n, len(h_range), 3))
 
-    
+        for h_i, h in enumerate(h_range):
+            ctx = copy(self)
+            ctx.h = h
+
+            for n_i in range(n):
+                
+                d, k, b = ctx.observe()
+
+                brights[n_i, h_i] = b
+                darks[n_i, h_i] = d
+                kernels[n_i, h_i] = k
+
+        return darks, kernels, brights
+
+
 #==============================================================================
 # Number functions
 #==============================================================================
@@ -515,7 +578,7 @@ def get_transmission_map_njit(
             α = α_map[x, y]
             θ = θ_map[x, y]
 
-            ψ = signals.get_input_fields_njit(a=1, θ=θ, α=α, λ=λ, p=p)
+            ψ = get_unique_source_input_fields_njit(a=1, θ=θ, α=α, λ=λ, p=p)
 
             n, d, _ = kernel_nuller.propagate_fields_njit(ψ, φ, σ, λ, output_order)
 
@@ -547,7 +610,7 @@ def get_unique_source_input_fields_njit(
 
     Parameters
     ----------
-    - a: Amplitude of the signal (prop. to #photons/s)
+    - a: Intensity of the signal (prop. to #photons/s)
     - θ: Angular separation (in radian)
     - α: Parallactic angle (in radian)
     - λ: Wavelength (in meter)

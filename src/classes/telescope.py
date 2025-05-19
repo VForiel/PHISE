@@ -3,7 +3,7 @@ import astropy.units as u
 import numpy as np
 
 class Telescope():
-    def __init__(self, a:u.Quantity, r:u.Quantity, name:str = "Unnamed"):
+    def __init__(self, a:u.Quantity, r:u.Quantity, name:str = "Unnamed Telescope"):
         """
         Initialize the telescope object.
 
@@ -37,7 +37,7 @@ class Telescope():
         self._a = a
 
         if self.parent_interferometer is not None:
-            self.parent_interferometer.parent_ctx.update_photon_flux(self)
+            self.parent_interferometer.parent_ctx.update_photon_flux()
 
     # r property --------------------------------------------------------------
 
