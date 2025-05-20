@@ -15,27 +15,68 @@ from . import default_context
 # Calibration approaches
 #==============================================================================
 
-def genetic_approach(ctx:Context = None, β:float = 0.9):
+# Genetic ---------------------------------------------------------------------
+
+def genetic_approach(ctx:Context = None, β:float = 0.9, verbose=False, figsize=(10,5)):
 
     if ctx is None:
          ctx = default_context.get()
+    else:
+        ctx = copy(ctx)
+
+    # Calibration is performed in a controled environment where there is no input cophasing error variation
+    ctx.Γ = 0 * u.nm
 
     # Introduce random noise
-    ctx = copy(ctx)
     ctx.interferometer.kn.σ = np.abs(np.random.normal(0, 1, 14)) * ctx.interferometer.λ
 
-    ctx = calibration.genetic(ctx=ctx, β=β, plot=True)
+    ctx = calibration.genetic(ctx=ctx, β=β, plot=True, verbose=verbose, figsize=figsize)
+
+    print_kernel_null_depth(ctx)
+
+    return ctx
+
+# Obstruction -----------------------------------------------------------------
 
 def obstruction_approach(ctx:Context = None, N:int = 1000):
 
     if ctx is None:
-        from .default_context import ctx
+        ctx = default_context.get()
+    else:
+        ctx = copy(ctx)
+
+    # Calibration is performed in a controled environment where there is no input cophasing error variation
+    ctx.Γ = 0 * u.nm
         
     # Introduce random noise
-    ctx = copy(ctx)
     ctx.interferometer.kn.σ = np.abs(np.random.normal(0, 1, 14)) * ctx.interferometer.λ
 
     ctx = calibration.obstruction(ctx=ctx, N=N, plot=True)
+
+    print_kernel_null_depth(ctx)
+
+    return ctx
+
+#==============================================================================
+# Calibration results
+#==============================================================================
+
+def print_kernel_null_depth(ctx:Context, N=1000):
+    kernels = np.empty((N, 3))
+    bright = np.empty(N)
+    for i in range(N):
+        _, k, b = ctx.observe()
+        kernels[i] = k
+        bright[i] = b
+
+    k_mean = np.mean(kernels, axis=0)
+    k_std = np.std(kernels, axis=0)
+    b_mean = np.mean(bright)
+    b_std = np.std(bright)
+
+    print(f"Achieved Kernel-Null depth:")
+    print("   Mean: " + " | ".join([f"{i / b_mean:.2e}" for i in k_mean]))
+    print("   Std:  " + " | ".join([f"{i / b_mean:.2e}" for i in k_std]))
 
 #==============================================================================
 # Comparison of the two algorithms
@@ -44,10 +85,13 @@ def obstruction_approach(ctx:Context = None, N:int = 1000):
 def compare_approaches(ctx:Context = None):
 
     if ctx is None:
-        from .default_context import ctx
+        ctx = default_context.get()
 
     kn = ctx.interferometer.kn
     λ = ctx.interferometer.λ
+
+    # Calibration is performed in a controled environment where there is no input cophasing error variation
+    ctx.Γ = 0 * u.nm
 
     β_res = 10
     βs, dβ = np.linspace(0.5, 0.99, β_res, retstep=True)

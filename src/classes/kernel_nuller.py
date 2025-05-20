@@ -21,6 +21,8 @@ class KernelNuller():
             φ: np.ndarray[u.Quantity],
             σ: np.ndarray[u.Quantity],
             output_order: np.ndarray[int] = None,
+            input_attenuation: np.ndarray[float] = None,
+            input_opd: np.ndarray[u.Quantity] = None,
             name: str = "Unnamed Kernel-Nuller",
         ):
         """Kernel-Nuller object.
@@ -30,6 +32,8 @@ class KernelNuller():
         - φ: Array of 14 injected OPD
         - σ: Array of 14 intrasic OPD error
         - output_order: Order of the outputs
+        - input_attenuation: Array of 4 input attenuations
+        - input_opd: Array of 4 input OPD
         - name: Name of the Kernel-Nuller object
         """
 
@@ -38,6 +42,8 @@ class KernelNuller():
         self.φ = φ
         self.σ = σ
         self.output_order = output_order if output_order is not None else np.array([0, 1, 2, 3, 4, 5])
+        self.input_attenuation = input_attenuation if input_attenuation is not None else np.array([1.0, 1.0, 1.0, 1.0])
+        self.input_opd = input_opd if input_opd is not None else np.zeros(4) * u.m
         self.name = name
 
     # φ property --------------------------------------------------------------
@@ -100,6 +106,40 @@ class KernelNuller():
             raise ValueError(f"output_order contain an invalid configuration of output pairs. Found {output_order}")
         self._output_order = output_order
 
+    # Input attenuation property ---------------------------------------------
+
+    @property
+    def input_attenuation(self):
+        return self._input_attenuation
+    
+    @input_attenuation.setter
+    def input_attenuation(self, input_attenuation:np.ndarray[float]):
+        try:
+            input_attenuation = np.array(input_attenuation, dtype=float)
+        except:
+            raise ValueError(f"input_attenuation must be an array of floats, not {type(input_attenuation)}")
+        if input_attenuation.shape != (4,):
+            raise ValueError(f"input_attenuation must have a shape of (4,), not {input_attenuation.shape}")
+        self._input_attenuation = input_attenuation
+
+    # Input OPD property ------------------------------------------------------
+
+    @property
+    def input_opd(self):
+        return self._input_opd
+    
+    @input_opd.setter
+    def input_opd(self, input_opd:np.ndarray[u.Quantity]):
+        if type(input_opd) != u.Quantity:
+            raise ValueError("input_opd must be a Quantity")
+        try:
+            input_opd.to(u.m)
+        except u.UnitConversionError:
+            raise ValueError("input_opd must be in a distance unit")
+        if input_opd.shape != (4,):
+            raise ValueError("input_opd must have a shape of (4,)")
+        self._input_opd = input_opd
+
     # Name property -----------------------------------------------------------
 
     @property
@@ -130,7 +170,8 @@ class KernelNuller():
             λ: u.Quantity,
         ) -> tuple[np.ndarray[float], np.ndarray[float], np.ndarray[float], float]:
         """
-        Simulate a 4 telescope Kernel-Nuller field propagation (at a given wavelength) using a numeric approach
+        Simulate a 4 telescope Kernel-Nuller field propagation (at a given wavelength) using a numeric approach.
+        Take in account the input attenuation and OPD.
 
         Parameters
         ----------
@@ -145,9 +186,14 @@ class KernelNuller():
         """
         φ = self.φ.to(λ.unit).value
         σ = self.σ.to(λ.unit).value
-        λ = λ.value
 
-        return propagate_fields_njit(ψ=ψ, φ=φ, σ=σ, λ=λ, output_order=self.output_order)
+        # Attenuate inputs
+        ψ *= self.input_attenuation
+
+        # Apply OPD
+        ψ *= np.exp(-1j * 2 * np.pi * self.input_opd.to(λ.unit).value / λ.value)
+
+        return propagate_fields_njit(ψ=ψ, φ=φ, σ=σ, λ=λ.value, output_order=self.output_order)
     
     # Plot phases -------------------------------------------------------------
 
@@ -325,8 +371,9 @@ def propagate_fields_njit(
         output_order:np.ndarray[int]
     ) -> tuple[np.ndarray[float], np.ndarray[float], np.ndarray[float], float]:
     """
-    Simulate a 4 telescope Kernel-Nuller propagation using a numeric approach
-
+    Simulate a 4 telescope Kernel-Nuller propagation using a numeric approach.
+    ⚠️ Does not take in account the input attenuation and OPD.
+    
     Parameters
     ----------
     - ψ: Array of 4 input signals complex amplitudes

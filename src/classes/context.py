@@ -119,22 +119,6 @@ class Context:
             Δh = e
         self._Δh = Δh
 
-    # e property --------------------------------------------------------------
-
-    @property
-    def e(self) -> u.Quantity:
-        return self._e
-    
-    @e.setter
-    def e(self, e: u.Quantity):
-        if type(e) != u.Quantity:
-            raise TypeError("e must be a Quantity")
-        try:
-            e = e.to(u.s)
-        except u.UnitConversionError:
-            raise ValueError("e must be in a time unit")
-        self._e = e
-
     # Γ property --------------------------------------------------------------
 
     @property
@@ -403,8 +387,15 @@ class Context:
             pf_c = pf * c.c # Photon flux from the companion for each telescope
             input_fields.append(get_unique_source_input_fields_njit(a=pf_c, θ=c.θ.to(u.rad).value, α=c.α.to(u.rad).value, λ=λ, p=p))
         
-        # Add the cophasing error
-        raise NotImplementedError("Cophasing error not implemented")
+        # Error OPD
+        γ = np.random.normal(0, self.Γ.to(u.m).value, size=len(self.interferometer.telescopes))
+
+        # OPD to phase difference
+        phase = 2 * np.pi * γ / λ
+
+        # Add the OPD error to the input fields
+        for i in range(len(input_fields)):
+            input_fields[i] = input_fields[i] * np.exp(1j * phase)
 
         return np.array(input_fields, dtype=np.complex128)
     
@@ -429,14 +420,23 @@ class Context:
     # Observation -------------------------------------------------------------
 
     def observe(self):
+        """
+        Observe the target in this context.
+
+        Returns
+        -------
+        - Dark data (6,)
+        - Kernel data (3,)
+        - Bright data
+        """
         
         nb_objects = len(self.target.companions) + 1
-        ds = np.empty((6, nb_objects), dtype=np.complex128)
+        ds = np.empty((nb_objects, 6), dtype=np.complex128)
         bs = np.empty(nb_objects, dtype=np.complex128)
 
         for ψ_i, ψ in enumerate(self.get_input_fields()):
 
-            _, d, b = self.interferometer.kn.propagate_fields(ψ=self.target.ψ, λ=self.interferometer.λ)
+            _, d, b = self.interferometer.kn.propagate_fields(ψ=ψ, λ=self.interferometer.λ)
             ds[ψ_i] = d
             bs[ψ_i] = b
 
@@ -444,7 +444,7 @@ class Context:
 
         darks = np.empty(6)
         for i in range(6):
-            darks[i] = self.interferometer.camera.acquire_pixel(ds[i])
+            darks[i] = self.interferometer.camera.acquire_pixel(ds[:, i])
 
         kernels = np.empty(3)
         for i in range(3):

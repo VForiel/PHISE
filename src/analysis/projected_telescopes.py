@@ -54,7 +54,7 @@ def gui(
 
     # Latitude
     l_slider = widgets.FloatSlider(
-        value=l.to(u.deg).value,
+        value=ref_ctx.interferometer.l.to(u.deg).value,
         min=-90,
         max=90,
         step=0.01,
@@ -63,7 +63,7 @@ def gui(
 
     # Declination
     δ_slider = widgets.FloatSlider(
-        value=δ.to(u.deg).value,
+        value=ref_ctx.target.δ.to(u.deg).value,
         min=-90,
         max=90,
         step=0.01,
