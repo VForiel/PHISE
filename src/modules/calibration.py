@@ -24,6 +24,7 @@ def genetic(
     ) -> Context:
     """
     Optimize the phase shifters offsets to maximize the nulling performance
+    ⚠️ The input context will be edited
 
     Parameters
     ----------
@@ -37,7 +38,6 @@ def genetic(
     - Dict: Dictionary with the optimization history (optional)
     """
 
-    ctx = copy(ctx)
     ctx.Δh = ctx.interferometer.camera.e.to(u.hour).value * u.hourangle
 
     ψ = np.sqrt(ctx.pf.to(1/ctx.interferometer.camera.e.unit).value) * (1 + 0j) # Perfectly cophased inputs
@@ -161,6 +161,7 @@ def obstruction(
     ) -> Context:
     """
     Optimize the phase shifters offsets to maximize the nulling performance
+    ⚠️ The input context will be edited
 
     Parameters
     ----------
@@ -174,14 +175,13 @@ def obstruction(
     - Context: New context with the optimized kernel nuller
     """
 
-    ctx = copy(ctx)
     kn = ctx.interferometer.kn
     λ = ctx.interferometer.λ
     e = ctx.interferometer.camera.e
     total_photons = np.sum(ctx.pf.to(1/e.unit).value) * e.value
 
     if plot:
-        fig, axs = plt.subplots(3, 3, figsize=figsize)
+        _, axs = plt.subplots(3, 3, figsize=figsize)
         for i in range(7):
             axs.flatten()[i].set_xlabel("Phase shift")
             axs.flatten()[i].set_ylabel("Throughput")
@@ -195,10 +195,11 @@ def obstruction(
             kn.φ[n-1] = i * λ / N
             _, _, b = ctx.observe()
             y[i] = b / total_photons
-
+        
         def sin(x, x0):
-            return np.max(y) * (np.sin((x-x0)/λ.value*2*np.pi)+1)/2
-        popt, pcov = curve_fit(sin, x, y, p0=[0])
+            return (np.sin((x-x0)/λ.value*2*np.pi)+1)/2 * (np.max(y)-np.min(y)) + np.min(y)
+        
+        popt, _ = curve_fit(sin, x, y, p0=[0])
 
         kn.φ[n-1] = (np.mod(popt[0]+λ.value/4, λ.value) * λ.unit).to(kn.φ.unit)
 
@@ -220,10 +221,11 @@ def obstruction(
             kn.φ[n-1] = i * λ / N
             _, k, _ = ctx.observe()
             y[i] = k[m-1] / total_photons
-
+        
         def sin(x, x0):
-            return np.max(y) * np.sin((x-x0)/λ.value*2*np.pi)/2
-        popt, pcov = curve_fit(sin, x, y, p0=[0])
+            return (np.sin((x-x0)/λ.value*2*np.pi)+1)/2 * (np.max(y)-np.min(y)) + np.min(y)
+        
+        popt, _ = curve_fit(sin, x, y, p0=[0])
 
         kn.φ[n-1] = (np.mod(popt[0], λ.value) * λ.unit).to(kn.φ.unit)
 
@@ -245,10 +247,11 @@ def obstruction(
             kn.φ[n-1] = i * λ / N
             d, _, _ = ctx.observe()
             y[i] = np.sum(np.abs(d[np.array(ds)-1])) / total_photons
-
+        
         def sin(x, x0):
-            return np.max(y) * (np.sin((x-x0)/λ.value*2*np.pi)+1)/2
-        popt, pcov = curve_fit(sin, x, y, p0=[0], maxfev = 100_000)
+            return (np.sin((x-x0)/λ.value*2*np.pi)+1)/2 * (np.max(y)-np.min(y)) + np.min(y)
+        
+        popt, _ = curve_fit(sin, x, y, p0=[0], maxfev = 100_000)
 
         kn.φ[n-1] = (np.mod(popt[0]+λ.value/4, λ.value) * λ.unit).to(kn.φ.unit)
 

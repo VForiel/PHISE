@@ -27,6 +27,9 @@ def genetic_approach(ctx:Context = None, β:float = 0.9, verbose=False, figsize=
     # Calibration is performed in a controled environment where there is no input cophasing error variation
     ctx.Γ = 0 * u.nm
 
+    # Calibration is performed with only the on-axis source
+    ctx.target.companions = []
+
     # Introduce random noise
     ctx.interferometer.kn.σ = np.abs(np.random.normal(0, 1, 14)) * ctx.interferometer.λ
 
@@ -47,12 +50,17 @@ def obstruction_approach(ctx:Context = None, N:int = 1000):
 
     # Calibration is performed in a controled environment where there is no input cophasing error variation
     ctx.Γ = 0 * u.nm
+
+    # Calibration is performed with only the on-axis source
+    ctx.target.companions = []
         
     # Introduce random noise
     ctx.interferometer.kn.σ = np.abs(np.random.normal(0, 1, 14)) * ctx.interferometer.λ
 
+    print(ctx.interferometer.kn.φ)
+    print_kernel_null_depth(ctx)
     ctx = calibration.obstruction(ctx=ctx, N=N, plot=True)
-
+    print(ctx.interferometer.kn.φ)
     print_kernel_null_depth(ctx)
 
     return ctx
@@ -86,6 +94,8 @@ def compare_approaches(ctx:Context = None):
 
     if ctx is None:
         ctx = default_context.get()
+    else:
+        ctx = copy(ctx)
 
     kn = ctx.interferometer.kn
     λ = ctx.interferometer.λ
@@ -106,21 +116,20 @@ def compare_approaches(ctx:Context = None):
             print(f'Gen.: β={β:.3f}, sample={i+1}/{samples}          ', end='\r')
 
             # Introduce random noise
-            ctx_gen = copy(ctx)
-            ctx_gen.interferometer.kn.σ = np.abs(np.random.normal(0, 1, len(kn.σ))) * λ
+            ctx.interferometer.kn.σ = np.abs(np.random.normal(0, 1, len(kn.σ))) * λ
 
             # Calibrate
-            ctx_gen, history = calibration.genetic(ctx=ctx, β=β, verbose=False, ret_history=True)
+            _, history = calibration.genetic(ctx=ctx, β=β, verbose=False, ret_history=True)
 
             # Calculate depth
             ψ = np.ones(4) * (1+0j) * np.sqrt(1/4)
-            _, d, b = ctx_gen.interferometer.kn.propagate_fields(ψ=ψ, λ=λ)
+            _, d, b = ctx.interferometer.kn.propagate_fields(ψ=ψ, λ=λ)
             di = np.abs(d)**2
             k = np.array([di[0] - di[1], di[2] - di[3], di[4] - di[5]])
             depth = np.sum(np.abs(k)) / np.abs(b)**2
 
             # Store results
-            shots.append((len(history['bright']), depth))
+            shots.append((len(history['depth']), depth))
         
     x, y = zip(*shots)
     x = np.array(x); y = np.array(y)
@@ -140,15 +149,14 @@ def compare_approaches(ctx:Context = None):
             print(f'Obs.: N={N}, sample={i+1}/{samples}          ', end='\r')
 
             # Introduce random noise
-            ctx_obs = copy(ctx)
-            ctx_obs.interferometer.kn.σ = np.abs(np.random.normal(0, 1, len(kn.σ))) * λ
+            ctx.interferometer.kn.σ = np.abs(np.random.normal(0, 1, len(kn.σ))) * λ
 
             # Calibrate
-            ctx_obs = calibration.obstruction(ctx=ctx, N=N, plot=False)
+            calibration.obstruction(ctx=ctx, N=N, plot=False)
 
             # Calculate depth
             ψ = np.ones(4) * (1+0j) * np.sqrt(1/4)
-            _, d, b = ctx_obs.interferometer.kn.propagate_fields(ψ=ψ, λ=λ)
+            _, d, b = ctx.interferometer.kn.propagate_fields(ψ=ψ, λ=λ)
             di = np.abs(d)**2
             k = np.array([di[0] - di[1], di[2] - di[3], di[4] - di[5]])
             depth = np.sum(np.abs(k)) / np.abs(b)**2
