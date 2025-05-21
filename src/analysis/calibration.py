@@ -103,12 +103,15 @@ def compare_approaches(ctx:Context = None):
     # Calibration is performed in a controled environment where there is no input cophasing error variation
     ctx.Γ = 0 * u.nm
 
+    # Calibration is performed with only the on-axis source
+    ctx.target.companions = []
+
     β_res = 10
     βs, dβ = np.linspace(0.5, 0.99, β_res, retstep=True)
     Ns = [10, 100, 1000, 10_000]#, 100_000]
     samples = 100
 
-    # fig, axs = plt.subplots(1, 1, figsize=(5, 5))
+    # Genetic approach --------------------------------------------------------
 
     shots = []
     for β in βs:
@@ -142,6 +145,8 @@ def compare_approaches(ctx:Context = None):
     plt.plot(x_values, y_fit, 'tab:cyan', linestyle='--', label=f'Gen. fit')
 
     print("")
+    
+    # Obstraction approach ----------------------------------------------------
 
     shots = []
     for j, N in enumerate(Ns):
