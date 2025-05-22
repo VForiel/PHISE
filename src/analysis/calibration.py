@@ -33,9 +33,11 @@ def genetic_approach(ctx:Context = None, β:float = 0.9, verbose=False, figsize=
     # Introduce random noise
     ctx.interferometer.kn.σ = np.abs(np.random.normal(0, 1, 14)) * ctx.interferometer.λ
 
-    ctx = calibration.genetic(ctx=ctx, β=β, plot=True, verbose=verbose, figsize=figsize)
+    print_kernel_null_depth_lab_space_atm(ctx)
 
-    print_kernel_null_depth(ctx)
+    ctx.calibrate_gen(β=β, plot=True, verbose=verbose, figsize=figsize)
+
+    print_kernel_null_depth_lab_space_atm(ctx)
 
     return ctx
 
@@ -58,16 +60,32 @@ def obstruction_approach(ctx:Context = None, N:int = 1000):
     ctx.interferometer.kn.σ = np.abs(np.random.normal(0, 1, 14)) * ctx.interferometer.λ
 
     print(ctx.interferometer.kn.φ)
-    print_kernel_null_depth(ctx)
-    ctx = calibration.obstruction(ctx=ctx, N=N, plot=True)
+    print_kernel_null_depth_lab_space_atm(ctx)
+
+    ctx.calibrate_obs(N=N, plot=True)
+
     print(ctx.interferometer.kn.φ)
-    print_kernel_null_depth(ctx)
+    print_kernel_null_depth_lab_space_atm(ctx)
 
     return ctx
 
 #==============================================================================
 # Calibration results
 #==============================================================================
+
+def print_kernel_null_depth_lab_space_atm(ctx:Context):
+    ctx = copy(ctx)
+    ctx.Γ = 0 * u.nm
+    print("Performances in lab (Γ=0)")
+    print_kernel_null_depth(ctx)
+
+    ctx.Γ = 1 * u.nm
+    print("\nPerformances in space (Γ=1 nm)")
+    print_kernel_null_depth(ctx)
+
+    ctx.Γ = 100 * u.nm
+    print("\nPerformances in atmosphere (Γ=100 nm)")
+    print_kernel_null_depth(ctx)
 
 def print_kernel_null_depth(ctx:Context, N=1000):
     kernels = np.empty((N, 3))
@@ -78,12 +96,15 @@ def print_kernel_null_depth(ctx:Context, N=1000):
         bright[i] = b
 
     k_mean = np.mean(kernels, axis=0)
+    k_med = np.median(kernels, axis=0)
     k_std = np.std(kernels, axis=0)
     b_mean = np.mean(bright)
+    b_med = np.median(bright)
     b_std = np.std(bright)
 
     print(f"Achieved Kernel-Null depth:")
     print("   Mean: " + " | ".join([f"{i / b_mean:.2e}" for i in k_mean]))
+    print("   Med:  " + " | ".join([f"{i / b_mean:.2e}" for i in k_med]))
     print("   Std:  " + " | ".join([f"{i / b_mean:.2e}" for i in k_std]))
 
 #==============================================================================
