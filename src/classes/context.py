@@ -627,7 +627,7 @@ class Context:
     
     # Obstruction calibration -------------------------------------------------
 
-    def obstruction(
+    def calibrate_obs(
             self,
             N: int = 1_000,
             plot: bool = False,

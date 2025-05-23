@@ -8,7 +8,6 @@ from copy import deepcopy as copy
 
 # Internal libs
 from .. import Context
-from .. import calibration
 from . import default_context
 
 #==============================================================================
@@ -143,7 +142,7 @@ def compare_approaches(ctx:Context = None):
             ctx.interferometer.kn.σ = np.abs(np.random.normal(0, 1, len(kn.σ))) * λ
 
             # Calibrate
-            _, history = calibration.genetic(ctx=ctx, β=β, verbose=False, ret_history=True)
+            history = ctx.calibrate_gen(β=β, verbose=False)
 
             # Calculate depth
             ψ = np.ones(4) * (1+0j) * np.sqrt(1/4)
@@ -178,7 +177,7 @@ def compare_approaches(ctx:Context = None):
             ctx.interferometer.kn.σ = np.abs(np.random.normal(0, 1, len(kn.σ))) * λ
 
             # Calibrate
-            calibration.obstruction(ctx=ctx, N=N, plot=False)
+            ctx.calibrate_obs(N=N, plot=False)
 
             # Calculate depth
             ψ = np.ones(4) * (1+0j) * np.sqrt(1/4)
