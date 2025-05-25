@@ -48,6 +48,25 @@ class Interferometer:
         self.camera._parent_interferometer = self
         self.name = name
 
+    # To string ---------------------------------------------------------------
+
+    def __str__(self) -> str:
+        res = f'Interferometer "{self.name}"\n'
+        res += f'  Latitude: {self.l:.2f}\n'
+        res += f'  Central wavelength: {self.λ:.2f}\n'
+        res += f'  Bandwidth: {self.Δλ:.2f}\n'
+        res += f'  Field of view: {self.fov:.2f}\n'
+        res += f"  Telescopes:\n"
+        lines = []
+        for telescope in self.telescopes:
+            lines += str(telescope).split("\n")
+        res += f"    " + "\n    ".join(lines) + "\n"
+        res += f"  " + "\n  ".join(str(self.kn).split("\n")) + "\n"
+        res += f"  " + "\n  ".join(str(self.camera).split("\n"))
+        return res
+    
+    def __repr__(self) -> str:
+        return self.__str__()
 
     # l property --------------------------------------------------------------
 

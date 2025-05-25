@@ -53,6 +53,20 @@ class Context:
 
         self._initialized = True
 
+    # To string ---------------------------------------------------------------
+
+    def __str__(self) -> str:
+        res = f'Context "{self.name}"\n'
+        res += "  " + "\n  ".join(str(self.interferometer).split("\n")) + "\n"
+        res += "  " + "\n  ".join(str(self.target).split("\n"))
+        res += f'  h: {self.h:.2f}\n'
+        res += f'  Δh: {self.Δh:.2f}\n'
+        res += f'  Γ: {self.Γ:.2f}'
+        return res
+    
+    def __repr__(self) -> str:
+        return self.__str__()
+
     # Interferometer property -------------------------------------------------
 
     @property
@@ -299,7 +313,7 @@ class Context:
         _, axs = plt.subplots(2, 6, figsize=(35, 10))
 
         fov = self.interferometer.fov
-        extent = (-fov.value, fov.value, -fov.value, fov.value)
+        extent = (-fov.value/2, fov.value/2, -fov.value/2, fov.value/2)
 
         for i in range(3):
             im = axs[0, i].imshow(n_maps[i], aspect="equal", cmap="hot", extent=extent)
@@ -410,7 +424,8 @@ class Context:
         - Hour angle range (in radian)
         """
         
-        nb_obs_per_night = self.Δh.to(u.hourangle).value // self.interferometer.camera.e.to(u.hour).value
+        nb_obs_per_night = int(self.Δh.to(u.hourangle).value // self.interferometer.camera.e.to(u.hour).value)
+
         if nb_obs_per_night < 1:
             nb_obs_per_night = 1
         
@@ -431,6 +446,7 @@ class Context:
         """
         
         nb_objects = len(self.target.companions) + 1
+
         ds = np.empty((nb_objects, 6), dtype=np.complex128)
         bs = np.empty(nb_objects, dtype=np.complex128)
 

@@ -46,6 +46,20 @@ class KernelNuller():
         self.input_opd = input_opd if input_opd is not None else np.zeros(4) * u.m
         self.name = name
 
+    # To string ---------------------------------------------------------------
+
+    def __str__(self) -> str:
+        res = f'Kernel-Nuller "{self.name}"\n'
+        res += f'  φ: [{", ".join([f"{i:.2e}" for i in self.φ.value])}] {self.φ.unit}\n'
+        res += f'  σ: [{", ".join([f"{i:.2e}" for i in self.σ.value])}] {self.σ.unit}\n'
+        res += f'  Output order: [{", ".join([f"{i}" for i in self.output_order])}]\n'
+        res += f'  Input attenuation: [{", ".join([f"{i:.2e}" for i in self.input_attenuation])}]\n'
+        res += f'  Input OPD: [{", ".join([f"{i:.2e}" for i in self.input_opd.value])}] {self.input_opd.unit}'
+        return res.replace("e+00", "")
+    
+    def __repr__(self) -> str:
+        return self.__str__()
+
     # φ property --------------------------------------------------------------
 
     @property

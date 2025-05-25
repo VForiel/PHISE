@@ -31,7 +31,7 @@ def get_maps_njit(
         x_map[:, i] = v
         y_map[i, :] = v
 
-    θ_map = np.sqrt(x_map**2 + y_map**2) * fov
+    θ_map = np.sqrt(x_map**2 + y_map**2) * fov/2
     α_map = np.arctan2(y_map, x_map) % (2*np.pi)
 
     return x_map, y_map, α_map, θ_map

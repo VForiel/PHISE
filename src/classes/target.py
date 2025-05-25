@@ -36,8 +36,24 @@ class Target():
             companion._parent_target = self
         self.name = name
 
-    # m property --------------------------------------------------------------
+    # To string ---------------------------------------------------------------
+
+    def __str__(self) -> str:
+        res = f'Target "{self.name}"\n'
+        res += f'  f: {self.f:.2e}\n'
+        res += f'  δ: {self.δ:.2e}\n'
+        res += f"  Companions:\n"
+        lines = []
+        for companion in self.companions:
+            lines += str(companion).split("\n")
+        res += f"    " + "\n    ".join(lines)
+        return res
     
+    def __repr__(self) -> str:
+        return self.__str__()
+
+    # m property --------------------------------------------------------------
+
     @property
     def f(self) -> u.Quantity:
         return self._f

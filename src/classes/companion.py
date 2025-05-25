@@ -20,17 +20,21 @@ class Companion():
 
         self._parent_target = None
 
-        self.θ = θ.to(u.mas)
-        self.α = α.to(u.rad)
-        self.c = float(c)
-        self.name = str(name)
+        self.θ = θ
+        self.α = α
+        self.c = c
+        self.name = name
     
     def __repr__(self) -> str:
         return self.__str__()
     
     def __str__(self) -> str:
-        return f'Companion "{self.name}": contrast = {self.c:.2e}, θ = {self.θ}, α = {self.α}'
-    
+        res = f'Companion "{self.name}"\n'
+        res += f'  Contrast: {self.c:.2f}\n'
+        res += f'  Angular separation: {self.θ:.2f}\n'
+        res += f'  Parallactic angle: {self.α:.2f}'
+        return res
+
     # c property --------------------------------------------------------------
 
     @property

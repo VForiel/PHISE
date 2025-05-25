@@ -30,7 +30,7 @@ def get() -> Context:
                 name = "First Generation Kernel-Nuller", # Kernel nuller name
             ),
             camera = Camera(
-                e = 1 * u.s, # Exposure time
+                e = 5 * u.min, # Exposure time
                 name = "Default Camera", # Camera name
             ),
         ),

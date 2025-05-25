@@ -20,6 +20,17 @@ class Telescope():
         self.r = r
         self.name = name
 
+    # To string ---------------------------------------------------------------
+
+    def __str__(self) -> str:
+        res = f'Telescope "{self.name}"\n'
+        res += f'  Area: {self.a:.2e}\n'
+        res += f'  Relative position: [{", ".join([f"{i:.2e}" for i in self.r.value])}] {self.r.unit}'
+        return res.replace("e+00", "")
+    
+    def __repr__(self) -> str:
+        return self.__str__()
+
     # a property --------------------------------------------------------------
 
     @property
