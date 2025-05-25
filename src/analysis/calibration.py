@@ -8,7 +8,6 @@ from copy import deepcopy as copy
 
 # Internal libs
 from .. import Context
-from .. import calibration
 from . import default_context
 
 #==============================================================================
@@ -33,9 +32,11 @@ def genetic_approach(ctx:Context = None, β:float = 0.9, verbose=False, figsize=
     # Introduce random noise
     ctx.interferometer.kn.σ = np.abs(np.random.normal(0, 1, 14)) * ctx.interferometer.λ
 
-    ctx = calibration.genetic(ctx=ctx, β=β, plot=True, verbose=verbose, figsize=figsize)
+    print_kernel_null_depth_lab_space_atm(ctx)
 
-    print_kernel_null_depth(ctx)
+    ctx.calibrate_gen(β=β, plot=True, verbose=verbose, figsize=figsize)
+
+    print_kernel_null_depth_lab_space_atm(ctx)
 
     return ctx
 
@@ -58,16 +59,32 @@ def obstruction_approach(ctx:Context = None, N:int = 1000):
     ctx.interferometer.kn.σ = np.abs(np.random.normal(0, 1, 14)) * ctx.interferometer.λ
 
     print(ctx.interferometer.kn.φ)
-    print_kernel_null_depth(ctx)
-    ctx = calibration.obstruction(ctx=ctx, N=N, plot=True)
+    print_kernel_null_depth_lab_space_atm(ctx)
+
+    ctx.calibrate_obs(N=N, plot=True)
+
     print(ctx.interferometer.kn.φ)
-    print_kernel_null_depth(ctx)
+    print_kernel_null_depth_lab_space_atm(ctx)
 
     return ctx
 
 #==============================================================================
 # Calibration results
 #==============================================================================
+
+def print_kernel_null_depth_lab_space_atm(ctx:Context):
+    ctx = copy(ctx)
+    ctx.Γ = 0 * u.nm
+    print("Performances in lab (Γ=0)")
+    print_kernel_null_depth(ctx)
+
+    ctx.Γ = 1 * u.nm
+    print("\nPerformances in space (Γ=1 nm)")
+    print_kernel_null_depth(ctx)
+
+    ctx.Γ = 100 * u.nm
+    print("\nPerformances in atmosphere (Γ=100 nm)")
+    print_kernel_null_depth(ctx)
 
 def print_kernel_null_depth(ctx:Context, N=1000):
     kernels = np.empty((N, 3))
@@ -78,12 +95,15 @@ def print_kernel_null_depth(ctx:Context, N=1000):
         bright[i] = b
 
     k_mean = np.mean(kernels, axis=0)
+    k_med = np.median(kernels, axis=0)
     k_std = np.std(kernels, axis=0)
     b_mean = np.mean(bright)
+    b_med = np.median(bright)
     b_std = np.std(bright)
 
     print(f"Achieved Kernel-Null depth:")
     print("   Mean: " + " | ".join([f"{i / b_mean:.2e}" for i in k_mean]))
+    print("   Med:  " + " | ".join([f"{i / b_mean:.2e}" for i in k_med]))
     print("   Std:  " + " | ".join([f"{i / b_mean:.2e}" for i in k_std]))
 
 #==============================================================================
@@ -103,12 +123,15 @@ def compare_approaches(ctx:Context = None):
     # Calibration is performed in a controled environment where there is no input cophasing error variation
     ctx.Γ = 0 * u.nm
 
+    # Calibration is performed with only the on-axis source
+    ctx.target.companions = []
+
     β_res = 10
     βs, dβ = np.linspace(0.5, 0.99, β_res, retstep=True)
     Ns = [10, 100, 1000, 10_000]#, 100_000]
     samples = 100
 
-    # fig, axs = plt.subplots(1, 1, figsize=(5, 5))
+    # Genetic approach --------------------------------------------------------
 
     shots = []
     for β in βs:
@@ -119,7 +142,7 @@ def compare_approaches(ctx:Context = None):
             ctx.interferometer.kn.σ = np.abs(np.random.normal(0, 1, len(kn.σ))) * λ
 
             # Calibrate
-            _, history = calibration.genetic(ctx=ctx, β=β, verbose=False, ret_history=True)
+            history = ctx.calibrate_gen(β=β, verbose=False)
 
             # Calculate depth
             ψ = np.ones(4) * (1+0j) * np.sqrt(1/4)
@@ -142,6 +165,8 @@ def compare_approaches(ctx:Context = None):
     plt.plot(x_values, y_fit, 'tab:cyan', linestyle='--', label=f'Gen. fit')
 
     print("")
+    
+    # Obstraction approach ----------------------------------------------------
 
     shots = []
     for j, N in enumerate(Ns):
@@ -152,7 +177,7 @@ def compare_approaches(ctx:Context = None):
             ctx.interferometer.kn.σ = np.abs(np.random.normal(0, 1, len(kn.σ))) * λ
 
             # Calibrate
-            calibration.obstruction(ctx=ctx, N=N, plot=False)
+            ctx.calibrate_obs(N=N, plot=False)
 
             # Calculate depth
             ψ = np.ones(4) * (1+0j) * np.sqrt(1/4)
