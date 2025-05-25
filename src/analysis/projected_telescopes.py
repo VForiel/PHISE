@@ -7,7 +7,7 @@ from io import BytesIO
 from copy import deepcopy as copy
 
 # Internal libs
-from .. import *
+from src import Telescope
 from . import default_context
 
 def gui(
@@ -85,8 +85,8 @@ def gui(
         plot.value = ctx.plot_projected_positions(N=11, return_image=True)
 
     def reset_values(*_):
-        l_slider.value = l.to(u.deg).value
-        δ_slider.value = δ.to(u.deg).value
+        l_slider.value = ref_ctx.interferometer.l.to(u.deg).value
+        δ_slider.value = ref_ctx.target.δ.to(u.deg).value
 
     # Triggers ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

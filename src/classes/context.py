@@ -61,7 +61,7 @@ class Context:
     def __str__(self) -> str:
         res = f'Context "{self.name}"\n'
         res += "  " + "\n  ".join(str(self.interferometer).split("\n")) + "\n"
-        res += "  " + "\n  ".join(str(self.target).split("\n"))
+        res += "  " + "\n  ".join(str(self.target).split("\n")) + "\n"
         res += f'  h: {self.h:.2f}\n'
         res += f'  Δh: {self.Δh:.2f}\n'
         res += f'  Γ: {self.Γ:.2f}'
@@ -311,7 +311,7 @@ class Context:
         companions_pos = []
         for c in self.target.companions:
             x, y = coordinates.αθ_to_xy(α=c.α, θ=c.θ, fov=self.interferometer.fov)
-            companions_pos.append((x*self.interferometer.fov, y*self.interferometer.fov))
+            companions_pos.append((x*self.interferometer.fov/2, y*self.interferometer.fov/2))
 
         _, axs = plt.subplots(2, 6, figsize=(35, 10))
 
@@ -484,9 +484,9 @@ class Context:
 
         Returns
         -------
-        - Bright data (n, n_h) - # of photons events
         - Dark data (n, n_h, 6) - # of photons events
         - Kernel data (n, n_h, 3) - # of photons events
+        - Bright data (n, n_h) - # of photons events
         """
 
         h_range = self.get_h_range()
@@ -637,15 +637,15 @@ class Context:
             plt.show()
 
         return {
-            "depth": depth_history,
-            "shifters": shifters_history,
+            "depth": np.array(depth_history),
+            "shifters": np.array(shifters_history),
         }
     
     # Obstruction calibration -------------------------------------------------
 
     def calibrate_obs(
             self,
-            N: int = 1_000,
+            n: int = 1_000,
             plot: bool = False,
             figsize:tuple[int] = (30,20),
         ):
@@ -654,17 +654,18 @@ class Context:
 
         Parameters
         ----------
-        - ctx: Context of the calibration process
-        - λ: Wavelength of the observation
-        - N: Number of points for the least squares optimization
+        - n: Number of points for the least squares optimization
         - plot: Boolean, if True, plot the optimization process
+        - figsize: Figure size for the plot
 
         Returns
         -------
         - Context: New context with the optimized kernel nuller
         """
 
+
         kn = self.interferometer.kn
+        input_attenuation_backup = kn.input_attenuation.copy()
         λ = self.interferometer.λ
         e = self.interferometer.camera.e
         total_photons = np.sum(self.pf.to(1/e.unit).value) * e.value
@@ -675,25 +676,25 @@ class Context:
                 axs.flatten()[i].set_xlabel("Phase shift")
                 axs.flatten()[i].set_ylabel("Throughput")
 
-        def maximize_bright(n, plt_coords=None):
+        def maximize_bright(p, plt_coords=None):
 
-            x = np.linspace(0, λ.value,N)
-            y = np.empty(N)
+            x = np.linspace(0, λ.value,n)
+            y = np.empty(n)
 
-            for i in range(N):
-                kn.φ[n-1] = i * λ / N
+            for i in range(n):
+                kn.φ[p-1] = i * λ / n
                 _, _, b = self.observe()
                 y[i] = b / total_photons
             
             def sin(x, x0):
                 return (np.sin((x-x0)/λ.value*2*np.pi)+1)/2 * (np.max(y)-np.min(y)) + np.min(y)
             
-            popt, _ = curve_fit(sin, x, y, p0=[0])
+            popt, _ = curve_fit(sin, x, y, p0=[0], maxfev = 100_000)
 
-            kn.φ[n-1] = (np.mod(popt[0]+λ.value/4, λ.value) * λ.unit).to(kn.φ.unit)
+            kn.φ[p-1] = (np.mod(popt[0]+λ.value/4, λ.value) * λ.unit).to(kn.φ.unit)
 
             if plot:
-                axs[*plt_coords].set_title(f"$|B(\phi{n})|$")
+                axs[*plt_coords].set_title(f"$|B(\phi{p})|$")
                 axs[*plt_coords].scatter(x, y, label='Data', color='tab:blue')
                 axs[*plt_coords].plot(x, sin(x, *popt), label='Fit', color='tab:orange')
                 axs[*plt_coords].axvline(x=np.mod(popt[0]+λ.value/4, λ.value), color='k', linestyle='--', label='Optimal phase shift')
@@ -701,25 +702,26 @@ class Context:
                 axs[*plt_coords].set_ylabel("Bright throughput")
                 axs[*plt_coords].legend()
 
-        def minimize_kernel(n, m, plt_coords=None):
+        def minimize_kernel(p, m, plt_coords=None):
 
-            x = np.linspace(0,λ.value,N)
-            y = np.empty(N)
+            x = np.linspace(0,λ.value,n)
+            y = np.empty(n)
 
-            for i in range(N):
-                kn.φ[n-1] = i * λ / N
+            for i in range(n):
+                kn.φ[p-1] = i * λ / n
                 _, k, _ = self.observe()
                 y[i] = k[m-1] / total_photons
             
             def sin(x, x0):
                 return (np.sin((x-x0)/λ.value*2*np.pi)+1)/2 * (np.max(y)-np.min(y)) + np.min(y)
             
-            popt, _ = curve_fit(sin, x, y, p0=[0])
+            popt, _ = curve_fit(sin, x, y, p0=[0], maxfev = 100_000)
 
-            kn.φ[n-1] = (np.mod(popt[0], λ.value) * λ.unit).to(kn.φ.unit)
+            kn.φ[p-1] = (np.mod(popt[0], λ.value) * λ.unit).to(kn.φ.unit)
+            kn.input_attenuation = input_attenuation_backup
 
             if plot:
-                axs[*plt_coords].set_title(f"$K_{m}(\phi{n})$")
+                axs[*plt_coords].set_title(f"$K_{m}(\phi{p})$")
                 axs[*plt_coords].scatter(x, y, label='Data', color='tab:blue')
                 axs[*plt_coords].plot(x, sin(x, *popt), label='Fit', color='tab:orange')
                 axs[*plt_coords].axvline(x=np.mod(popt[0], λ.value), color='k', linestyle='--', label='Optimal phase shift')
@@ -727,13 +729,13 @@ class Context:
                 axs[*plt_coords].set_ylabel("Kernel throughput")
                 axs[*plt_coords].legend()
 
-        def maximize_darks(n, ds, plt_coords=None):
+        def maximize_darks(p, ds, plt_coords=None):
 
-            x = np.linspace(0, λ.value, N)
-            y = np.empty(N)
-        
-            for i in range(N):
-                kn.φ[n-1] = i * λ / N
+            x = np.linspace(0, λ.value, n)
+            y = np.empty(n)
+
+            for i in range(n):
+                kn.φ[p-1] = i * λ / n
                 d, _, _ = self.observe()
                 y[i] = np.sum(np.abs(d[np.array(ds)-1])) / total_photons
             
@@ -742,10 +744,10 @@ class Context:
             
             popt, _ = curve_fit(sin, x, y, p0=[0], maxfev = 100_000)
 
-            kn.φ[n-1] = (np.mod(popt[0]+λ.value/4, λ.value) * λ.unit).to(kn.φ.unit)
+            kn.φ[p-1] = (np.mod(popt[0]+λ.value/4, λ.value) * λ.unit).to(kn.φ.unit)
 
             if plot:
-                axs[*plt_coords].set_title(f"$|D_{ds[0]}(\phi{n})| + |D_{ds[0]}(\phi{n})|$")
+                axs[*plt_coords].set_title(f"$|D_{ds[0]}(\phi{p})| + |D_{ds[0]}(\phi{p})|$")
                 axs[*plt_coords].scatter(x, y, label='Data', color='tab:blue')
                 axs[*plt_coords].plot(x, sin(x, *popt), label='Fit', color='tab:orange')
                 axs[*plt_coords].axvline(x=np.mod(popt[0]+λ.value/4, λ.value), color='k', linestyle='--', label='Optimal phase shift')

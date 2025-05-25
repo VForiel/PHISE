@@ -33,6 +33,7 @@ def instant_distribution(ctx:Context=None, n=10000, stat=np.median) -> np.ndarra
     
     if ctx is None:
         ctx = default_context.get()
+        # Ideal kernel nuller
         ctx.interferometer.kn.σ = np.zeros(14) * u.um
         ctx.target.companions[0].c = 1e-1
     else:
@@ -102,7 +103,7 @@ def time_evolution(ctx:Context=None, n=100, map=np.median) -> np.ndarray:
     if ctx is None:
         ctx = default_context.get()
         ctx.interferometer.kn.σ = np.zeros(14) * u.um
-        ctx.Γ = 1 * u.nm
+        ctx.Γ = 10 * u.nm
     else:
         ctx = copy(ctx)
 
@@ -129,8 +130,9 @@ def time_evolution(ctx:Context=None, n=100, map=np.median) -> np.ndarray:
 
     # Map the data (ex: median on the n samples)
     for h in range(len(h_range)):
-        data[h] = map(k_depth[:, h])
-        ref_data[h] = ref_k_depth[0, h]
+        for k in range(3):
+            data[h, k] = map(k_depth[:, h, k])
+            ref_data[h, k] = ref_k_depth[0, h, k]
 
     # Plot
     _, axs = plt.subplots(3, 1, figsize=(10, 10), sharex=True)

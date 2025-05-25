@@ -11,76 +11,30 @@ from . import default_context
 
 
 def gui(
-        N:int = 100,
-        r:np.ndarray[float] = None,
-        δ:u.Quantity = None,
-        h:u.Quantity = None,
-        l:u.Quantity = None,
-        fov:u.Quantity = None,
-        λ:u.Quantity = None,
-        φ:u.Quantity = None,
-        σ:u.Quantity = None,
-        companions:list[Companion] = None,
+        ctx: Context = None,
+        N: int = 100,
     ):
     """
     GUI to visualize the transmission maps of the VLTI.
     Parameters
     ----------
+    ctx : Context, optional
+        The context to use for the transmission maps. If None, the default context is used.
+        The default is None.
     N : int, optional
         Resolution of the maps. The default is 100 (for 100x100).
-    r : np.ndarray[float], optional
-        Positions of the telescopes in the array. If None, the default positions
-        are used.
-    δ : `astropy.units.Quantity`, optional
-        Declination of the target. If None, the default value is used.
-    h : `astropy.units.Quantity`, optional
-        Hour angle of the target. If None, the default value is used.
-    l : `astropy.units.Quantity`, optional
-        Latitude of the target. If None, the default value is used.
-    fov : `astropy.units.Quantity`, optional
-        Field of view of the instrument. If None, the default value is used.
-    λ : `astropy.units.Quantity`, optional
-        Wavelength of the instrument. If None, the default value is used.
-    φ : `astropy.units.Quantity`, optional
-        Phase of the kernel nuller. If None, the default value is used.
-    σ : `astropy.units.Quantity`, optional
-        Standard deviation of the kernel nuller. If None, the default value is used.
-    companions : list[Companion], optional
-        List of companions to add to the target. If None, the default value is used.
     """
 
     # Set default values ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    ref_ctx = default_context.get()
+    
 
-    if r is not None:
-        ref_ctx.interferometer.telescopes = [Telescope(a=1*u.m**2, r=pos) for pos in r]
+    if ctx is None:
+        ref_ctx = default_context.get()
+        # Ideal kernel nuller
+        ref_ctx.interferometer.kn.σ = np.zeros(14) * u.um
     else:
-        # Setting the area of all telescopes to 1 m^2
-        for telescope in ref_ctx.interferometer.telescopes:
-            telescope.a = 1*u.m**2
-    if h is not None:
-        ref_ctx.h = h
-    if l is not None:
-        ref_ctx.interferometer.l = l
-    if δ is not None:
-        ref_ctx.target.δ = δ
-    if fov is not None:
-        ref_ctx.interferometer.fov = fov
-    if λ is not None:
-        ref_ctx.interferometer.λ = λ
-    if φ is not None:
-        ref_ctx.interferometer.kn.φ = φ
-    else:
-        # Setting the phase of all telescopes to 0
-        ref_ctx.interferometer.kn.φ *= 0
-    if σ is not None:
-        ref_ctx.interferometer.kn.σ = σ
-    else:
-        # Setting the standard deviation of all telescopes to 0
-        ref_ctx.interferometer.kn.σ *= 0
-    if companions is not None:
-        ref_ctx.target.companions = companions
+        ref_ctx = ctx
 
     # UI elements ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

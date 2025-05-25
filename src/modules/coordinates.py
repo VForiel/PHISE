@@ -115,8 +115,8 @@ def αθ_to_xy_njit(
     - V value
     """
     
-    x = θ/fov * np.cos(α)
-    y = θ/fov * np.sin(α)
+    x = 2*θ/fov * np.cos(α)
+    y = 2*θ/fov * np.sin(α)
 
     return x, y
 

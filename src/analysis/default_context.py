@@ -2,8 +2,8 @@ from astropy import units as u
 import numpy as np
 from astropy import constants as const
 
-from .. import Context, Interferometer, Target, Companion, KernelNuller, Camera
-from .. import telescope
+from src import Context, Interferometer, Target, Companion, KernelNuller, Camera
+from src import telescope
 
 def get() -> Context:
     """
@@ -20,7 +20,7 @@ def get() -> Context:
         interferometer = Interferometer(
             l = -24.6275 * u.deg, # Latitude
             λ = λ, # Central wavelength
-            Δλ = 0.1 * u.m, # Bandwidth
+            Δλ = 1 * u.nm, # Bandwidth
             fov = 10 * u.mas, # Field of view
             telescopes = telescope.get_VLTI_UTs(),
             name = "VLTI", # Interferometer name
@@ -41,8 +41,8 @@ def get() -> Context:
             companions = [
                 Companion(
                     c = 1e-6, # Companion contrast
-                    θ = 2 * u.mas, # Companion angular separation
-                    α = 45 * u.deg, # Companion position angle
+                    θ = 4 * u.mas, # Companion angular separation
+                    α = 0 * u.deg, # Companion position angle
                     name = "Hypothetical Companion", # Companion name
                 ),
             ],

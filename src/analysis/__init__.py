@@ -6,3 +6,6 @@ from . import demonstration
 from . import default_context
 from . import calibration
 from . import data_representations
+from . import noise_sensitivity
+from . import distribution_model
+from . import sky_contribution

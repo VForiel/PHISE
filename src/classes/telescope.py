@@ -69,7 +69,7 @@ class Telescope():
         self._r = r
 
         if self.parent_interferometer is not None:
-            self.parent_interferometer.parent_ctx.update_telescope_position(self)
+            self.parent_interferometer.parent_ctx.project_telescopes_position()
 
     # name property -----------------------------------------------------------
 
