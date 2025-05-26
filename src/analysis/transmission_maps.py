@@ -55,7 +55,7 @@ def gui(
 
         ctx.interferometer.l = l_slider.value*u.deg
         ctx.target.δ = δ_slider.value*u.deg
-        ctx.h = h_slider.value*u.deg
+        ctx.h = h_slider.value*u.hourangle
         
         img, txt = ctx.plot_transmission_maps(
             N=N,

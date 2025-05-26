@@ -3,6 +3,7 @@ import numpy as np
 import numba as nb
 import astropy.units as u
 import matplotlib.pyplot as plt
+plt.rcParams['image.origin'] = 'lower'
 from io import BytesIO
 from LRFutils import color
 from copy import deepcopy as copy

@@ -1,6 +1,7 @@
 import numpy as np
 import numba as nb
 import matplotlib.pyplot as plt
+plt.rcParams['image.origin'] = 'lower'
 from copy import deepcopy as copy
 
 from ..classes.context import Context

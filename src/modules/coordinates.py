@@ -2,6 +2,7 @@ import numpy as np
 import numba as nb
 import astropy.units as u
 import matplotlib.pyplot as plt
+plt.rcParams['image.origin'] = 'lower'
 
 @nb.njit()
 def get_maps_njit(

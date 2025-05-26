@@ -8,48 +8,34 @@ from copy import deepcopy as copy
 
 # Internal libs
 from src import Telescope
+from src import Context
 from . import default_context
 
 def gui(
-        r:u.Quantity = None,
-        h:u.Quantity = None,
-        Δh:u.Quantity = None,
-        l:u.Quantity = None,
-        δ:u.Quantity = None,
+        ctx:Context=None,
+        n = 10
     ) -> None:
     """
     GUI to visualize the projected positions of the telescopes in the array.
 
     Parameters
     ----------
-    r : `astropy.units.Quantity`, optional
-        Positions of the telescopes in the array. If None, the default positions
-        are used.
-    h : `astropy.units.Quantity`, optional
-        Hour angle of the target. If None, the default value is used.
-    Δh : `astropy.units.Quantity`, optional
-        Range of hour angles to plot. If None, the default value is used.
-    l : `astropy.units.Quantity`, optional
-        Latitude of the target. If None, the default value is used.
-    δ : `astropy.units.Quantity`, optional
-        Declination of the target. If None, the default value is used.
+    ctx: Context
+        Context object containing the interferometer and target information.
+        If None, a default context is used.
+    n: int
+        Number of telescopes in the interferometer. Default is 10.
     """
 
     # Set default values ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    ref_ctx = default_context.get()
-
-    if r is not None:
-        ref_ctx.interferometer.telescopes = [Telescope(a=1*u.m**2, r=pos) for pos in r]
-    if h is not None:
-        ref_ctx.h = h
-    if Δh is not None:
-        ref_ctx.Δh = Δh
-    if l is not None:
-        ref_ctx.interferometer.l = l
-    if δ is not None:
-        ref_ctx.target.δ = δ
     
+    if ctx is None:
+        ref_ctx = default_context.get()
+    else:
+        ref_ctx = copy(ctx)
+
+
     # GUI elements ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     # Latitude
@@ -82,7 +68,7 @@ def gui(
         ctx.interferometer.l = l_slider.value * u.deg
         ctx.target.δ = δ_slider.value * u.deg
 
-        plot.value = ctx.plot_projected_positions(N=11, return_image=True)
+        plot.value = ctx.plot_projected_positions(N=n, return_image=True)
 
     def reset_values(*_):
         l_slider.value = ref_ctx.interferometer.l.to(u.deg).value

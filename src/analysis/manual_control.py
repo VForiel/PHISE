@@ -2,6 +2,7 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+plt.rcParams['image.origin'] = 'lower'
 import ipywidgets as widgets
 import astropy.units as u
 from copy import deepcopy as copy

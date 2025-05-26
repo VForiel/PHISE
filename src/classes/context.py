@@ -5,6 +5,7 @@ import astropy.constants as const
 import numba as nb
 from copy import deepcopy as copy
 import matplotlib.pyplot as plt
+plt.rcParams['image.origin'] = 'lower'
 from io import BytesIO
 from LRFutils import color
 from scipy.optimize import curve_fit
@@ -772,7 +773,9 @@ class Context:
         # Kernel minimization
         self.interferometer.kn.input_attenuation = [1, 0, 0, 0]
         minimize_kernel(11, 1, plt_coords=(2,0))
+        print(self)
         minimize_kernel(13, 2, plt_coords=(2,1))
+        print(self)
         minimize_kernel(14, 3, plt_coords=(2,2))
 
         kn.φ = phase.bound(kn.φ, λ)

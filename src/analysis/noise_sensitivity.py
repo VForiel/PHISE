@@ -1,6 +1,7 @@
 import astropy.units as u
 import numpy as np
 import matplotlib.pyplot as plt
+plt.rcParams['image.origin'] = 'lower'
 from copy import deepcopy as copy
 
 from src.classes.context import Context

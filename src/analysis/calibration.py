@@ -1,6 +1,7 @@
 # External libs
 import numpy as np
 import matplotlib.pyplot as plt
+plt.rcParams['image.origin'] = 'lower'
 import astropy.units as u
 from LRFutils import color
 from scipy.stats import linregress
