@@ -13,6 +13,7 @@ from . import default_context
 def plot(
         ctx: Context = None,
         resolution: int = 100,
+        n = 100,
         map=np.median
     ):
     """
@@ -46,9 +47,8 @@ def plot(
         ctx.h = h
 
         # Generate data
-        N = 100
-        raw_data = np.empty((N, 3))
-        for j in range(N):
+        raw_data = np.empty((n, 3))
+        for j in range(n):
             _, k, _ = ctx.observe()
             raw_data[j] = k
 
