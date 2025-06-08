@@ -517,7 +517,7 @@ class Context:
             β: float,
             verbose: bool = False,
             plot:bool = False,
-            figsize:tuple = (10, 5),
+            figsize:tuple = (10, 10),
         ) -> dict:
         """
         Optimize the phase shifters offsets to maximize the nulling performance.
@@ -633,7 +633,7 @@ class Context:
             axs[1].set_ylabel("Phase shift")
             axs[1].set_yscale("linear")
             axs[1].set_title("Convergence of the phase shifters")
-            axs[1].legend(loc='upper right')
+            # axs[1].legend(loc='upper right')
 
             plt.show()
 
@@ -710,8 +710,8 @@ class Context:
 
             for i in range(n):
                 kn.φ[p-1] = i * λ / n
-                _, k, _ = self.observe()
-                y[i] = k[m-1] / total_photons
+                _, k, b = self.observe()
+                y[i] = k[m-1] / b
             
             def sin(x, x0):
                 return (np.sin((x-x0)/λ.value*2*np.pi)+1)/2 * (np.max(y)-np.min(y)) + np.min(y)
@@ -719,7 +719,6 @@ class Context:
             popt, _ = curve_fit(sin, x, y, p0=[0], maxfev = 100_000)
 
             kn.φ[p-1] = (np.mod(popt[0], λ.value) * λ.unit).to(kn.φ.unit)
-            kn.input_attenuation = input_attenuation_backup
 
             if plot:
                 axs[*plt_coords].set_title(f"$K_{m}(\phi{p})$")
@@ -737,9 +736,9 @@ class Context:
 
             for i in range(n):
                 kn.φ[p-1] = i * λ / n
-                d, _, _ = self.observe()
-                y[i] = np.sum(np.abs(d[np.array(ds)-1])) / total_photons
-            
+                d, _, b = self.observe()
+                y[i] = np.sum(np.abs(d[np.array(ds)-1])) / b
+
             def sin(x, x0):
                 return (np.sin((x-x0)/λ.value*2*np.pi)+1)/2 * (np.max(y)-np.min(y)) + np.min(y)
             
@@ -777,6 +776,7 @@ class Context:
         minimize_kernel(14, 3, plt_coords=(2,2))
 
         kn.φ = phase.bound(kn.φ, λ)
+        kn.input_attenuation = input_attenuation_backup
 
         if plot:
             axs[1,1].axis('off')

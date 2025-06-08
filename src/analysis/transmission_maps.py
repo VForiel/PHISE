@@ -27,8 +27,6 @@ def gui(
 
     # Set default values ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    
-
     if ctx is None:
         ref_ctx = default_context.get()
         # Ideal kernel nuller
@@ -43,12 +41,14 @@ def gui(
     δ_slider = widgets.FloatSlider(value=ref_ctx.target.δ.to(u.deg).value, min=-90, max=90, step=0.01, description='Declination:')
     reset = widgets.Button(description="Reset values")
     run = widgets.Button(description="Run")
+    export = widgets.Button(description="Export")
     plot = widgets.Image()
     transmission = widgets.HTML()
 
     # Callbacks ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     def update_plot(*args):
+
         run.button_style = "warning"
 
         ctx = copy(ref_ctx)
@@ -65,6 +65,18 @@ def gui(
         transmission.value = txt
         
         run.button_style = ""
+
+    def export_plot(*args):
+        ctx = copy(ref_ctx)
+
+        ctx.interferometer.l = l_slider.value*u.deg
+        ctx.target.δ = δ_slider.value*u.deg
+        ctx.h = h_slider.value*u.hourangle
+        
+        ctx.plot_transmission_maps(
+            N=N,
+            return_plot=False,
+        )
 
     def reset_values(*args):
         l_slider.value = ref_ctx.interferometer.l.to(u.deg).value
@@ -83,8 +95,9 @@ def gui(
     l_slider.observe(enable_run)
     δ_slider.observe(enable_run)
     run.on_click(update_plot)
+    export.on_click(export_plot)
 
     # Display ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    display(widgets.VBox([h_slider, l_slider, δ_slider, widgets.HBox([reset, run]), plot, transmission]))
+    display(widgets.VBox([h_slider, l_slider, δ_slider, widgets.HBox([reset, run, export]), plot, transmission]))
     update_plot()

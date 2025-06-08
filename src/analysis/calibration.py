@@ -17,7 +17,7 @@ from . import default_context
 
 # Genetic ---------------------------------------------------------------------
 
-def genetic_approach(ctx:Context = None, β:float = 0.9, verbose=False, figsize=(10,5)):
+def genetic_approach(ctx:Context = None, β:float = 0.9, verbose=False, figsize=(10,10)):
 
     if ctx is None:
          ctx = default_context.get()
