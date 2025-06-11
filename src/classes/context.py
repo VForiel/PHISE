@@ -747,7 +747,7 @@ class Context:
             kn.φ[p-1] = (np.mod(popt[0]+λ.value/4, λ.value) * λ.unit).to(kn.φ.unit)
 
             if plot:
-                axs[*plt_coords].set_title(f"$|D_{ds[0]}(\phi{p})| + |D_{ds[0]}(\phi{p})|$")
+                axs[*plt_coords].set_title(f"$|D_{ds[0]}(\phi{p})| + |D_{ds[1]}(\phi{p})|$")
                 axs[*plt_coords].scatter(x, y, label='Data', color='tab:blue')
                 axs[*plt_coords].plot(x, sin(x, *popt), label='Fit', color='tab:orange')
                 axs[*plt_coords].axvline(x=np.mod(popt[0]+λ.value/4, λ.value), color='k', linestyle='--', label='Optimal phase shift')
@@ -766,7 +766,7 @@ class Context:
         maximize_bright(7, plt_coords=(0,2))
 
         # Darks maximization
-        self.interferometer.kn.input_attenuation = [1, 0, -1, 0]
+        self.interferometer.kn.input_attenuation = [1, 0, 0, -1]
         maximize_darks(8, [1,2], plt_coords=(1,0))
 
         # Kernel minimization
