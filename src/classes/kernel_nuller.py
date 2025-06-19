@@ -1,16 +1,20 @@
+# External libs
 import numpy as np
 import numba as nb
 import astropy.units as u
-from astropy import constants as const
 import matplotlib.pyplot as plt
+plt.rcParams['image.origin'] = 'lower'
 from io import BytesIO
-import os
-import ipywidgets as widgets
+from LRFutils import color
 from copy import deepcopy as copy
 
+# Internal libs
 from ..modules import mmi
 from ..modules import phase
-from .source import Source
+
+#==============================================================================
+# Kernel-Nuller class
+#==============================================================================
 
 class KernelNuller():
     def __init__(
@@ -18,7 +22,9 @@ class KernelNuller():
             φ: np.ndarray[u.Quantity],
             σ: np.ndarray[u.Quantity],
             output_order: np.ndarray[int] = None,
-            name: str = "Unnamed",
+            input_attenuation: np.ndarray[float] = None,
+            input_opd: np.ndarray[u.Quantity] = None,
+            name: str = "Unnamed Kernel-Nuller",
         ):
         """Kernel-Nuller object.
 
@@ -27,37 +33,35 @@ class KernelNuller():
         - φ: Array of 14 injected OPD
         - σ: Array of 14 intrasic OPD error
         - output_order: Order of the outputs
+        - input_attenuation: Array of 4 input attenuations
+        - input_opd: Array of 4 input OPD
         - name: Name of the Kernel-Nuller object
         """
-        self._φ = φ
+
+        self._parent_interferometer = None
+
+        self.φ = φ
         self.σ = σ
         self.output_order = output_order if output_order is not None else np.array([0, 1, 2, 3, 4, 5])
+        self.input_attenuation = input_attenuation if input_attenuation is not None else np.array([1.0, 1.0, 1.0, 1.0])
+        self.input_opd = input_opd if input_opd is not None else np.zeros(4) * u.m
         self.name = name
 
-    def copy(self,
-            φ:np.ndarray[u.Quantity] = None,
-            σ:np.ndarray[u.Quantity] = None,
-            output_order:np.ndarray[int] = None,
-            **kwargs
-        ) -> "KernelNuller":
-        """
-        Create a copy of the Kernel-Nuller object with some parameters changed.
+    # To string ---------------------------------------------------------------
 
-        Parameters
-        ----------
-        - φ: Array of 14 injected OPD
-        - σ: Array of 14 intrasic OPD error
-        - output_order: Order of the outputs
+    def __str__(self) -> str:
+        res = f'Kernel-Nuller "{self.name}"\n'
+        res += f'  φ: [{", ".join([f"{i:.2e}" for i in self.φ.value])}] {self.φ.unit}\n'
+        res += f'  σ: [{", ".join([f"{i:.2e}" for i in self.σ.value])}] {self.σ.unit}\n'
+        res += f'  Output order: [{", ".join([f"{i}" for i in self.output_order])}]\n'
+        res += f'  Input attenuation: [{", ".join([f"{i:.2e}" for i in self.input_attenuation])}]\n'
+        res += f'  Input OPD: [{", ".join([f"{i:.2e}" for i in self.input_opd.value])}] {self.input_opd.unit}'
+        return res.replace("e+00", "")
+    
+    def __repr__(self) -> str:
+        return self.__str__()
 
-        Returns
-        -------
-        - Copied Kernel-Nuller object
-        """
-        return KernelNuller(
-            φ = copy(φ) if φ is not None else copy(self.φ),
-            σ = copy(σ) if σ is not None else copy(self.σ),
-            output_order = copy(output_order) if output_order is not None else copy(self.output_order),
-        )
+    # φ property --------------------------------------------------------------
 
     @property
     def φ(self):
@@ -73,7 +77,11 @@ class KernelNuller():
             raise ValueError("φ must be in a distance unit")
         if φ.shape != (14,):
             raise ValueError("φ must have a shape of (14,)")
+        if np.any(φ < 0):
+            raise ValueError("φ must be positive")
         self._φ = φ
+
+    # σ property --------------------------------------------------------------
 
     @property
     def σ(self):
@@ -90,6 +98,8 @@ class KernelNuller():
         if σ.shape != (14,):
             raise ValueError("σ must have a shape of (14,)")
         self._σ = σ
+
+    # Output order property --------------------------------------------------
 
     @property
     def output_order(self):
@@ -111,6 +121,62 @@ class KernelNuller():
             raise ValueError(f"output_order contain an invalid configuration of output pairs. Found {output_order}")
         self._output_order = output_order
 
+    # Input attenuation property ---------------------------------------------
+
+    @property
+    def input_attenuation(self):
+        return self._input_attenuation
+    
+    @input_attenuation.setter
+    def input_attenuation(self, input_attenuation:np.ndarray[float]):
+        try:
+            input_attenuation = np.array(input_attenuation, dtype=float)
+        except:
+            raise ValueError(f"input_attenuation must be an array of floats, not {type(input_attenuation)}")
+        if input_attenuation.shape != (4,):
+            raise ValueError(f"input_attenuation must have a shape of (4,), not {input_attenuation.shape}")
+        self._input_attenuation = input_attenuation
+
+    # Input OPD property ------------------------------------------------------
+
+    @property
+    def input_opd(self):
+        return self._input_opd
+    
+    @input_opd.setter
+    def input_opd(self, input_opd:np.ndarray[u.Quantity]):
+        if type(input_opd) != u.Quantity:
+            raise ValueError("input_opd must be a Quantity")
+        try:
+            input_opd.to(u.m)
+        except u.UnitConversionError:
+            raise ValueError("input_opd must be in a distance unit")
+        if input_opd.shape != (4,):
+            raise ValueError("input_opd must have a shape of (4,)")
+        self._input_opd = input_opd
+
+    # Name property -----------------------------------------------------------
+
+    @property
+    def name(self):
+        return self._name
+    
+    @name.setter
+    def name(self, name: str):
+        if not isinstance(name, str):
+            raise ValueError("name must be a string")
+        self._name = name
+
+    # Parent interferometer property ------------------------------------------
+
+    @property
+    def parent_interferometer(self):
+        return self._parent_interferometer
+    
+    @parent_interferometer.setter
+    def parent_interferometer(self, parent_interferometer):
+        raise ValueError("parent_interferometer is read-only")
+
     # Electric fields propagation ---------------------------------------------
 
     def propagate_fields(
@@ -119,7 +185,8 @@ class KernelNuller():
             λ: u.Quantity,
         ) -> tuple[np.ndarray[float], np.ndarray[float], np.ndarray[float], float]:
         """
-        Simulate a 4 telescope Kernel-Nuller propagation using a numeric approach
+        Simulate a 4 telescope Kernel-Nuller field propagation (at a given wavelength) using a numeric approach.
+        Take in account the input attenuation and OPD.
 
         Parameters
         ----------
@@ -134,40 +201,16 @@ class KernelNuller():
         """
         φ = self.φ.to(λ.unit).value
         σ = self.σ.to(λ.unit).value
-        λ = λ.value
 
-        return propagate_fields_njit(ψ=ψ, φ=φ, σ=σ, λ=λ, output_order=self.output_order)
+        # Attenuate inputs
+        ψ *= self.input_attenuation
 
-    # Observation -------------------------------------------------------------
+        # Apply OPD
+        ψ *= np.exp(-1j * 2 * np.pi * self.input_opd.to(λ.unit).value / λ.value)
 
-    def observe(
-            self,
-            ψ: np.ndarray[complex],
-            λ: u.Quantity,
-            f: float = None,
-            Δt:u.Quantity = 1*u.s,
-        ) -> np.ndarray[float]:
-        """
-        Simulate a 4 telescope Kernel-Nuller propagation using a numeric approach
-
-        Parameters
-        ----------
-        - Ψ: Array of 4 input beams complex amplitudes
-        - λ: Wavelength of the light
-        - Δt: Exposure time 
-
-        Returns
-        -------
-        - Array of 6 dark outputs intensities
-        - Array of 3 kernels output intensities
-        - Bright output intensity
-        """
-        φ = self.φ.to(λ.unit).value
-        σ = self.σ.to(λ.unit).value
-        Δt = Δt.to(u.s).value
-        return observe_njit(ψ, φ, σ, λ.value, Δt, self.output_order)
+        return propagate_fields_njit(ψ=ψ, φ=φ, σ=σ, λ=λ.value, output_order=self.output_order)
     
-    # Plotting --------------------------------------------------------------------
+    # Plot phases -------------------------------------------------------------
 
     def plot_phase(
             self,
@@ -256,183 +299,77 @@ class KernelNuller():
             return plot.getvalue()
         plt.show()
 
-    # Shift control GUI -------------------------------------------------------
+    # Rebind outputs ----------------------------------------------------------
 
-    def shifts_control_gui(self, λ:u.Quantity):
-        step = 1e-20
+    def rebind_outputs(self, λ):
+        """
+        Correct the output order of the KernelNuller object. To do so, we successively obstruct two inputs and add a π/4 phase over one of the two remaining inputs. Doing so, 
 
-        # Build sliders -----------------------------------------------------------
+        Parameters
+        ----------
+        - self: KernelNuller object
+        - λ: Wavelength of the observation
 
-        # Input amplitude
-        IA_sliders = [
-            widgets.FloatSlider(
-                value=0.5, min=0, max=0.5, step=step, description=f"I{i+1}",
-                continuous_update=False,
-            )
-            for i in range(4)
-        ]
+        Returns
+        -------
+        - KernelNuller object
+        """
 
-        # Input phase
-        IP_sliders = [
-            widgets.FloatSlider(
-                value=0, min=0, max=λ.value, step=step, description=f"I{i+1}",
-                continuous_update=False,
-            )
-            for i in range(4)
-        ]
+        # Identify kernels (correct kernel swapping) ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        # Shifter phase
-        P_sliders = [
-            widgets.FloatSlider(
-                value=0, min=0, max=λ.value, step=step, description=f"P{i+1}",
-                continuous_update=False,
-            )
-            for i in range(14)
-        ]
+        # E1 + E4 -> D1 & D2 should be dark (K1)
+        ψ = np.zeros(4, dtype=complex)
+        ψ[0] = ψ[3] = (1+0j) * np.sqrt(1/2)
 
-        # for i in range(14):
-        #     P_sliders[i].value = CALIBRATED_SHIFTS_IB[i].value
+        _, d, _ = self.propagate_fields(ψ=ψ, λ=λ)
+        k1 = np.argsort((d * np.conj(d)).real)[:2]
 
+        # E1 + E3 -> D3 & D4 should be dark (K2)
+        ψ = np.zeros(4, dtype=complex)
+        ψ[0] = ψ[2] = (1+0j) * np.sqrt(1/2)
 
-        # Build GUI ---------------------------------------------------------------
+        _, d, _ = self.propagate_fields(ψ=ψ, λ=λ)
+        k2 = np.argsort((d * np.conj(d)).real)[:2]
 
-        def beam_repr(beam: complex) -> str:
-            return f"<b>{np.abs(beam):.2e}</b> * exp(<b>{np.angle(beam)/np.pi:.2f}</b> pi i)"
+        # E1 + E2 -> D5 & D6 should be dark (K3)
+        ψ = np.zeros(4, dtype=complex)
+        ψ[0] = ψ[1] = (1+0j) * np.sqrt(1/2)
 
-        inputs = [widgets.HTML(value=f" ") for _ in range(4)]
-        null_outputs = [widgets.HTML(value=f" ") for _ in range(4)]
-        dark_outputs = [widgets.HTML(value=f" ") for _ in range(6)]
-        kernel_outputs = [widgets.HTML(value=f" ") for _ in range(3)]
+        _, d, _ = self.propagate_fields(ψ=ψ, λ=λ)
+        k3 = np.argsort((d * np.conj(d)).real)[:2]
 
-        def update_gui(*args):
+        # Check kernel sign (correc kernel inversion) ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-            ψ = np.array([
-                IA_sliders[i].value * np.exp(1j * IP_sliders[i].value / λ.value * 2 * np.pi)
-                for i in range(4)
-            ])
+        # E1 + E2*exp(-iπ/4) -> K1 and K2 should be positive
+        ψ = np.zeros(4, dtype=complex)
+        ψ[0] = ψ[1] = (1+0j) * np.sqrt(1/2)
+        ψ[1] *= np.exp(- 1j * np.pi / 2)
+        _, d, _ = self.propagate_fields(ψ=ψ, λ=λ)
 
-            self.φ = np.array([x.value for x in P_sliders]) * λ.unit
-            n, d, b = self.propagate_fields(ψ=ψ, λ=λ)
+        dk1 = d[k1]
+        diff = np.abs(dk1[0] - dk1[1])
+        if diff < 0:
+            k1 = np.flip(k1)
 
-            k = np.array([
-                np.abs(d[2*i])**2 - np.abs(d[2*i+1])**2
-            for i in range(3)])
+        dk2 = d[k2]
+        diff = np.abs(dk2[0] - dk2[1])
+        if diff < 0:
+            k2 = np.flip(k2)
 
-            for i, beam in enumerate(ψ):
-                inputs[i].value = (
-                    f"<b>Input {i+1} -</b> Amplitude: <code>{beam_repr(beam)}</code> Intensity: <code><b>{np.abs(beam)**2*100:.1f}%</b></code>"
-                )
-            null_outputs[0].value = (
-                f"<b>N3a -</b> Amplitude: <code>{beam_repr(b)}</code> Intensity: <code><b>{np.abs(b)**2*100:.1f}%</b></code> <b><- Bright channel</b>"
-            )
-            for i, beam in enumerate(n):
-                null_outputs[i + 1].value = (
-                    f"<b>N{(i-1)//2+4}{['a','b'][(i+1)%2]} -</b> Amplitude: <code>{beam_repr(beam)}</code> Intensity: <code><b>{np.abs(beam)**2*100:.1f}%</b></code>"
-                )
-            for i, beam in enumerate(d):
-                dark_outputs[i].value = (
-                    f"<b>Dark {i+1} -</b> Amplitude: <code>{beam_repr(beam)}</code> Intensity: <code><b>{np.abs(beam)**2*100:.1f}%</b></code>"
-                )
-            for i, beam in enumerate(k):
-                kernel_outputs[i].value = (
-                    f"<b>Kernel {i+1} -</b> Value: <code>{beam:.2e}</code>"
-                )   
-                
-            # fig, ax = plt.subplots(1, 1, figsize=(5, 5))
+        # E1 + E3*exp(-iπ/4) -> K3 should be positive
+        ψ = np.zeros(4, dtype=complex)
+        ψ[0] = ψ[1] = (1+0j) * np.sqrt(1/2)
+        ψ[2] *= np.exp(- 1j * np.pi / 2)
+        _, d, _ = self.propagate_fields(ψ=ψ, λ=λ)
 
-            phases.value = self.plot_phase(
-                λ=λ,
-                ψ = ψ,
-                plot = False
-                )
+        dk3 = d[k3]
+        diff = np.abs(dk3[0] - dk3[1])
+        if diff < 0:
+            k3 = np.flip(k3)
 
-            # Plot intensities
-            for i in range(len(ψ)):
-                plt.imshow([[np.abs(ψ[i])**2,],], cmap="hot", vmin=0, vmax=np.sum(np.abs(ψ)**2))
-                plt.savefig(fname=f"img/tmp.png", format="png")
-                plt.close()
-                with open("img/tmp.png", "rb") as file:
-                    image = file.read()
-                    photometric_cameras[i].value = image
-            for i in range(len(n)+1):
-                if i == 0:
-                    plt.imshow([[np.abs(b)**2,],], cmap="hot", vmin=0, vmax=np.sum(np.abs(n)**2) + np.abs(b)**2)
-                else:
-                    plt.imshow([[np.abs(n[i-1])**2,],], cmap="hot", vmin=0, vmax=np.sum(np.abs(n)**2) + np.abs(b)**2)
-                plt.savefig(fname=f"img/tmp.png", format="png")
-                plt.close()
-                with open("img/tmp.png", "rb") as file:
-                    image = file.read()
-                    null_cameras[i].value = image
-            for i in range(len(d)):
-                plt.imshow([[np.abs(d[i])**2,],], cmap="hot", vmin=0, vmax=np.sum(np.abs(d)**2))
-                plt.savefig(fname=f"img/tmp.png", format="png")
-                plt.close()
-                with open("img/tmp.png", "rb") as file:
-                    image = file.read()
-                    dark_cameras[i].value = image
-            for i in range(len(k)):
-                plt.imshow([[k[i],],], cmap="bwr", vmin=-np.max(np.abs(k)), vmax=np.max(np.abs(k)))
-                plt.savefig(fname=f"img/tmp.png", format="png")
-                plt.close()
-                with open("img/tmp.png", "rb") as file:
-                    image = file.read()
-                    kernel_cameras[i].value = image
+        # Reconstruct the kernel order ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-            os.remove("img/tmp.png")
-
-            return b, d
-        
-        photometric_cameras = [widgets.Image(width=50,height=50) for _ in range(4)]
-        null_cameras = [widgets.Image(width=50,height=50) for _ in range(4)]
-        dark_cameras = [widgets.Image(width=50,height=50) for _ in range(6)]
-        kernel_cameras = [widgets.Image(width=50,height=50) for _ in range(3)]
-        phases = widgets.Image()
-
-        vbox = widgets.VBox(
-            [
-                widgets.HTML("<h1>Inputs</h1>"),
-                widgets.HTML("Amplitude:"),
-                widgets.HBox(IA_sliders[:4]),
-                widgets.HTML("Phase:"),
-                widgets.HBox(IP_sliders[:4]),
-                *[widgets.HBox([photometric_cameras[i], x]) for i, x in enumerate(inputs)],
-                widgets.HTML("<h1>Phases</h1>"),
-                phases,
-                widgets.HTML("<h1>Nuller</h1>"),
-                widgets.HBox(P_sliders[:4]),
-                widgets.HBox(P_sliders[4:8]),
-                *[widgets.HBox([null_cameras[i], x]) for i, x in enumerate(null_outputs)],
-                widgets.HTML("<h1>Recombiner</h1>"),
-                widgets.HBox(P_sliders[8:11]),
-                widgets.HBox(P_sliders[11:14]),
-                *[widgets.HBox([dark_cameras[i], x]) for i, x in enumerate(dark_outputs)],
-                widgets.HTML("<h1>Kernels</h1>"),
-                *[widgets.HBox([kernel_cameras[i], x]) for i, x in enumerate(kernel_outputs)],
-            ]
-        )
-
-        # Link sliders to update function ------------------------------------------
-
-        for widget in P_sliders:
-            widget.observe(update_gui, "value")
-        for widget in IA_sliders:
-            widget.observe(update_gui, "value")
-        for widget in IP_sliders:
-            widget.observe(update_gui, "value")
-
-        update_gui()
-        return vbox
-    
-    def __repr__(self) -> str:
-        return self.__str__()
-    
-    def __str__(self) -> str:
-        return f'Kernel-Nuller "{self.name}":' + '\n' \
-            f" | output_order = {self.output_order}" + '\n' + \
-            f" | φ = {self.φ}" + '\n' + \
-            f" | σ = {self.σ}"
-        
+        self.output_order = np.concatenate([k1, k2, k3])
 
 #==============================================================================
 # Numba functions
@@ -449,8 +386,9 @@ def propagate_fields_njit(
         output_order:np.ndarray[int]
     ) -> tuple[np.ndarray[float], np.ndarray[float], np.ndarray[float], float]:
     """
-    Simulate a 4 telescope Kernel-Nuller propagation using a numeric approach
-
+    Simulate a 4 telescope Kernel-Nuller propagation using a numeric approach.
+    ⚠️ Does not take in account the input attenuation and OPD.
+    
     Parameters
     ----------
     - ψ: Array of 4 input signals complex amplitudes
@@ -512,57 +450,3 @@ def propagate_fields_njit(
     darks = darks[output_order]
 
     return nulls, darks, bright
-
-# Observation -----------------------------------------------------------------
-
-@nb.njit()
-def observe_njit(
-    ψ: np.ndarray[complex],
-    φ: u.Quantity,
-    σ: u.Quantity,
-    λ: u.Quantity,
-    Δt:float,
-    output_order:np.ndarray[int],
-) -> np.ndarray[float]:
-    """
-    Simulate a 4 telescope Kernel-Nuller propagation using a numeric approach
-
-    Parameters
-    ----------
-    - ψ: Array of 4 input beams complex amplitudes (in photon/[Δt] unit)
-    - φ: Array of 14 injected OPD
-    - σ: Array of 14 intrasic OPD
-    - λ: Wavelength of the light
-    - Δt: Exposure time in seconds
-    - output_order: Order of the outputs
-
-    Returns
-    -------
-    - Array of 6 dark outputs intensities
-    - Array of 3 kernels outputs intensities
-    - Bright output intensity
-    """
-
-    _, d, b = propagate_fields_njit(ψ, φ, σ, λ, output_order)
-
-    # Get intensities
-    d = np.abs(d) ** 2
-    b = np.abs(b) ** 2
-
-    # Add photon noise
-    dp = d * (d <= 2147020237)
-    dn = d * (d > 2147020237)
-
-    for i in range(d.shape[0]):
-        d[i] = int(np.random.poisson(dp[i] * Δt))
-        d[i] += int(np.random.normal(dn[i], np.sqrt(dn[i])))
-
-    if b <= 2147020237:
-        b = np.random.poisson(b * Δt)
-    else:
-        b = int(np.random.normal(b, np.sqrt(b)))
-
-    # Create kernels
-    k = np.array([d[0]-d[1], d[2]-d[3], d[4]-d[5]])
-
-    return d, k, b

@@ -1,11 +1,20 @@
-from . import source
-from .source import Source
+from . import companion
+from .companion import Companion
 
-from . import instrument
-from .instrument import Instrument
+from . import target
+from .target import Target
+
+from . import telescope
+from .telescope import Telescope
 
 from . import kernel_nuller
 from .kernel_nuller import KernelNuller
 
-from . import scene
-from .scene import Scene
+from . import interferometer
+from .interferometer import Interferometer
+
+from . import context
+from .context import Context
+
+from . import camera
+from .camera import Camera

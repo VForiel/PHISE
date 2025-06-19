@@ -2,6 +2,7 @@ import numpy as np
 import numba as nb
 import astropy.units as u
 import matplotlib.pyplot as plt
+plt.rcParams['image.origin'] = 'lower'
 
 @nb.njit()
 def get_maps_njit(
@@ -31,7 +32,7 @@ def get_maps_njit(
         x_map[:, i] = v
         y_map[i, :] = v
 
-    θ_map = np.sqrt(x_map**2 + y_map**2) * fov
+    θ_map = np.sqrt(x_map**2 + y_map**2) * fov/2
     α_map = np.arctan2(y_map, x_map) % (2*np.pi)
 
     return x_map, y_map, α_map, θ_map
@@ -115,8 +116,8 @@ def αθ_to_xy_njit(
     - V value
     """
     
-    x = θ/fov * np.cos(α)
-    y = θ/fov * np.sin(α)
+    x = 2*θ/fov * np.cos(α)
+    y = 2*θ/fov * np.sin(α)
 
     return x, y
 
