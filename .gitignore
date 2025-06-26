@@ -2,3 +2,13 @@ __pycache__/
 /.venv/
 .vscode/
 .idea/
+
+# LaTeX generated files
+*.aux
+*.bbl
+*.blg
+*.log
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.out
