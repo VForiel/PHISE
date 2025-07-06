@@ -9,7 +9,7 @@ from copy import deepcopy as copy
 
 # Internal libs
 from .. import Context
-from . import default_context
+from . import contexts
 
 #==============================================================================
 # Calibration approaches
@@ -20,7 +20,7 @@ from . import default_context
 def genetic_approach(ctx:Context = None, β:float = 0.9, verbose=False, figsize=(10,10)):
 
     if ctx is None:
-         ctx = default_context.get()
+         ctx = contexts.get()
     else:
         ctx = copy(ctx)
 
@@ -46,7 +46,7 @@ def genetic_approach(ctx:Context = None, β:float = 0.9, verbose=False, figsize=
 def obstruction_approach(ctx:Context = None, n:int = 1000):
 
     if ctx is None:
-        ctx = default_context.get()
+        ctx = contexts.get()
     else:
         ctx = copy(ctx)
 
@@ -112,7 +112,7 @@ def print_kernel_null_depth(ctx:Context, N=1000):
 def compare_approaches(ctx:Context = None, β:float = 0.9, n:int = 10_000):
 
     if ctx is None:
-        ctx = default_context.get()
+        ctx = contexts.get()
     else:
         ctx = copy(ctx)
 

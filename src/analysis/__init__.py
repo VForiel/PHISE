@@ -2,7 +2,7 @@ from . import projected_telescopes
 from . import transmission_maps
 from . import manual_control
 from . import demonstration
-from . import default_context
+from . import contexts
 from . import calibration
 from . import data_representations
 from . import noise_sensitivity

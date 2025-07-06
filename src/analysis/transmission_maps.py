@@ -7,7 +7,7 @@ from IPython.display import display
 
 # Internal libs
 from .. import *
-from . import default_context
+from . import contexts
 
 
 def gui(
@@ -28,7 +28,7 @@ def gui(
     # Set default values ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     if ctx is None:
-        ref_ctx = default_context.get()
+        ref_ctx = contexts.get()
         # Ideal kernel nuller
         ref_ctx.interferometer.kn.σ = np.zeros(14) * u.um
     else:

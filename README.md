@@ -1,80 +1,118 @@
-<div align=center>
+# Tunable Kernel-Nulling for Direct Exoplanet Detection
 
-Adaptive tunable kernel-nulling interferometry for the direct detection of extrasolar planets
----
+[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
-Supervised by: Frantz Martinache, David Mary & Rodolphe Krawczyk
+## 📜 Abstract
 
-</div>
+This project focuses on the development and optimization of a tunable Kernel-Nulling interferometer for direct detection of exoplanets. The work combines numerical simulations, calibration algorithms, and statistical analysis techniques to achieve high-contrast detection capabilities using a four-telescope architecture with integrated photonic components.
 
-- [🔭 Context](#-context)
-- [⚙️ Current Architecture](#️-current-architecture)
-- [☁️ Perturbation sources](#️-perturbation-sources)
-- [🎯 Milestones](#-milestones)
-  - [Milestone 1 : Analytical model](#milestone-1--analytical-model)
-  - [Milestone 2 : Numerical model](#milestone-2--numerical-model)
-  - [Milestone 3 : Supervised AI training](#milestone-3--supervised-ai-training)
-  - [Milestone 4 : Unsupervised AI training](#milestone-4--unsupervised-ai-training)
-  - [Milestone 5 : Test on the lab](#milestone-5--test-on-the-lab)
+## 🎯 Objectives
 
-# 🔭 Context
+- **Direct exoplanet detection** with contrasts beyond 10⁻⁸
+- **Phase aberration correction** using active photonic components with 14 electro-optic phase shifters
+- **Performance optimization** through advanced calibration algorithms
+- **Statistical analysis** of kernel-null depth distributions
 
-Getting direct light from exoplanet is a hard task due to the high contrast and the low angular separation between the star and it's companion. One of the technics that already exist is called "coronography", consisting of putting a mask in the focal plane of the telescope to hide the star and let the companion appear. However, this technic is still limited by the telescope resolution and several diffraction issues. An evolution of this idea is to use an interferometer to combine the light of several telescopes, which allow to efficiently destroy the star light and significantly increase the angular resolution. This technic is called "Nulling" and have already been declined into several architectures. The architecture we are studying in this project is called the "Kernel Nulling". It consist of recombining the dark channels - those where the star light have been descrutively interfered - to create a new dark channels that have more interesting properties such as lower perturbation sensitivity or asymetrix transmission map alowing to better constraint the companion position.
+## 🚀 Getting Started
 
-This system is composed of a fiber injection system, a serie of 2x2 MMI nuller and a serie of 2x2 MMI Split&Mix - the special recombiner of our architecture - that aims to reproduce the behavior of 4 input MMI. Between each of these MMI, we placed some phase shifters to tune the behavior of the component and compensate some perturbations. The goal of this thesis is to create a method to get the best phase shifters configuration to reach the deepest nulling depth in the dark output channels.
+### Prerequisites
 
+- Python 3.11 or higher
+- PDM (Python Dependency Manager)
 
-# ⚙️ Current Architecture
-The current architecture of the Kernel-Nuller component is shown in the following figure:
+### Key Dependencies
 
-![](img/scheme.png)
+- `numpy` - Numerical computations
+- `astropy` - Astronomical units and calculations
+- `matplotlib` - Plotting and visualization
+- `scipy` - Scientific computing
+- `numba` - High-performance numerical functions
+- `ipywidgets` - Interactive widgets for Jupyter notebooks
 
-From left to right, we have the following components:
-- $P_n$ are the delayers, they use an electrical power $p_n$ to warm up the fiber core and induce a phase shift  $\phi_{n,\lambda} = f_\lambda(p_n)$ on the input signal.
-- $N_n$ are the Nulling 2x2 MMI. They make constructive interference on the first output channel and oppose the phase to make destructive interference on the second output channel.
-- $S_n$ are the Split&Mix 2x2 MMI. As this system is insensitive to the global phase, we can consider that these system simply dephase one of the input by $\theta = \pi/2$ on an output channel and by $-\theta$ on the other one.
+### Installation
 
-Null depths can then be computed on each of the Split&Mix output channels compared to the bright one on top of the scheme.
+1. Clone the repository:
+```bash
+git clone https://github.com/your-username/Tunable-Kernel-Nulling.git
+cd Tunable-Kernel-Nulling
+```
 
-# ☁️ Perturbation sources
+2. Install project dependencies (using [PDM](https://pdm-project.org/)):
+```bash
+pdm install
+```
 
-There is several perturbation sources that can affect the system. On this architecture, we only consider the phase perturbations. There is 2 mains sources of perturbations:
-- Atmospheric perturbations (red) that are not correlated between the different channels and that are evolving in a milisecond time frame.
-- System perturbation (blue) that are here simplified as MMI defects but actually also include the fiber lenght incertainty and the phase shifters errors. These perturbations are correlated between different channels and seems to be constant.
+Thes open the main simulation notebook "`numerical_simulation.ipynb`" and select the appropriate kernel for your environment.
 
-![](img/perturbations.png)
+## 🔬 Scientific Approach
 
-# 🎯 Milestones
+### Architecture
 
-## Milestone 1 : Analytical model
+The system employs a four-telescope Kernel-Nulling architecture using integrated optical components:
 
-This first milestone consist of expressing the matrix associated to each component and deduce it's overall transfer function by ensuring it is physically relevant (must be energy conservative, so respect the relation $U^* U = I$)
+- **4 Telescopes**: Collecting light from target star and potential companions
+- **14 Phase Shifters**: Electro-optic elements for phase correction
+- **MMI Components**: Multi-mode interferometers for signal processing
+- **7 Outputs**: 1 bright output + 6 dark outputs → 3 kernel outputs
 
-> This step was made with the 4x4 MMI architecture so I have to redo it for this 2x2 MMI architecture.
+### Key Features
 
-## Milestone 2 : Numerical model
+1. **Calibration Algorithms**:
+   - Genetic algorithm approach
+   - Input obstruction method
+   - Performance comparison and optimization
 
-This second milestone consist of implementing this later transfer function in a numerical model and test it with and without star companion and with different levels of perturbations. The second objective in this milestone is to make a simple code that find the perfect phase shifters configuration to reach the deepest nulling depth.
+2. **Statistical Analysis**:
+   - ROC curve analysis
+   - P-value computation
+   - Multiple test statistics (mean, median, Kolmogorov-Smirnov, etc.)
 
-> This milestone was also made with the 4x4 MMI architecture, I can easily adapt the code for the new one. However, I made a mistake in the previous numerical model consisting of summing the complex amplitude of the star and the planet which are not coherent. This correction imply to rewrite a bigger part of the code to make it indepently for the star and for the companion.
+3. **Simulation Scenarios**:
+   - **VLTI**: Ground-based, 8m telescopes, 130m baseline, λ=1.55μm
+   - **LIFE**: Space-based, 2m telescopes, 600m baseline, λ=4μm
 
-## Milestone 3 : Supervised AI training
+### Applications
 
-At this point I will be able to generate a dataset using different inputs and different perturbations on which I will be able to train an AI finding the best phase shifters configuration.
+- Direct imaging of exoplanets
+- High-contrast astronomy
+- Interferometric nulling techniques
+- Statistical detection methods
 
-This AI will firstly take in input :
-- The current phase shifters configuration
-- The output complex amplitudes
-- The input complexe amplitudes
+## 📊 Key Results
 
-In a second step, I will remove the input amplitudes, and then in a third step, give to the AI only the output intensities. If this last step doesn't work because of the lack of information, I plan to add to it the input intensities.
+- Achievable contrasts: 10⁻⁵ to 10⁻⁶ (limited by phase perturbations)
+- Robust performance against first-order phase aberrations
+- Statistical tests demonstrate reliable planet detection capabilities
+- Successful calibration algorithms for component optimization
 
-## Milestone 4 : Unsupervised AI training
+## 📚 Publications
 
-Except if the results of the milestone 3 are really satisfying, I think it could be interesting to compare the supervised method with the unsupervised one by computing a score associated to the null depth and other science information we want to get. This unsupervised method will not be limited by a dataset and all it's inherent limitations.
+This work has contributed to several scientific publications:
 
-## Milestone 5 : Test on the lab
+1. **SPIE Proceedings** - "Tunable Kernel-Nulling interferometry for direct exoplanet detection"
+2. **A&A Paper (in preparation)** - "Tunable Kernel-Nulling for direct detection of exoplanets: 1. Calibration and performance"
+3. **Statistical Analysis Paper (in preparation)** - "Statistical data analysis techniques for kernel-nulling interferometry"
 
-Once one (or both) of the previous method  gives satisfying results, I plan to test it in the lab to see how it behave in a more realistic conditions.
+## 👥 Contributors
 
-For the supervised method, there is a possibility to exploti a model that wwas previously trained on the numerical model and train it again on the lab data. This pre-training method is often used to reduce the amount of needed "real" data to train the model by using the numerical data to give a first intuition to the model. However, if the dataset generation is a fast process, we can still consider to train the model directly on the lab data and compare both results to see if the pre-training method is worth it or not in this highly sensitive system.
+- **Vincent Foriel** - PhD Student, Primary Developer
+- **David Mary** - Supervisor, Statistical Analysis
+- **Frantz Martinache** - Supervisor, Interferometry Expert
+- **Nick Cvetojevic** - Photonics Specialist
+- **Romain Laugier** - Kernel-Nulling Theory
+- **Marc-Antoine Martinod** - Technical Support
+- **Sylvie Robbe-Dubois** - Project Coordination
+- **Roxanne Ligi** - Scientific Advisor
+
+## 🏢 Affiliations
+
+- **Université Côte d'Azur, Observatoire de la Côte d'Azur Nice**
+- **CNRS, Laboratoire Lagrange, Nice, France**
+- **KU Leuven University, Leuven, Belgium**
+
+## 📞 Contact
+
+For questions or collaborations:
+- **Vincent Foriel**: vincent.foriel@oca.eu
+- **Frantz Martinache**: frantz.martinache@oca.eu
+- **David Mary**: david.mary@oca.eu

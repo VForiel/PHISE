@@ -1,0 +1,188 @@
+\documentclass{article}
+
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[english]{babel}
+
+% Custom packages
+\usepackage{color,soul} % For highlighting text
+\usepackage{float} % For controlling figure placement ([H] option)
+\usepackage{amsmath}
+\usepackage{amssymb} % For mathematical symbols such as \lessgtr
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+% Set page size and margins
+% Replace `letterpaper' with `a4paper' for UK/EU standard size
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+% Useful packages
+\usepackage{graphicx}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+\newcommand{\mi}{\mathrm{i}}
+
+\title{Statistical analysis of Kernel-Nulling output distributions for high contrast detection of exoplanets in VLTI and LIFE configurations}
+
+\author{Vincent Foriel,
+        David Mary,
+        Frantz Martinache
+       }
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Kernel-nulling interferometry represents a promising approach for direct exoplanet detection. This technique generates characteristic kernel-null depth distributions depending on the presence or absence of a planetary companion. Statistical analysis of these distributions is essential for robust planet detection. We develop and compare several statistical tests to efficiently discriminate between the H0 (star-only) and H1 (star-planet system) hypotheses. We analyze the performance of different test statistics including mean, median, argmax, Kolmogorov-Smirnov, Cramér-von Mises, and Wilcoxon-Mann-Whitney tests. We conduct numerical simulations for two instrumental scenarios: ground-based VLTI and space-based LIFE configurations. For each scenario, we generate datasets under both H0 and H1 hypotheses, accounting for specific instrumental parameters and noise levels. We evaluate test performance using ROC curves and P-value analysis. \hl{Ajouter les résultats}. This statistical analysis, currently applied to simulated data, paves the way for robust high-contrast exoplanet detection using kernel-nulling interferometry.
+\end{abstract}
+
+%------------------------------------------------------------------------------
+
+\section{Introduction}
+
+Direct imaging of exoplanets remains one of the major challenges in modern astronomy, requiring techniques capable of overcoming contrast constraints (beyond $10^{-8}$ to begin detecting Earth-like exoplanets) and angular separation requirements (on the order of milli-arcseconds). Nulling interferometry, initially proposed by \cite{Bracewell1979}, uses destructive interference to suppress stellar light while preserving the planetary signal, thus addressing both angular resolution and contrast challenges.
+
+Kernel-Nulling \cite{Martinache2018} improves this approach by using four telescopes and phase-quadrature signals, enabling the creation of signal combinations (Kernel-Nulls) that are robust to first-order phase aberrations. This technique generates characteristic statistical distributions depending on the presence or absence of a planetary companion (Fig \ref{fig:distribution}). However, these distributions do not follow conventional probability laws (Fig. \ref{fig:model_fitting}).
+
+Analysis of these distributions therefore requires appropriate statistical tools to efficiently discriminate between the two hypotheses: H0 (star-only) and H1 (star-planet system). In this work, we develop and compare several statistical tests to optimize exoplanet detection using Kernel-Nulling.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{img/output_distribution.png}
+\caption{Example of kernel-null depth distributions for H0 (star-only) and H1 (with companion) hypotheses. In this scenario with a companion that has a contrast of $10^{-7}$, we observe a significant shift of the distribution.}
+\label{fig:distribution}
+\end{figure}
+
+%--------------------------------------------------------------------
+
+\section{Methodology}
+
+\subsection{Data generation}
+
+In this study, we consider two distinct instrumental scenarios for generating simulated data:
+
+\begin{itemize}
+    \item \textbf{VLTI}: Four 8-meter diameter telescopes, arranged irregularly with a maximum baseline of 130 meters, operating on the ground at a wavelength of $1.55\mu$m. This scenario includes residual cophasing error of 100 nm RMS, representative of atmospheric conditions and phase control system limitations at VLTI.
+    \item \textbf{LIFE}: Four 2-meter diameter telescopes, arranged regularly (rectangular configuration) with a maximum baseline of 600 meters, operating in space at a wavelength of $4\mu$m. In this case, the space environment allows reducing the cophasing error to 1 nm RMS, reflecting the increased stability expected for a space mission such as LIFE.
+\end{itemize}
+
+For each scenario, datasets are generated under both H0 (star-only) and H1 (star-planet system) hypotheses, accounting for specific instrumental parameters and noise levels for each case. The Kernel-Nulling operation is supposed ideal.
+
+\subsection{Distribution analysis}
+
+Before attempting to discriminate between the H0 and H1 hypotheses, it is essential to study the obtained distributions to identify characteristics that might facilitate their analysis. For this purpose, we compare simulated distributions to different conventional probability laws, notably observing their symmetry and general shape.
+
+We find that no conventional law perfectly matches the observed distributions. Moreover, the distribution shape can vary significantly with limited data or high noise levels, potentially becoming asymmetric. Among the tested laws, the Cauchy (or Lorentzian) distribution seems to offer a relatively satisfactory fit, although not perfect.
+
+This observation guides the choice of statistical tests to favor, particularly those effective for detecting shifts in symmetric distributions. Furthermore, this suggests that data fitting by minimizing absolute error (least absolute error) would be more relevant than minimizing quadratic error (least square error), due to the particular shape of the distribution.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=7cm]{img/model_fitting.png}
+\caption{Fitting of conventional probability laws to simulated distributions.}
+\label{fig:model_fitting}
+\end{figure}
+
+\subsection{Statistical tests implemented}
+
+We have developed and compared several test statistics:
+
+\subsubsection{Mean}
+
+The test statistic based on the mean compares the absolute value of the distribution mean to a threshold:
+
+\begin{equation}
+    \left|\frac{1}{N}\sum_i x_i \right| \stackrel{H_1}{\underset{H_0}{\gtrless}} \xi
+\end{equation}
+
+\subsubsection{Median}
+Test based on the absolute value of the distribution median.
+
+\begin{equation}
+\begin{cases}
+\left| x_{\frac{N+1}{2}} \right| & \text{if }N\text{ is odd} \\
+\left| \frac{x_{\frac{N}{2}} + x_{\frac{N+1}{2}}}{2} \right|  & \text{if }N\text{ is even}
+\end{cases}
+\quad\stackrel{H_1}{\underset{H_0}{\gtrless}} \xi
+\end{equation}
+
+\subsubsection{Argmax}
+This statistic examines the position of the bin with the highest number of occurrences in the data histogram.
+
+\hl{Décrire formèlement}
+
+\subsubsection{Kolmogorov-Smirnov}
+Test comparing the maximum distance between the cumulative distribution functions of the two distributions.
+
+\hl{Décrire formèlement}
+
+\subsubsection{Cramér-von Mises}
+Test based on the total quadratic distance between cumulative distribution functions.
+
+\hl{Décrire formèlement}
+
+\subsubsection{Wilcoxon-Mann-Whitney}
+Non-parametric test for comparing two independent samples.
+
+\hl{Décrire formèlement}
+
+\subsubsection{CDF difference area}
+This statistic measures the area between the cumulative distribution functions of the two distributions.
+
+\hl{Décrire formèlement}
+
+%--------------------------------------------------------------------
+
+\section{Results}
+
+\subsection{ROC curves}
+
+ROC (Receiver Operating Characteristic) curves allow comparing the effectiveness of different test statistics by representing the proportion of true detections as a function of false alarm probability.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=7cm]{img/roc_curves.png}
+\caption{ROC curves for different test statistics.}
+\label{fig:roc}
+\end{figure}
+
+\hl{Analyse des résultats}
+\hl{Ajouter la courbe de Neyman-Pearson pour la comparaison}
+
+\subsection{P-value analysis}
+
+P-values provide a confidence measure for rejecting the null hypothesis. A P-value below 0.05 is generally considered significant.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=10cm]{img/p-values.png}
+\caption{Evolution of P-values as a function of threshold for different test statistics. The red dotted line indicates the significance threshold at 0.05. \hl{Plot à refaire pour se focaliser sur un seul Kernel (+ correction des bugs)}}
+\label{fig:pvalues}
+\end{figure}
+
+\hl{Analyse des résultats}
+
+%--------------------------------------------------------------------
+
+\section{Discussion}
+
+\subsection{Comparative test performance}
+
+\hl{ToDo}
+
+\subsection{Noise sensitivity}
+
+\hl{ToDo}
+
+
+%-----------------------------------------------------------------
+
+\section{Conclusions}
+
+\hl{ToDo}
+
+\bibliographystyle{alpha}
+\bibliography{sample}
+
+\end{document}

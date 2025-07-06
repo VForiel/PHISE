@@ -6,12 +6,12 @@ import fitter
 
 # Internal libs
 from src import Context
-from . import default_context
+from . import contexts
 
 def fit(ctx:Context=None):
 
     if ctx is None:
-        ctx = default_context.get()
+        ctx = contexts.get()
         ctx.interferometer.kn.σ = np.zeros(14) * u.nm
     else:
         ctx = copy(ctx)

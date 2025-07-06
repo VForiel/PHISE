@@ -8,12 +8,12 @@ from copy import deepcopy as copy
 import astropy.units as u
 
 from src.classes.context import Context
-from . import default_context
+from . import contexts
 
 def get_vectors(ctx:Context=None, nmc:int=1000, size:int=1000):
 
     if ctx is None:
-        ctx = default_context.get()
+        ctx = contexts.get()
         ctx.interferometer.kn.σ = np.zeros(14) * u.m
 
     if ctx.target.companions == []:
@@ -32,6 +32,9 @@ def get_vectors(ctx:Context=None, nmc:int=1000, size:int=1000):
 
     for i in range(nmc):
         print(f"Generating... {round(i/nmc * 100,2)}%", end="\r")
+
+        α = np.random.uniform(0, 2 * np.pi, len(ctx.target.companions))
+        θ = np.random.uniform(1, 10, len(ctx.target.companions))
 
         for j in range(size):
             _, k_h0, b_h0 = ctx_h0.observe()

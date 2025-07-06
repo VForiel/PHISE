@@ -2,6 +2,8 @@ __pycache__/
 /.venv/
 .vscode/
 .idea/
+.pdm-python
+pdm.lock
 
 # LaTeX generated files
 *.aux

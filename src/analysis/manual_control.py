@@ -9,7 +9,7 @@ from copy import deepcopy as copy
 
 # Internal libs
 from .. import *
-from . import default_context
+from . import contexts
 
 def gui(
         λ:u.Quantity = None,
@@ -19,7 +19,7 @@ def gui(
     
     # Set default values ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    ref_ctx = default_context.get()
+    ref_ctx = contexts.get()
     
     if λ is not None:
         ref_ctx.interferometer.λ = λ

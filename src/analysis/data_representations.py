@@ -7,7 +7,7 @@ plt.rcParams['image.origin'] = 'lower'
 
 # Internal libs
 from src import Context
-from . import default_context
+from . import contexts
 
 #==============================================================================
 # Instantaneous distribution
@@ -33,7 +33,7 @@ def instant_distribution(ctx:Context=None, n=10000, stat=np.median) -> np.ndarra
     """
     
     if ctx is None:
-        ctx = default_context.get()
+        ctx = contexts.get()
         # Ideal kernel nuller
         ctx.interferometer.kn.σ = np.zeros(14) * u.um
         ctx.target.companions[0].c = 1e-1
@@ -104,7 +104,7 @@ def time_evolution(ctx:Context=None, n=100, map=np.median) -> np.ndarray:
     """
 
     if ctx is None:
-        ctx = default_context.get()
+        ctx = contexts.get()
         ctx.interferometer.kn.σ = np.zeros(14) * u.um
         ctx.Γ = 10 * u.nm
     else:
