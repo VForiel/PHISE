@@ -31,7 +31,7 @@ def gui(
 
     
     if ctx is None:
-        ref_ctx = contexts.get()
+        ref_ctx = contexts.get_VLTI()
     else:
         ref_ctx = copy(ctx)
 

@@ -19,7 +19,7 @@ def gui(
     
     # Set default values ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    ref_ctx = contexts.get()
+    ref_ctx = contexts.get_VLTI()
     
     if λ is not None:
         ref_ctx.interferometer.λ = λ
@@ -117,9 +117,9 @@ def gui(
 
         for i in range(len(ψ)):
             plt.imshow([[np.abs(ψ[i])**2,],], cmap="hot", vmin=0, vmax=np.sum(np.abs(ψ)**2))
-            plt.savefig(fname=f"img/tmp.png", format="png")
+            plt.savefig(fname=f"docs/img/tmp.png", format="png")
             plt.close()
-            with open("img/tmp.png", "rb") as file:
+            with open("docs/img/tmp.png", "rb") as file:
                 image = file.read()
                 photometric_cameras[i].value = image
         for i in range(len(n)+1):
@@ -127,27 +127,27 @@ def gui(
                 plt.imshow([[np.abs(b)**2,],], cmap="hot", vmin=0, vmax=np.sum(np.abs(n)**2) + np.abs(b)**2)
             else:
                 plt.imshow([[np.abs(n[i-1])**2,],], cmap="hot", vmin=0, vmax=np.sum(np.abs(n)**2) + np.abs(b)**2)
-            plt.savefig(fname=f"img/tmp.png", format="png")
+            plt.savefig(fname=f"docs/img/tmp.png", format="png")
             plt.close()
-            with open("img/tmp.png", "rb") as file:
+            with open("docs/img/tmp.png", "rb") as file:
                 image = file.read()
                 null_cameras[i].value = image
         for i in range(len(d)):
             plt.imshow([[np.abs(d[i])**2,],], cmap="hot", vmin=0, vmax=np.sum(np.abs(d)**2))
-            plt.savefig(fname=f"img/tmp.png", format="png")
+            plt.savefig(fname=f"docs/img/tmp.png", format="png")
             plt.close()
-            with open("img/tmp.png", "rb") as file:
+            with open("docs/img/tmp.png", "rb") as file:
                 image = file.read()
                 dark_cameras[i].value = image
         for i in range(len(k)):
             plt.imshow([[k[i],],], cmap="bwr", vmin=-np.max(np.abs(k)), vmax=np.max(np.abs(k)))
-            plt.savefig(fname=f"img/tmp.png", format="png")
+            plt.savefig(fname=f"docs/img/tmp.png", format="png")
             plt.close()
-            with open("img/tmp.png", "rb") as file:
+            with open("docs/img/tmp.png", "rb") as file:
                 image = file.read()
                 kernel_cameras[i].value = image
 
-        os.remove("img/tmp.png")
+        os.remove("docs/img/tmp.png")
 
         return b, d
     

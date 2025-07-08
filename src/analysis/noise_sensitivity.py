@@ -29,7 +29,7 @@ def plot(ctx:Context=None, β=0.5, n=1000):
 
     # Perturbated context (with manufacturing defects)
     if ctx is None:
-        ctx_perturbated = contexts.get()
+        ctx_perturbated = contexts.get_VLTI()
     else:
         ctx_perturbated = copy(ctx)
     ctx_perturbated.name = "Perturbated"
@@ -55,16 +55,7 @@ def plot(ctx:Context=None, β=0.5, n=1000):
     ctx_obs.name = "Obstruction"
     ctx_obs.calibrate_obs(n=n)
 
-
-
-    # ⚠️🧹 A supprimer .......................................................
-    # ctx_perturbated.interferometer.kn.σ = np.zeros(14) * u.nm
-    # ctx_perturbated.interferometer.kn.φ = np.zeros(14) * u.nm
-    #..........................................................................
-
-
-
-    contexts = [ctx_ideal, ctx_gen, ctx_obs]#, ctx_perturbated]
+    context_list = [ctx_ideal, ctx_gen, ctx_obs]#, ctx_perturbated]
     colors = ['tab:green', 'tab:blue', 'tab:orange']#, 'tab:red']
 
     # Input perturbation ------------------------------------------------------
@@ -79,7 +70,7 @@ def plot(ctx:Context=None, β=0.5, n=1000):
     for i, Γ in enumerate(Γ_range):
 
 
-        for c, ctx in enumerate(contexts):
+        for c, ctx in enumerate(context_list):
             ctx.Γ = Γ
 
             _, k_data, b_data = ctx.observation_serie(n=1000)

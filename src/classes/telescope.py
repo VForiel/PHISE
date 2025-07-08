@@ -131,3 +131,25 @@ def get_VLTI_UTs() -> list[Telescope]:
     a = 4 * np.pi * (4*u.m)**2
 
     return [Telescope(a=a, r=pos, name=f"UT {i + 1}") for i, pos in enumerate(r)]
+
+def get_LIFE_telescopes() -> list[Telescope]:
+    """
+    Get the relative position of the LIFE telescopes, in meter.
+
+    Returns
+    -------
+    - List containing the 4 LIFE telescopes as Telescope objects.
+    """
+
+    # LIFE telescope relative positions
+    r = np.array([
+        [0, 0],
+        [1, 0],
+        [0, 6],
+        [1, 6]
+    ]) * 100 * u.m
+
+    # Area of the collectors (2m radius)
+    a = np.pi * (2*u.m)**2
+
+    return [Telescope(a=a, r=pos, name=f"LIFE telescope {i + 1}") for i, pos in enumerate(r)]

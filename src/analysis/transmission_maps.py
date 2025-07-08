@@ -28,7 +28,7 @@ def gui(
     # Set default values ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     if ctx is None:
-        ref_ctx = contexts.get()
+        ref_ctx = contexts.get_VLTI()
         # Ideal kernel nuller
         ref_ctx.interferometer.kn.σ = np.zeros(14) * u.um
     else:

@@ -13,7 +13,7 @@ from . import contexts
 def get_vectors(ctx:Context=None, nmc:int=1000, size:int=1000):
 
     if ctx is None:
-        ctx = contexts.get()
+        ctx = contexts.get_VLTI()
         ctx.interferometer.kn.σ = np.zeros(14) * u.m
 
     if ctx.target.companions == []:

@@ -11,7 +11,7 @@ from . import contexts
 def fit(ctx:Context=None):
 
     if ctx is None:
-        ctx = contexts.get()
+        ctx = contexts.get_VLTI()
         ctx.interferometer.kn.σ = np.zeros(14) * u.nm
     else:
         ctx = copy(ctx)

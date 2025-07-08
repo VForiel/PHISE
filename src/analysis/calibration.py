@@ -20,7 +20,7 @@ from . import contexts
 def genetic_approach(ctx:Context = None, β:float = 0.9, verbose=False, figsize=(10,10)):
 
     if ctx is None:
-         ctx = contexts.get()
+         ctx = contexts.get_VLTI()
     else:
         ctx = copy(ctx)
 
@@ -46,7 +46,7 @@ def genetic_approach(ctx:Context = None, β:float = 0.9, verbose=False, figsize=
 def obstruction_approach(ctx:Context = None, n:int = 1000):
 
     if ctx is None:
-        ctx = contexts.get()
+        ctx = contexts.get_VLTI()
     else:
         ctx = copy(ctx)
 
@@ -112,7 +112,7 @@ def print_kernel_null_depth(ctx:Context, N=1000):
 def compare_approaches(ctx:Context = None, β:float = 0.9, n:int = 10_000):
 
     if ctx is None:
-        ctx = contexts.get()
+        ctx = contexts.get_VLTI()
     else:
         ctx = copy(ctx)
 
