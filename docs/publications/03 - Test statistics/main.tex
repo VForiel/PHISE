@@ -62,10 +62,26 @@ Analysis of these distributions therefore requires appropriate statistical tools
 
 In this study, we consider two distinct instrumental scenarios for generating simulated data:
 
-\begin{itemize}
-    \item \textbf{VLTI}: Four 8-meter diameter telescopes, arranged irregularly with a maximum baseline of 130 meters, operating on the ground at a wavelength of $1.55\mu$m. This scenario includes residual cophasing error of 100 nm RMS, representative of atmospheric conditions and phase control system limitations at VLTI.
-    \item \textbf{LIFE}: Four 2-meter diameter telescopes, arranged regularly (rectangular configuration) with a maximum baseline of 600 meters, operating in space at a wavelength of $4\mu$m. In this case, the space environment allows reducing the cophasing error to 1 nm RMS, reflecting the increased stability expected for a space mission such as LIFE.
-\end{itemize}
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Parameter} & \textbf{VLTI} & \textbf{LIFE} \\
+\hline
+Number of telescopes & 4 & 4 \\
+Telescope diameter & 8 m & 2 m \\
+Configuration & Irregular & Regular (rectangular) \\
+Maximum baseline & 130 m & 600 m \\
+Operating environment & Ground & Space \\
+Wavelength & $1.55\mu$m & $4\mu$m \\
+Cophasing error (RMS) & 100 nm & 1 nm \\
+\hline
+\end{tabular}
+\caption{Instrumental parameters for the two scenarios considered in this study.}
+\label{tab:scenarios}
+\end{table}
+
+The VLTI scenario includes residual cophasing error of 100 nm RMS, representative of atmospheric conditions and phase control system limitations at VLTI. The LIFE scenario benefits from the space environment, allowing a reduction of the cophasing error to 1 nm RMS, reflecting the increased stability expected for a space mission such as LIFE.
 
 For each scenario, datasets are generated under both H0 (star-only) and H1 (star-planet system) hypotheses, accounting for specific instrumental parameters and noise levels for each case. The Kernel-Nulling operation is supposed ideal.
 
