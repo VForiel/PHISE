@@ -224,7 +224,6 @@ class Context:
         h = self.h.to(u.rad).value
         l = self.interferometer.l.to(u.rad).value
         δ = self.target.δ.to(u.rad).value
-
         r = np.array([i.r.to(u.m).value for i in self.interferometer.telescopes])
         
         self._p = project_position_njit(r, h, l, δ) * u.m
