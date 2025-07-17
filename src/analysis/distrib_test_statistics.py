@@ -91,69 +91,48 @@ def kolmogorov_smirnov(u, v):
 def cramer_von_mises(u, v):
     return np.abs(stats.cramervonmises_2samp(u, v).statistic)
 
-# Wilcoxon-Mann-Whitney -------------------------------------------------------
+# Mann-Whitney U --------------------------------------------------------------
+
+def mannwhitneyu(u, v):
+    return np.abs(stats.mannwhitneyu(u, v).statistic)
+
+# Wilcoxon --------------------------------------------------------------------
 
 def wilcoxon_mann_whitney(u, v):
+    return np.abs(stats.wilcoxon(u, v).statistic)
 
-    res = np.empty(len(u))
+# Anderson Darling ------------------------------------------------------------
 
-    for d, dist in enumerate(u):
+def anderson_darling(u, v):
+    return np.abs(stats.anderson_ksamp([u, v]).statistic)
 
-        sorted_comb = np.unique(np.sort(np.concatenate([dist, v])))
+# Brunner-Munzel --------------------------------------------------------------
 
-        r1 = np.sum(np.searchsorted(sorted_comb, dist) + 1)
-        r2 = np.sum(np.searchsorted(sorted_comb, v) + 1)
+def brunner_munzel(u, v):
+    return np.abs(stats.brunnermunzel(u, v).statistic)
 
-        n1 = len(dist)
-        n2 = len(v)
+# Wasserstein distance --------------------------------------------------------
 
-        u1 = n1*n2 + n1*(n1+1)/2 - r1
-        u2 = n1*n2 + n2*(n2+1)/2 - r2
+def wasserstein_distance(u, v):
+    return np.abs(stats.wasserstein_distance(u, v))
 
-        res[d] = min(u1, u2)
-    
-    return res
-
-# CDF difference area ---------------------------------------------------------
-
-def cdf_diff_area(u, v):
-    """
-    Compute the area between the 2 CDF 
-    """
-    #data
-    num_simulations = u.shape[0]
-    distances = np.zeros(num_simulations)
-
-    v = np.sort(v)
-    m = len(v)
-    cdf_ref_dist = np.arange(1, m + 1) / m
-
-    for d in range(num_simulations):
-        dist = u[d, :]
-        dist = np.sort(dist)
-        n = len(dist)
-        cdf_dist = np.arange(1, n + 1) / n
-
-        #interpolation 
-        cdf_ref_dist_interp = np.interp(dist, v, cdf_ref_dist)
-
-        #test 
-        cdf_diff = cdf_dist - cdf_ref_dist_interp
-        area = np.trapz(cdf_diff, dist)
-        distances[d] = area
-    
-    return distances
+#==============================================================================
+# All tests
+#==============================================================================
 
 ALL_TESTS = {
     'Mean': mean,
     'Median': median,
     'Central bin 50': argmax50,
-    'Central bin 100': argmax100,
+    # 'Central bin 100': argmax100,
     'Central bin 500': argmax500,
     'Kolmogorov-Smirnov': kolmogorov_smirnov,
     'Cramer von Mises': cramer_von_mises,
-    # 'Xilcoxon Mann Whitney': wilcoxon_mann_whitney,
-    # 'CDF diff. area': cdf_diff_area
+    'Mann-Whitney U': mannwhitneyu,
+    'Wilcoxon': wilcoxon_mann_whitney,
+    'Anderson Darling': anderson_darling,
+    'Brunner-Munzel': brunner_munzel,
+    'Wasserstein distance': wasserstein_distance
 }
 
 #==============================================================================
