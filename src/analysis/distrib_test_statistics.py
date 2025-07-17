@@ -30,7 +30,7 @@ def get_vectors(ctx:Context=None, nmc:int=1000, size:int=1000):
     fov = ctx.interferometer.fov.to(u.mas).value
 
     for i in range(nmc):
-        print(f"Generating... {round(i/nmc * 100,2)}%", end="\r")
+        print(f"Generating vectors... {round(i/nmc * 100,2)}%", end="\r")
 
         for j in range(size):
 
@@ -47,7 +47,7 @@ def get_vectors(ctx:Context=None, nmc:int=1000, size:int=1000):
             T0[:, i, j] = k_h0
             T1[:, i, j] = k_h1
     
-    print(f"Generation complete ✅")
+    print(f"Vectors generation complete ✅")
     return np.concatenate(T0), np.concatenate(T1)
 
 #==============================================================================
@@ -84,39 +84,12 @@ def argmax500(u, v):
 # Kolmogorov-Smirnov ----------------------------------------------------------
 
 def kolmogorov_smirnov(u, v):
-    return np.abs(stats.kstest(u, v).statistic)
+    return np.abs(stats.ks_2samp(u, v).statistic)
 
 # Cramer-von Mises ------------------------------------------------------------
 
 def cramer_von_mises(u, v):
-
-    distances = np.zeros(u.shape[0])
-
-    for d, dist in enumerate(u):
-
-        dist = np.sort(dist)
-        ref = np.sort(v)
-
-        v = np.min(np.concatenate([dist, ref]))
-
-        i_ref = 0
-        i_dist = 0
-
-        count_ref = 0
-        count_dist = 0
-
-        while i_ref < len(ref) and i_dist < len(dist):
-
-            if ref[i_ref] < dist[i_dist]:
-                count_ref += 1
-                i_ref += 1
-            else:
-                count_dist += 1
-                i_dist += 1
-            
-            distances[d] += np.abs(count_dist - count_ref) ** 2
-
-    return distances
+    return np.abs(stats.cramervonmises_2samp(u, v).statistic)
 
 # Wilcoxon-Mann-Whitney -------------------------------------------------------
 
@@ -178,9 +151,9 @@ ALL_TESTS = {
     'Central bin 100': argmax100,
     'Central bin 500': argmax500,
     'Kolmogorov-Smirnov': kolmogorov_smirnov,
-    # 'Cramer von Mises': ts.cramer_von_mises,
-    # 'Xilcoxon Mann Whitney': ts.wilcoxon_mann_whitney,
-    # 'CDF diff. area': ts.cdf_diff_area
+    'Cramer von Mises': cramer_von_mises,
+    # 'Xilcoxon Mann Whitney': wilcoxon_mann_whitney,
+    # 'CDF diff. area': cdf_diff_area
 }
 
 #==============================================================================
@@ -252,19 +225,22 @@ def test_power(ctx=None, tests=ALL_TESTS, nmc=100, bootstrap=10, resolution=10, 
     # Bootstrap
 
     for b in range(bootstrap):
-        print("="*10, f"\nBootstrap {b+1}/{bootstrap}...\n", "="*10)
+        print("="*10, f"\nBootstrap {b+1}/{bootstrap}...\n", "="*10, sep='')
 
         # Generate dataset
 
+        t0, t1 = get_vectors(ctx=ctx, nmc=nmc, size=maxpoints)
         dataset = []
         for nb in nb_values:
-            print(f"Generating data for {nb} points...")
-            t0, t1 = get_vectors(ctx=ctx, nmc=nmc, size=nb)
-            dataset.append((t0, t1))
+            # Take nb random points from t0 and t1
+            indices = np.random.choice(t0.shape[1], nb, replace=False)
+            t0_subset = t0[:,indices]
+            t1_subset = t1[:,indices]
+            dataset.append((t0_subset, t1_subset))
 
         # Loop over tests
 
-        print("-"*10, f"\nComputing tests power...")
+        print(f"Computing tests power...", end='\r')
         for ts_name, ts in tests.items():
 
             auc = np.zeros(len(dataset))
@@ -284,14 +260,14 @@ def test_power(ctx=None, tests=ALL_TESTS, nmc=100, bootstrap=10, resolution=10, 
             
             auc_bootstrap[ts_name].append(auc)
             power_bootstrap[ts_name].append(power)
+        print("Done computing tests power. ✅")
 
     # Plot the results
 
     _, axs = plt.subplots(1, 2, figsize=(12, 6))
 
     # Associate each test to a color
-
-    colors = plt.cm.viridis(np.linspace(0, 1, len(tests)))
+    colors = plt.cm.gist_rainbow(np.linspace(0, 1, len(tests)))
 
     for i, (ts_name, ts) in enumerate(tests.items()):
 
@@ -321,7 +297,7 @@ def test_power(ctx=None, tests=ALL_TESTS, nmc=100, bootstrap=10, resolution=10, 
 # P-value
 #==============================================================================
 
-def plot_p_values(t0, t1, tests):
+def plot_p_values(t0, t1, tests=ALL_TESTS):
 
     col = min(2, len(tests))
     row = int(np.ceil(len(tests) / col))
