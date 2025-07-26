@@ -188,7 +188,7 @@ def test_power(ctx=None, tests=ALL_TESTS, nmc=100, bootstrap=10, resolution=10, 
         ctx = contexts.get_VLTI()
 
         ctx.interferometer.kn.σ = np.zeros(14) * u.nm
-        ctx.target.companions[0].c = 1e-2
+        ctx.target.companions[0].c = 1e-4
 
     else:
         ctx = copy(ctx)
@@ -239,7 +239,7 @@ def test_power(ctx=None, tests=ALL_TESTS, nmc=100, bootstrap=10, resolution=10, 
             
             auc_bootstrap[ts_name].append(auc)
             power_bootstrap[ts_name].append(power)
-        print("Done computing tests power. ✅")
+        print("Done computing tests power ✅")
 
     # Plot the results
 

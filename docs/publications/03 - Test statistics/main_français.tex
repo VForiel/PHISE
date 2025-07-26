@@ -1,0 +1,240 @@
+\documentclass{article}
+
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[en
+glish]{babel}
+
+% Custom packages
+\usepackage{color,soul} % For highlighting text
+\usepackage{float} % For controlling figure placement ([H] option)
+\usepackage{amsmath}
+\usepackage{amssymb} % For mathematical symbols such as \lessgtr
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+% Set page size and margins
+% Replace `letterpaper' with `a4paper' for UK/EU standard size
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+% Useful packages
+\usepackage{graphicx}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+\definecolor{mulberry}{rgb}{0.77, 0.29, 0.55}
+\newcommand{\dm}[1]{{\color{mulberry} #1}}
+
+\newcommand{\mi}{\mathrm{i}}
+
+\title{Analyse statistique des distributions de sortie du Kernel-Nulling pour la détection à haut contraste d'exoplanètes dans les configurations VLTI et LIFE}
+
+\author{Vincent Foriel,
+        David Mary,
+        Frantz Martinache
+       }
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+L'interférométrie à annulation par noyau (Kernel-Nulling) représente une approche prometteuse pour la détection directe d'exoplanètes. Cette technique génère des distributions d'intensité caractéristiques selon la présence ou l'absence d'un compagnon planétaire. L'analyse statistique de ces distributions est essentielle pour une détection robuste de planètes. Nous développons et comparons plusieurs tests statistiques pour discriminer efficacement entre les hypothèses $\mathcal{H}_0$ (étoile seule) et $\mathcal{H}_1$ (système étoile-planète). Nous analysons les performances de différentes statistiques de test incluant la moyenne, la médiane, le mode, les tests de Kolmogorov-Smirnov, Cramér-von Mises et Wilcoxon-Mann-Whitney. Nous effectuons des simulations numériques pour deux scenarios instrumentaux : les configurations VLTI au sol et LIFE dans l'espace. Pour chaque scénario, nous générons des jeux de données sous les deux hypothèses $\mathcal{H}_0$ et $\mathcal{H}_1$, en tenant compte des paramètres instrumentaux spécifiques et des niveaux de bruit. Nous évaluons les performances des tests en utilisant les courbes ROC et l'analyse des valeurs P. \hl{Ajouter les résultats}. Cette analyse statistique, actuellement appliquée à des données simulées, ouvre la voie à une détection robuste d'exoplanètes à haut contraste utilisant l'interférométrie à annulation par noyau.
+\end{abstract}
+
+%------------------------------------------------------------------------------
+
+\dm{OK résumé de mes coms détailles ci-dessous : le plus gros boulot à faire pour l'itération suivante c'est : \\
+- en intro : biblio : recenser, comparer, contraster pour mettre en évidence l'originalité du papier\\
+- en intro : justification de l'intérêt scientifique du papier (/exoplanètes, VLTI, LIFE) et de son scope (portée attendu des simus ?) \\
+- Sec. 2 étude statistique plus poussée des différents régimes, types de distribution, influence des paramètres, classement et présentation des résultats pour justifier la section d'après (les tests mis en opuvre)\\
+- Sec. 3 : La formalisation rigoureuse des tests, classement, formules analytiques \\
+- Sec. 4 : Etude comparative des performances dans les résultats }
+
+\section{Introduction}
+
+L'imagerie directe d'exoplanètes demeure l'un des défis majeurs de l'astronomie moderne, nécessitant des techniques capables de surmonter les contraintes de contraste (au-delà de $10^{-8}$ pour permettre la détection d'exo-Terres) et les exigences de séparation angulaire (de l'ordre de milli-arcseconde). L'interférométrie à annulation, initialement proposée par \cite{Bracewell1979}, utilise l'interférence destructive pour supprimer la source sur l'axe (lumière stellaire) tout en préservant celles hors axe (signaux planétaires), répondant ainsi aux défis de résolution angulaire et de contraste.
+
+Le Kernel-Nulling (\cite{Martinache2018}) améliore cette approche en se concentrant sur la différence entre des paires de combinaisons  symétriques de faisceaux qui sont robustes aux aberrations de phase du premier ordre (\cite{Martinache2018}). En raison de différentes sources de perturbations, la sortie de l'opération d'annulation - ainsi que l'opération de Kernel-Nulling - est une distribution statistique d'intensités. Cette distribution est influencée par divers paramètres instrumentaux tels que les erreurs de cophasage en entrée, les erreurs d'amplitude, le nombre de trames, le fond de ciel ou même d'autres sources de lumière indésirables comme, par exemple, étoiles d'arrière-plan (\cite{Hanot2011}, \cite{Cvetojevic2022}). La présence d'un compagnon induit une erreur de cophasage systématique qui ne peut être approximée par une perturbation du premier ordre, conduisant à un décalage global dans les distributions de sortie du Kernel-Null. Cela résulte en des distributions statistiques distinctes pour la sortie du kernel-null selon qu'un compagnon soit présent ou non (voir Fig. \ref{fig:distribution}). Dans des scénarios réalistes, le décalage induit par la présence du compagnon est petit comparé à la dispersion due aux différentes sources de perturbation, rendant les distributions $\mathcal{H}_0$ et $\mathcal{H}_1$ difficiles à distinguer. Le nombre de trames utilisé dans la simulation affecte également l'étalement et la lissité des distributions. Une analyse détaillée de l'influence de ces paramètres et des familles de distributions résultantes est fournie en Sec. \ref{sec:distribution_analysis}. Cependant, ces distributions ne suivent pas les lois de probabilité standard, et leur forme analytique est inconnue a priori. Cela rend le problème de discrimination difficile, en particulier lorsque le contraste du compagnon est élevé et que les distributions se chevauchent significativement.
+
+L'analyse de ces distributions nécessite donc des outils statistiques appropriés pour discriminer efficacement entre les deux hypothèses : $\mathcal{H}_0$ (étoile seule) et $\mathcal{H}_1$ (système étoile-planète). Dans ce travail, nous développons et comparons plusieurs tests statistiques pour optimiser la détection d'exoplanètes utilisant le Kernel-Nulling.
+
+\dm{Il manque :\\
+- Une biblio minutieuse de ce pb : mettre en évidence des différence entre des distributions dans un contexte exoplanètes, et plus généralement astro, ça existe où ? Comment les gens font ? Qu'est-ce que tu prends d'eux et qu'est ce que tu vas apporter de nouveau ? Quelles différences entre les problématiques connexes que tu as trouvées et la tienne ? Expliquer points communs et différences.\\
+- Justification de l'intérêt de ce papier par rapport aux instruments visés / VLTI et LIFE. Faire un topo sur VLTI et lIFE par rapport à la détection d'exoplanètes. Puis décrire comment l'approche kernel-nulling se compare aux autres approches de détection exoplanètes (pros/cons) ? Et enfin sur l'approche quel est le statut des méthodes prévues ? (en gros : on ne sait pas vraiment faire, ton papier est très important pour poser des algos. Mais attention contraster par rapport aux travaux de Hanot \& co que je t'ai fait suivre par mail; et il y en a probablement d'autres.)\\ 
+- plan du papier}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{img/output_distribution.png}
+\caption{Exemple de distributions de profondeur d'annulation par noyau pour les hypothèses $\mathcal{H}_0$ (étoile seule) et $\mathcal{H}_1$ (avec compagnon). Ce scénario d'exemple est fortement exagéré avec un compagnon qui a un faible contraste afin d'induire un décalage significatif de la distribution. En pratique, les deux distributions sont généralement beaucoup plus proches et difficiles à distinguer.\dm{Cf texte; aussi prends l'habitude d'être ultra-spécifique, c'est un papier scientifique. Là tu es bcp trop vague : "low contrast" (c'est quoi low ?) "much closer" (=?..)}.}
+\label{fig:distribution}
+\end{figure}
+
+%--------------------------------------------------------------------
+
+\section{Méthodologie}
+
+\subsection{Génération de données}
+
+Dans cette étude, nous considérons deux scénarios instrumentaux distincts pour générer des données simulées :
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Paramètre} & \textbf{VLTI} & \textbf{LIFE} \\
+\hline
+Nombre de télescopes & 4 & 4 \\
+Diamètre des télescopes & 8 m & 2 m \\
+Configuration & Irrégulière & Régulière (rectangulaire) \\
+Ligne de base maximale & 130 m & 600 m \\
+Environnement d'exploitation & Sol & Espace \\
+Longueur d'onde & $1.55\mu$m & $4\mu$m \\
+Erreur de cophasage (RMS) & 100 nm & 1 nm \\
+\hline
+\end{tabular}
+\caption{Paramètres instrumentaux pour les deux scénarios considérés dans cette étude.}
+\label{tab:scenarios}
+\end{table}
+
+Le scénario VLTI inclut une erreur de cophasage résiduelle de 100 nm RMS, représentative des conditions atmosphériques et des limitations du système de contrôle de phase au VLTI. Le scénario LIFE bénéficie de l'environnement spatial, permettant une réduction de l'erreur de cophasage à 1 nm RMS, reflétant la stabilité accrue attendue pour une mission spatiale telle que LIFE.\dm{Il faut expliquer en détail cette table, que le lecteur ait l'impression de voir les instruments et que tes simus simulent une réalité vraiment réaliste et des manips à portée de main, ça donnera un aspect "chaud" et concret à ton papier.}
+
+Pour chaque scénario, des jeux de données sont générés sous les deux hypothèses $\mathcal{H}_0$ (étoile seule) et $\mathcal{H}_1$ (système étoile-planète), en tenant compte des paramètres instrumentaux spécifiques et des niveaux de bruit pour chaque cas. L'opération de Kernel-Nulling est supposée idéale.\dm{Je pense qu'il faut prévoir un appendice où tu résumes le principe de kernel-nulling pour que le lecteur te suive; qu'il comprenne ce que signifie faire une operaiton de kernel nulling en pratique, et lister tous les défauts qui font que ça ne peut pas être idéal. Il faut aussi différencier une operation de kernel null idéale et l'absence de bruit à la fin. Bien expliquer ce que capturent tes simulations et les fluctuations qui créent les distributions montrées en Fig. 1.}
+
+\subsection{Analyse des distributions}  \label{sec:distribution_analysis}
+
+Avant de tenter de discriminer entre les hypothèses $\mathcal{H}_0$ et $\mathcal{H}_1$, il est essentiel d'étudier les distributions obtenues pour identifier les caractéristiques qui pourraient faciliter leur analyse. À cette fin, nous comparons les distributions simulées à différentes lois de probabilité conventionnelles, en observant notamment leur symétrie et leur forme générale.
+
+Nous trouvons qu'aucune loi conventionnelle ne correspond parfaitement aux distributions observées. \dm{$<=$ Ca c'est une conclusion. Pour que cette phrase ait du poids, il faut présenter une analyse détaillée de ces distributions (comme le titre le suggère) : montrer comment les variations combinées de tous les paramètres importants mènent à des distributions différentes. Identifier et montrer tous les différents régimes de paramètres menant à des familles de distributions différentes. Lister aussi tous les pramètres qui vont entrer en compte dans les perfs de détections : contraste et position du compagnon, longueur d'onde donc, nombre de trames, puissance des erreurs de phase, D telescope,... tu peux faire une table. Une étude scientifique est vraiment une étude scientifique : on essaie d'être exhaustif dans l'analyse, et ensuite de faire une synthèse quantifiée et bien rangée qui reflète clairement tous les cas pour le lecteur. Le but est d'en faire un expert en lui donnant toutes les infos pour qu'ils le deviennent en lisant le papier, et puisse reproduire les résultats s'il le souhaite (c'est le propre de la démarche scientifique, éviter d'être juste déclaratif ce qui revient à proposer des arguments d'autorité; préférer systématiquement être aussi précis que possible et donner toutes les infos, ce qui revient à proposer des arguments d'expertise.} Parmi les lois testées, la distribution de Cauchy semble \dm{c'est faible et pas quantifié, et vu la fig.2 ça ne colle pas comme tu le dis} offrir un ajustement relativement satisfaisant (Fig. \ref{fig:fits}), bien que non parfait, en particulier sur les queues lorsque le nombre d'échantillons est élevé.
+
+Cette observation guide le choix des tests statistiques à privilégier, en particulier ceux efficaces pour détecter des décalages dans les distributions symétriques.\dm{Justifier théoriquement et/ou empiriquement (via l'optique et le ssimus) si les distribution doivent être symétriques. Ajouter éveutellement des acquisitions de frames sur banc pour appuyer à un moment ces hypothèses. } De plus, cela suggère que l'ajustement de données en minimisant \dm{$<=$ data fitting of what ? Pas le fit de d'une distribution empirique par une autre en tout cas... on en discutera. } l'erreur quadratique moyenne (MSE) ne sera très probablement pas très efficace en raison des queues lourdes de la distribution. Au lieu de cela, nous devrions utiliser une fonction de coût dérivée de la loi de Cauchy, qui est plus robuste aux valeurs aberrantes :\dm{Non je pense que la fin de la section n'est pas bonne.}
+\begin{equation}
+    \text{Cost}(x, y) = \sum_i \log \left( 1 + \left( y_i - s(x_i )\right)^2 \right)
+\end{equation}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=6cm]{img/fits.png}
+\caption{Ajustement des lois de probabilité conventionnelles aux distributions simulées. Le package Python Fitter a été utilisé pour effectuer l'ajustement de la plupart des lois usuelles. Cette figure montre l'ajustement des trois lois les plus pertinentes que le package a identifiées.}
+\label{fig:fits}
+\end{figure}
+
+\subsection{Tests statistiques implémentés}
+
+Nous avons développé et comparé plusieurs statistiques de test :
+\dm{Expliquer la démarche : vu le pb on a logiquement envie d'implémenter  des tests globaux qui mesurent un shift (et rejustifer que c'est juste un shift si c'est bien le cas.\\
+- Puis dire qu'on peut aller plus loin : il est naturel de regarder des mesures plus globales entre les distributions et là tu pars sur  KS etc. Ajoute Anderson-Darling dans cette famille.\\
+- Ensuite 1) présente tes notations (par ex, qu'est-ce que $x$ ? 2) rappelle précisément ce que tu appelles $\mathcal{H}_0$ et $\mathcal{H}_1$ en utilisant les quantitiés de  tes notations.\\
+- Ensuite, pour chaque test, de façon systématique : 0) Donne la ref du/des papiers scientifiques où il a été décrit (pas une ref à une toolbox python; un bouquin tu peux, mais il faut aussi les refs originales \#démarche scientifique vérifiable etc) 1) explique l'intuition derrière 2) donne la stat de test (en utilisant les notations définies avant) 3) explique s'il y a une formule analytique pour décrire la stat de test sous $\mathcal{H}_0$ (explique aussi avant fe lister les tests  que l'intérêt d'une formule analytique est  que ça donne accès à une p-valeur sans avoir à faire des simus de Monte Carlo, et les pbs que posent le fait de devoir faire des MC (calcul mais surtout on doit pouvoir simuler les mêmes conditions de perturbations que les données !)). Par exemple, avec le Th Centrale limite, si les $x_i$ sont i.i.d (pas forcément gaussiens comme dans notre cas), la stat de test (2) est gaussienne de variance connue donc pour (2) ça devrait être bon.\\
+- Dans les cas où une distribution est disponible, vérifier par simus et montrer que la distribution empirique correpond bien à la théorique. }
+\subsubsection{Moyenne}
+
+La statistique de test basée sur la moyenne compare la valeur absolue de la moyenne de la distribution à un seuil :
+
+\begin{equation}
+    \left|\frac{1}{N}\sum_i x_i \right| \stackrel{H_1}{\underset{H_0}{\gtrless}} \xi
+\end{equation}
+
+\subsubsection{Médiane}
+Test basé sur la valeur absolue de la médiane de la distribution.
+
+\begin{equation}
+\begin{cases}
+\left| x_{\frac{N+1}{2}} \right| & \text{si }N\text{ est impair} \\
+\left| \frac{x_{\frac{N}{2}} + x_{\frac{N+1}{2}}}{2} \right|  & \text{si }N\text{ est pair}
+\end{cases}
+\quad\stackrel{H_1}{\underset{H_0}{\gtrless}} \xi
+\end{equation}
+
+\subsubsection{Argmax}
+Cette statistique examine la position du bin avec le plus grand nombre d'occurrences dans l'histogramme des données.
+
+\hl{Décrire formèlement}
+
+\subsubsection{Kolmogorov-Smirnov}
+\dm{Attention c'est le 2-sided KS}
+Test comparant la distance maximale entre les fonctions de distribution cumulative des deux distributions.
+
+\hl{Décrire formèlement}
+
+\subsubsection{Cramér-von Mises}
+Test basé sur la distance quadratique totale entre les fonctions de distribution cumulative.
+
+\hl{Décrire formèlement}
+
+\subsubsection{Wilcoxon-Mann-Whitney}
+Test non-paramétrique pour comparer deux échantillons indépendants.
+
+\hl{Décrire formèlement}
+
+\subsubsection{Aire de différence CDF}
+Cette statistique mesure l'aire entre les fonctions de distribution cumulative des deux distributions.
+
+\hl{Décrire formèlement}
+
+\dm{N'oublie pas le Brunner-Munzel}
+%--------------------------------------------------------------------
+
+\dm{Il manque aussi une 3eme approche  ici qui est un GLR : utliser le modèle direct pour calculer la vraisemblance des données selon la position du compagnon; le GLR cherche alors à maximiser la position du compagnon. C'est les formules que j'avais mises au tableau dans mon bureau et la photo est sur discord. On en re-dicte aussi je sais que ça t'avait fait gamberger. C'est important parce que ce test permet la généralisation à plusieurs kernels. \\
+D'ailleurs, il faut que tu parles de ça avant de présenter les tests : tu es en seul kernel jusqu'ici. Et il faudra ajouter  une section : Generalisation des tests considérées à plusiers kernels et/ou poses (= comment les stat de tests monokernel-obs peuvent se combiner).}
+\section{Résultats}
+
+\dm{A la fin en bilan fais une lsite des pros et cons de chaque méthode. Il faut que tu déploies dans ce papier une analyse exhaustive et convaincante de la nature des données et des régimes qu'on peut y trouver, des types de distributions suivant les régimes, et des types de tests qu'on peut utiliser. A la fin on se dira que tu as plié le problème, le spécialiste de la détection sur des données kernel-nulling c'est toi !  }
+\subsection{Courbes ROC}
+
+Les courbes ROC (Receiver Operating Characteristic) permettent de comparer l'efficacité \dm{$<=$ power } de différentes statistiques de test en représentant la proportion de détections vraies en fonction de la probabilité de fausse alarme.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=7cm]{img/roc_curves.png}
+\caption{Courbes ROC pour différentes statistiques de test.}
+\label{fig:roc}
+\end{figure}
+
+\hl{Analyse des résultats}
+\hl{Ajouter la courbe de Neyman-Pearson pour la comparaison}
+
+\subsection{Analyse des valeurs P}
+
+\dm{Attention Fig.4 c'est faux : ce ne sont pas les p-valeurs car les p-valeurs ne dépendent pas d'un seuil, seulement des données.}
+
+Les valeurs P fournissent une mesure de confiance pour rejeter l'hypothèse nulle. Une valeur P inférieure à 0,05 est généralement considérée comme significative. \dm{Non ça ça dépend des applications. Donne la définition précise de la p-valeur tout de suite, comme ça on sait de quoi on parle. }\\
+
+\dm{Pour l'approche Neyman-Pearson (ou Likelihood-Ratio), il faut en faire une section à part dans la section d'avant en explicitant le Likelihood-Ratio et les paramètres dont il dépend sous les 2 hypothèses, puis en tirer la stat de test que ça donne en prenant le log etc .\\
+Expliquer aussi l'intérêt du NP.}.
+
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=10cm]{img/p-values.png}
+\caption{Évolution des valeurs P en fonction du seuil pour différentes statistiques de test. La ligne pointillée rouge indique le seuil de significativité à 0,05. \hl{Plot à refaire pour se focaliser sur un seul Kernel (+ correction des bugs)} \dm{Oui. On peut par exemple montrer la calibration théorique p-valeur(stat de test - pas seuil !) et comparer à la calibration empirique pour chaque test }}
+
+
+\label{fig:pvalues}
+\end{figure}
+
+\hl{Analyse des résultats}
+
+%--------------------------------------------------------------------
+
+\section{Discussion}
+
+\subsection{Performance comparative des tests}
+
+\hl{ToDo}
+
+\subsection{Sensibilité au bruit}
+
+\hl{ToDo}
+
+
+%-----------------------------------------------------------------
+
+\section{Conclusions}
+
+\hl{ToDo}
+
+\bibliographystyle{alpha}
+\bibliography{sample}
+
+\end{document}
