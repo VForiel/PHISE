@@ -116,23 +116,55 @@ def brunner_munzel(u, v):
 def wasserstein_distance(u, v):
     return np.abs(stats.wasserstein_distance(u, v))
 
+# Distance to median ----------------------------------------------------------
+
+# def flattening(u, v):
+#     med = np.median(u)
+#     distances = np.sort(np.abs(u - med))
+#     x = np.linspace(0, 1, len(u))
+#     auc = np.trapz(distances, x)
+#     return auc
+
+def flattening(u, v):
+    med = np.median(u)
+    return np.sum(np.abs(u - med))
+
+def shift_and_flattening(u, v):
+    med = np.median(u)
+    distances = np.sort(np.abs(u - med))
+    x = np.linspace(0, 1, len(u))
+    auc = np.trapz(distances  + np.abs(med), x)
+    return auc
+
+# CDF absolute distance -------------------------------------------------------
+
+def cdf_absolute_distance(u, v):
+    # Compute CDF of u and v
+    cdf_u = np.cumsum(np.histogram(u, bins=100, density=True)[0])
+    cdf_v = np.cumsum(np.histogram(v, bins=100, density=True)[0])
+    distance = np.trapz(np.abs(cdf_u - cdf_v))
+    return distance
+
 #==============================================================================
 # All tests
 #==============================================================================
 
 ALL_TESTS = {
-    'Mean': mean,
+    # 'Mean': mean,
     'Median': median,
-    'Central bin 50': argmax50,
+    # 'Central bin 50': argmax50,
     # 'Central bin 100': argmax100,
-    'Central bin 500': argmax500,
+    # 'Central bin 500': argmax500,
     'Kolmogorov-Smirnov': kolmogorov_smirnov,
-    'Cramer von Mises': cramer_von_mises,
-    'Mann-Whitney U': mannwhitneyu,
-    'Wilcoxon': wilcoxon_mann_whitney,
-    'Anderson Darling': anderson_darling,
-    'Brunner-Munzel': brunner_munzel,
-    'Wasserstein distance': wasserstein_distance
+    # 'Cramer von Mises': cramer_von_mises,
+    # 'Mann-Whitney U': mannwhitneyu,
+    # 'Wilcoxon': wilcoxon_mann_whitney,
+    # 'Anderson Darling': anderson_darling,
+    # 'Brunner-Munzel': brunner_munzel,
+    # 'Wasserstein distance': wasserstein_distance,
+    'Flattening': flattening,
+    'Shift and Flattening': shift_and_flattening,
+    'Absolute CDF distance': cdf_absolute_distance
 }
 
 #==============================================================================
