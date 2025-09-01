@@ -107,7 +107,7 @@ def get_LIFE() -> Context:
         ),
         h = 0 * u.hourangle, # Central hour angle
         Δh = 24 * u.hourangle, # Hour angle range
-        Γ = 100 * u.nm, # Input cophasing error (RMS)
+        Γ = 1 * u.nm, # Input cophasing error (RMS)
         name="Default Context", # Context name
     )
 

@@ -136,14 +136,11 @@ def shift_and_flattening(u, v):
     auc = np.trapz(distances  + np.abs(med), x)
     return auc
 
-# CDF absolute distance -------------------------------------------------------
+def median_of_abs(u, v):
+    return np.median(np.abs(u))
 
-def cdf_absolute_distance(u, v):
-    # Compute CDF of u and v
-    cdf_u = np.cumsum(np.histogram(u, bins=100, density=True)[0])
-    cdf_v = np.cumsum(np.histogram(v, bins=100, density=True)[0])
-    distance = np.trapz(np.abs(cdf_u - cdf_v))
-    return distance
+def full_sum(u, v):
+    return np.sum(np.abs(u))
 
 #==============================================================================
 # All tests
@@ -164,7 +161,8 @@ ALL_TESTS = {
     # 'Wasserstein distance': wasserstein_distance,
     'Flattening': flattening,
     'Shift and Flattening': shift_and_flattening,
-    'Absolute CDF distance': cdf_absolute_distance
+    'Full Sum': full_sum,
+    'Median of Abs': median_of_abs
 }
 
 #==============================================================================

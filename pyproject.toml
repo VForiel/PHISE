@@ -5,6 +5,7 @@ description = "Default template for PDM package"
 authors = [
     {name = "Vincent Foriel", email = "vincent.foriel@gmail.com"},
     {name = "VForiel", email = "vince.lrf@gmail.com"},
+    {name = "VForiel", email = "vincent.foriel@gmail.com"},
 ]
 dependencies = [
     "numpy>=1.26.4",
