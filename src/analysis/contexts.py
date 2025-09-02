@@ -26,11 +26,13 @@ def get_VLTI() -> Context:
             λ = λ, # Central wavelength
             Δλ = 1 * u.nm, # Bandwidth
             fov = 10 * u.mas, # Field of view
+            η = 0.03, # Optical efficiency
             telescopes = telescope.get_VLTI_UTs(),
             name = "VLTI", # Interferometer name
             kn = KernelNuller(
                 φ = np.zeros(14) * u.um, # Injected phase shifts
                 σ = np.abs(np.random.normal(0, 1, 14)) * u.um, # Manufacturing OPD errors
+                λ0 = λ,
                 name = "First Generation Kernel-Nuller", # Kernel nuller name
             ),
             camera = Camera(
@@ -80,11 +82,13 @@ def get_LIFE() -> Context:
             λ = λ, # Central wavelength
             Δλ = 1 * u.nm, # Bandwidth
             fov = 10 * u.mas, # Field of view
+            η = 0.03, # Optical efficiency
             telescopes = telescope.get_VLTI_UTs(),
             name = "LIFE", # Interferometer name
             kn = KernelNuller(
                 φ = np.zeros(14) * u.um, # Injected phase shifts
                 σ = np.abs(np.random.normal(0, 1, 14)) * u.um, # Manufacturing OPD errors
+                λ0 = λ,
                 name = "First Generation Kernel-Nuller", # Kernel nuller name
             ),
             camera = Camera(

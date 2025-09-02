@@ -14,6 +14,7 @@ class Interferometer:
             λ:u.Quantity,
             Δλ:u.Quantity,
             fov:u.Quantity,
+            η:float,
             telescopes:list[Telescope],
             kn:KernelNuller,
             camera:Camera,
@@ -28,6 +29,7 @@ class Interferometer:
         - λ: Central wavelength
         - Δλ: Bandwidth
         - fov: Field of view
+        - η: Optical efficiency
         - telescopes: List of telescope in the array
         - kn: Kernel-Nuller object
         - name: Name of the instrument
@@ -39,6 +41,7 @@ class Interferometer:
         self.λ = λ
         self.Δλ = Δλ
         self.fov = fov
+        self.η = η
         self.telescopes = copy(telescopes)
         for telescope in self.telescopes:
             telescope._parent_interferometer = self
@@ -105,6 +108,10 @@ class Interferometer:
             raise ValueError("λ must be in nanometers")
         self._λ = λ
 
+        # If the wavelength is modified, update the photon flux
+        if self.parent_ctx is not None:
+            self.parent_ctx.update_photon_flux()
+
     # Δλ property -------------------------------------------------------------
 
     @property
@@ -120,8 +127,12 @@ class Interferometer:
         except u.UnitConversionError:
             raise ValueError("Δλ must be in nanometers")
         
-        if Δλ <= 0*u.nm:
+        if Δλ <= 0 * u.nm:
             raise ValueError("Δλ must be positive")
+
+        # If the bandwidth is modified, update the photon flux
+        if self.parent_ctx is not None:
+            self.parent_ctx.update_photon_flux()
         
         self._Δλ = Δλ
 
@@ -207,4 +218,23 @@ class Interferometer:
             raise AttributeError("parent_ctx is read-only")
         else:
             self._parent_ctx = parent_ctx
-    
+
+    # η property --------------------------------------------------------------
+
+    @property
+    def η(self) -> u.Quantity:
+        return self._η
+
+    @η.setter
+    def η(self, η:float):
+        try:
+            η = float(η)
+        except (ValueError, TypeError):
+            raise ValueError("η must be a float")
+        if η < 0:
+            raise ValueError("η must be positive")
+        self._η = η
+
+        # If latitude is set, project the telescopes position
+        if self.parent_ctx is not None:
+            self.parent_ctx.update_photon_flux()

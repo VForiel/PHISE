@@ -186,16 +186,22 @@ class Context:
         """
         Update the photon flux in the context.
         ❗ Assumption: the spectral flux is constant over the bandwidth.
+        ❗ If Δλ=0 (monochromatic case), the photon flux is given for 1 nm of bandwidth
         """
 
         f = self.target.f.to(u.W / u.m**2 / u.nm)
         λ = self.interferometer.λ.to(u.m)
+        η = self.interferometer.η
         Δλ = self.interferometer.Δλ.to(u.nm)
         a = np.array([i.a.to(u.m**2).value for i in self.interferometer.telescopes]) * u.m**2
         h = const.h
         c = const.c
 
-        p = f * a * Δλ # Optical power [W]
+        # Monochromatic case
+        if Δλ == 0:
+            Δλ = 1 * u.nm
+
+        p = η * f * a * Δλ # Optical power [W]
 
         self._ph = p * λ / (h*c) # Photon flux [photons/s] (array of (n_telescopes,))
 
@@ -297,11 +303,12 @@ class Context:
         σ=self.interferometer.kn.σ.to(u.m).value
         p=self.p.value
         λ=self.interferometer.λ.to(u.m).value
+        λ0=self.interferometer.kn.λ0.to(u.m).value
         fov=self.interferometer.fov
         output_order=self.interferometer.kn.output_order
-        
-        return get_transmission_map_njit(N=N, φ=φ, σ=σ, p=p, λ=λ, fov=fov, output_order=output_order)
-    
+
+        return get_transmission_map_njit(N=N, φ=φ, σ=σ, p=p, λ=λ, λ0=λ0, fov=fov, output_order=output_order)
+
     def plot_transmission_maps(self, N:int, return_plot:bool = False) -> None:
         
         # Get transmission maps
@@ -437,9 +444,9 @@ class Context:
 
     # Observation -------------------------------------------------------------
 
-    def observe(self):
+    def observe_monochromatic(self):
         """
-        Observe the target in this context.
+        Observe the target in this context with monochromatic approximations.
 
         Returns
         -------
@@ -447,30 +454,80 @@ class Context:
         - Kernel data (3,) - # of photons events
         - Bright data (1,) - # of photons events
         """
+
+        ctx = copy(self)
+        ctx.Δλ = 1 * u.nm
         
-        nb_objects = len(self.target.companions) + 1
+        nb_objects = len(ctx.target.companions) + 1
 
         ds = np.empty((nb_objects, 6), dtype=np.complex128)
         bs = np.empty(nb_objects, dtype=np.complex128)
 
-        for ψ_i, ψ in enumerate(self.get_input_fields()):
+        for ψ_i, ψ in enumerate(ctx.get_input_fields()):
 
-            _, d, b = self.interferometer.kn.propagate_fields(ψ=ψ, λ=self.interferometer.λ)
+            _, d, b = ctx.interferometer.kn.propagate_fields(ψ=ψ, λ=ctx.interferometer.λ)
             ds[ψ_i] = d
             bs[ψ_i] = b
 
-        bright = self.interferometer.camera.acquire_pixel(bs)
+        bright = ctx.interferometer.camera.acquire_pixel(bs)
 
         darks = np.empty(6)
         for i in range(6):
-            darks[i] = self.interferometer.camera.acquire_pixel(ds[:, i])
+            darks[i] = ctx.interferometer.camera.acquire_pixel(ds[:, i])
 
         kernels = np.empty(3)
         for i in range(3):
             kernels[i] = darks[2*i] - darks[2*i+1]
 
+        # Multiply by the bandwidth
+        darks *= self.interferometer.Δλ.to(u.nm).value
+        kernels *= self.interferometer.Δλ.to(u.nm).value
+        bright *= self.interferometer.Δλ.to(u.nm).value
+
         return darks, kernels, bright
     
+    def observe(self, spectral_samples=10):
+        """
+        Observe the target in this context.
+
+        Parameters
+        ----------
+        - spectral_samples: Number of spectral samples to acquire (default: 10)
+
+        Returns
+        -------
+        - Dark data (6,) - # of photons events
+        - Kernel data (3,) - # of photons events
+        - Bright data (1,) - # of photons events
+        """
+
+        # Sampling bandwidth
+        λ_range = np.linspace(self.interferometer.λ - self.interferometer.Δλ/2, self.interferometer.λ + self.interferometer.Δλ/2, spectral_samples)
+
+        darks = np.empty((spectral_samples, 6))
+        kernels = np.empty((spectral_samples, 3))
+        brights = np.empty(spectral_samples)
+
+        # Monochromatic approximation
+        for i, λ in enumerate(λ_range):
+            ctx_mono = copy(self)
+            ctx_mono.interferometer.λ = λ
+            ctx_mono.interferometer.Δλ = 1 * u.nm
+
+            d, k, b = ctx_mono.observe_monochromatic()
+
+            # Store the results for each wavelength
+            darks[i] = d
+            kernels[i] = k
+            brights[i] = b
+
+        # Integrate over the bandwidth
+        darks = np.trapz(darks, λ_range, axis=0)
+        kernels = np.trapz(kernels, λ_range, axis=0)
+        brights = np.trapz(brights, λ_range, axis=0)
+
+        return darks, kernels, brights
+
     def observation_serie(
             self,
             n:int = 1,
@@ -830,6 +887,7 @@ def get_transmission_map_njit(
         σ: np.ndarray[float],
         p: np.ndarray[float],
         λ: float,
+        λ0: float,
         fov: float,
         output_order: np.ndarray[int]
     ) -> tuple[np.ndarray[complex], np.ndarray[complex], np.ndarray[float]]:
@@ -843,6 +901,7 @@ def get_transmission_map_njit(
     - σ: Array of 14 intrasic OPD (in meter)
     - p: Projected telescope positions (in meter)
     - λ: Wavelength (in meter)
+    - λ0: Reference wavelength (in meter)
     - fov: Field of view in mas
     - output_order: Order of the outputs
 
@@ -871,7 +930,7 @@ def get_transmission_map_njit(
 
             ψ = get_unique_source_input_fields_njit(a=1, θ=θ, α=α, λ=λ, p=p)
 
-            n, d, _ = kernel_nuller.propagate_fields_njit(ψ, φ, σ, λ, output_order)
+            n, d, _ = kernel_nuller.propagate_fields_njit(ψ, φ, σ, λ, λ0, output_order)
 
             k = np.array([np.abs(d[2*i])**2 - np.abs(d[2*i+1])**2 for i in range(3)])
 

@@ -21,6 +21,7 @@ class KernelNuller():
             self,
             φ: np.ndarray[u.Quantity],
             σ: np.ndarray[u.Quantity],
+            λ0: u.Quantity,
             output_order: np.ndarray[int] = None,
             input_attenuation: np.ndarray[float] = None,
             input_opd: np.ndarray[u.Quantity] = None,
@@ -32,6 +33,7 @@ class KernelNuller():
         ----------
         - φ: Array of 14 injected OPD
         - σ: Array of 14 intrasic OPD error
+        - λ0: Reference wavelength (in which the matrix are described)
         - output_order: Order of the outputs
         - input_attenuation: Array of 4 input attenuations
         - input_opd: Array of 4 input OPD
@@ -42,6 +44,7 @@ class KernelNuller():
 
         self.φ = φ
         self.σ = σ
+        self.λ0 = λ0
         self.output_order = output_order if output_order is not None else np.array([0, 1, 2, 3, 4, 5])
         self.input_attenuation = input_attenuation if input_attenuation is not None else np.array([1.0, 1.0, 1.0, 1.0])
         self.input_opd = input_opd if input_opd is not None else np.zeros(4) * u.m
@@ -98,6 +101,22 @@ class KernelNuller():
         if σ.shape != (14,):
             raise ValueError("σ must have a shape of (14,)")
         self._σ = σ
+
+    # λ0 property -------------------------------------------------------------
+
+    @property
+    def λ0(self):
+        return self._λ0
+
+    @λ0.setter
+    def λ0(self, λ0:u.Quantity):
+        if not isinstance(λ0, u.Quantity):
+            raise TypeError("λ0 must be an astropy Quantity")
+        try:
+            λ0 = λ0.to(u.m)
+        except u.UnitConversionError:
+            raise ValueError("λ0 must be in a distance unit")
+        self._λ0 = λ0
 
     # Output order property --------------------------------------------------
 
@@ -202,14 +221,16 @@ class KernelNuller():
         φ = self.φ.to(λ.unit).value
         σ = self.σ.to(λ.unit).value
 
+        λ0 = self.λ0.to(λ.unit).value
+
         # Attenuate inputs
         ψ *= self.input_attenuation
 
         # Apply OPD
         ψ *= np.exp(-1j * 2 * np.pi * self.input_opd.to(λ.unit).value / λ.value)
 
-        return propagate_fields_njit(ψ=ψ, φ=φ, σ=σ, λ=λ.value, output_order=self.output_order)
-    
+        return propagate_fields_njit(ψ=ψ, φ=φ, σ=σ, λ=λ.value, λ0=λ0, output_order=self.output_order)
+
     # Plot phases -------------------------------------------------------------
 
     def plot_phase(
@@ -383,6 +404,7 @@ def propagate_fields_njit(
         φ: np.ndarray[float],
         σ: np.ndarray[float],
         λ: float,
+        λ0: float,
         output_order:np.ndarray[int]
     ) -> tuple[np.ndarray[float], np.ndarray[float], np.ndarray[float], float]:
     """
@@ -395,6 +417,7 @@ def propagate_fields_njit(
     - φ: Array of 14 injected OPD (in wavelenght unit)
     - σ: Array of 14 intrasic OPD error (in wavelenght unit)
     - λ: Wavelength of the light
+    - λ0: Reference wavelenght (in wavelenght unit)
     - output_order: Order of the outputs
 
     Returns
@@ -404,22 +427,37 @@ def propagate_fields_njit(
     - Bright output electric fields
     """
 
+    λ_ratio = λ / λ0
+
+    N = 1/np.sqrt(2) * np.array([
+        [1+0j,   1+0j],
+        [1+0j,  np.exp(-1j * np.pi * λ_ratio)],
+    ], dtype=np.complex128)
+
+    θ:float=np.pi/2
+
+    # Cross recombiner matrix
+    R = 1/np.sqrt(2) * np.array([
+        [np.exp(1j*θ/2*λ_ratio), np.exp(-1j*θ/2*λ_ratio)],
+        [np.exp(-1j*θ/2*λ_ratio), np.exp(1j*θ/2*λ_ratio)]
+    ])
+
     φ = phase.bound_njit(φ + σ, λ)
 
     # First layer of pahse shifters
     nuller_inputs = phase.shift_njit(ψ, φ[:4], λ)
 
     # First layer of nulling
-    N1 = mmi.nuller_2x2(nuller_inputs[:2])
-    N2 = mmi.nuller_2x2(nuller_inputs[2:])
+    N1 = np.dot(N, nuller_inputs[:2])
+    N2 = N @ nuller_inputs[2:]
 
     # Second layer of phase shifters
     N1_shifted = phase.shift_njit(N1, φ[4:6], λ)
     N2_shifted = phase.shift_njit(N2, φ[6:8], λ)
 
     # Second layer of nulling
-    N3 = mmi.nuller_2x2(np.array([N1_shifted[0], N2_shifted[0]]))
-    N4 = mmi.nuller_2x2(np.array([N1_shifted[1], N2_shifted[1]]))
+    N3 = N @ np.array([N1_shifted[0], N2_shifted[0]])
+    N4 = N @ np.array([N1_shifted[1], N2_shifted[1]])
 
     nulls = np.array([N3[1], N4[0], N4[1]], dtype=np.complex128)
     bright = N3[0]
@@ -431,9 +469,9 @@ def propagate_fields_njit(
     R_inputs = phase.shift_njit(R_inputs, φ[8:], λ)
 
     # Beam mixing
-    R1_output = mmi.cross_recombiner_2x2(np.array([R_inputs[0], R_inputs[2]]))
-    R2_output = mmi.cross_recombiner_2x2(np.array([R_inputs[1], R_inputs[4]]))
-    R3_output = mmi.cross_recombiner_2x2(np.array([R_inputs[3], R_inputs[5]]))
+    R1_output = R @ np.array([R_inputs[0], R_inputs[2]])
+    R2_output = R @ np.array([R_inputs[1], R_inputs[4]])
+    R3_output = R @ np.array([R_inputs[3], R_inputs[5]])
 
     darks = np.array(
         [

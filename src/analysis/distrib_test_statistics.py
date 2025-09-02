@@ -147,7 +147,7 @@ def full_sum(u, v):
 #==============================================================================
 
 ALL_TESTS = {
-    # 'Mean': mean,
+    'Mean': mean,
     'Median': median,
     # 'Central bin 50': argmax50,
     # 'Central bin 100': argmax100,
@@ -160,8 +160,7 @@ ALL_TESTS = {
     # 'Brunner-Munzel': brunner_munzel,
     # 'Wasserstein distance': wasserstein_distance,
     'Flattening': flattening,
-    'Shift and Flattening': shift_and_flattening,
-    'Full Sum': full_sum,
+    'Median + Flattening': shift_and_flattening,
     'Median of Abs': median_of_abs
 }
 
