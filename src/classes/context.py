@@ -522,11 +522,11 @@ class Context:
             brights[i] = b
 
         # Integrate over the bandwidth
-        darks = np.trapz(darks, λ_range, axis=0)
-        kernels = np.trapz(kernels, λ_range, axis=0)
-        brights = np.trapz(brights, λ_range, axis=0)
+        dark = np.trapz(darks, λ_range.value, axis=0)
+        kernel = np.trapz(kernels, λ_range.value, axis=0)
+        bright = np.trapz(brights, λ_range.value, axis=0)
 
-        return darks, kernels, brights
+        return dark, kernel, bright
 
     def observation_serie(
             self,
