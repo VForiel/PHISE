@@ -64,9 +64,9 @@ def instant_distribution(ctx:Context=None, n=10000, stat=np.median) -> np.ndarra
     _, axs = plt.subplots(3, 1, figsize=(10, 10), sharex=True)
 
     for k in range(3):
-        axs[k].hist(data[:, k], label='With companion(s)', bins=500, alpha=0.5, color='blue')
+        axs[k].hist(data[:, k], label='With companion(s)', bins=500, alpha=0.5, color='blue', density=True)
         axs[k].axvline(stat(data[:, k]), color='blue', linestyle='--')
-        axs[k].hist(ref_data[:, k], label='Star only', bins=500, alpha=0.5, color='red')
+        axs[k].hist(ref_data[:, k], label='Star only', bins=500, alpha=0.5, color='red', density=True)
         axs[k].axvline(stat(ref_data[:, k]), color='red', linestyle='--')
         axs[k].set_ylabel(f'Occurrences')
         axs[k].set_xlabel('Kernel-Null depth')
