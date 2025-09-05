@@ -486,7 +486,7 @@ class Context:
 
         return darks, kernels, bright
     
-    def observe(self, spectral_samples=10):
+    def observe(self, spectral_samples=5):
         """
         Observe the target in this context.
 

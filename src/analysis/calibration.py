@@ -17,7 +17,7 @@ from . import contexts
 
 # Genetic ---------------------------------------------------------------------
 
-def genetic_approach(ctx:Context = None, β:float = 0.9, verbose=False, figsize=(10,10)):
+def genetic_approach(ctx:Context = None, β:float = 0.9, verbose=False, figsize=(10,10), σ_rms=None):
 
     if ctx is None:
          ctx = contexts.get_VLTI()
@@ -31,7 +31,9 @@ def genetic_approach(ctx:Context = None, β:float = 0.9, verbose=False, figsize=
     ctx.target.companions = []
 
     # Introduce random noise
-    ctx.interferometer.kn.σ = np.abs(np.random.normal(0, 1, 14)) * ctx.interferometer.λ
+    if σ_rms is not None:
+        σ_rms = ctx.interferometer.λ
+    ctx.interferometer.kn.σ = np.abs(np.random.normal(0, 10, 14)) * σ_rms
 
     print_kernel_null_depth_lab_space_atm(ctx)
 
@@ -43,7 +45,7 @@ def genetic_approach(ctx:Context = None, β:float = 0.9, verbose=False, figsize=
 
 # Obstruction -----------------------------------------------------------------
 
-def obstruction_approach(ctx:Context = None, n:int = 1000):
+def obstruction_approach(ctx:Context = None, n:int = 1000, σ_rms=None):
 
     if ctx is None:
         ctx = contexts.get_VLTI()
@@ -57,7 +59,9 @@ def obstruction_approach(ctx:Context = None, n:int = 1000):
     ctx.target.companions = []
         
     # Introduce random noise
-    ctx.interferometer.kn.σ = np.abs(np.random.normal(0, 1, 14)) * ctx.interferometer.λ
+    if σ_rms is not None:
+        σ_rms = ctx.interferometer.λ
+    ctx.interferometer.kn.σ = np.abs(np.random.normal(0, 10, 14)) * σ_rms
 
     print_kernel_null_depth_lab_space_atm(ctx)
 
