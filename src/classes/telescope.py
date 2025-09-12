@@ -3,6 +3,9 @@ import astropy.units as u
 import numpy as np
 
 class Telescope():
+
+    __slots__ = ('_parent_interferometer', '_a', '_r', '_name')
+
     def __init__(self, a:u.Quantity, r:u.Quantity, name:str = "Unnamed Telescope"):
         """
         Initialize the telescope object.

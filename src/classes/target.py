@@ -11,6 +11,8 @@ from .companion import Companion
 
 class Target():
 
+    __slots__ = ('_parent_ctx', '_f', '_δ', '_companions', '_name')
+
     def __init__(self, f:u.Quantity, δ:u.Quantity, companions:list[Companion], name:str = "Unnamed Target"):
         """
         A target star with a given magnitude and declination, and a list of companions.
@@ -69,7 +71,7 @@ class Target():
         self._f = f
 
         if self.parent_ctx is not None:
-            self.parent_ctx.update_photon_flux(self)
+            self.parent_ctx.update_photon_flux()
     
     # δ property --------------------------------------------------------------
 

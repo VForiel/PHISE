@@ -21,6 +21,9 @@ from ..modules import signals
 from ..modules import phase
 
 class Context:
+
+    __slots__ = ('_initialized', '_interferometer', '_target', '_h', '_Δh', '_Γ', '_name', '_p', '_ph', '_monochromatic')
+
     def __init__(
             self,
             interferometer:Interferometer,
@@ -28,6 +31,7 @@ class Context:
             h:u.Quantity,
             Δh: u.Quantity,
             Γ: u.Quantity,
+            monochromatic = False,
             name:str = "Unnamed Context",
         ):
         """
@@ -38,18 +42,20 @@ class Context:
         - h: Central hourangle of the observation
         - Δh: Hourangle range of the observation
         - Γ: Input cophasing error (rms)
+        - monochromatic: Whether to use monochromatic aproximation or not
         - name: Name of the scene
         """
 
         self._initialized = False
 
         self.interferometer = copy(interferometer)
-        self.interferometer._ctx = self
+        self.interferometer._parent_ctx = self
         self.target = copy(target)
-        self.target._ctx = self
+        self.target._parent_ctx = self
         self.h = h
         self.Δh = Δh
         self.Γ = Γ
+        self.monochromatic = monochromatic
         self.name = name
         
         self.project_telescopes_position() # define self.p
@@ -163,6 +169,29 @@ class Context:
     def p(self, p: u.Quantity):
         raise ValueError("p is a read-only property. Use project_telescopes_position() to set it accordingly to the other parameters in this context.")
     
+    # monochromatic property --------------------------------------------------
+
+    @property
+    def monochromatic(self) -> bool:
+        return self._monochromatic
+    
+    @monochromatic.setter
+    def monochromatic(self, monochromatic: bool):
+        if not isinstance(monochromatic, bool):
+            raise TypeError("monochromatic must be a boolean")
+        self._monochromatic = monochromatic
+    
+    # Name property -----------------------------------------------------------
+
+    @property
+    def name(self) -> str:
+        return self._name
+    
+    @name.setter
+    def name(self, name: str):
+        if not isinstance(name, str):
+            raise TypeError("name must be a string")
+        self._name = name    
 
     # Photon flux -------------------------------------------------------------
 
@@ -456,7 +485,7 @@ class Context:
         """
 
         ctx = copy(self)
-        ctx.Δλ = 1 * u.nm
+        ctx.interferometer.Δλ = 1 * u.nm
         
         nb_objects = len(ctx.target.companions) + 1
 
@@ -500,6 +529,9 @@ class Context:
         - Kernel data (3,) - # of photons events
         - Bright data (1,) - # of photons events
         """
+
+        if self.monochromatic:
+            return self.observe_monochromatic()
 
         # Sampling bandwidth
         λ_range = np.linspace(self.interferometer.λ - self.interferometer.Δλ/2, self.interferometer.λ + self.interferometer.Δλ/2, spectral_samples)

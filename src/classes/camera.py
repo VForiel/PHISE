@@ -11,19 +11,24 @@ import numba as nb
 import math
 
 class Camera:
-    def __init__(self, e:u.Quantity = 1 * u.s, name:str = "Unnamed Camera"):
+
+    __slots__ = ('_parent_interferometer', '_e', '_name', '_ideal')
+
+    def __init__(self, e:u.Quantity = 1 * u.s, ideal=False, name:str = "Unnamed Camera"):
         """
         Initialize the camera object.
 
         Parameters
         ----------
         - e: Exposure time
+        - ideal: Whether the camera is ideal (no noise) or not
         - name: Name of the camera
         """
 
         self._parent_interferometer = None
-
+        
         self.e = e
+        self.ideal = ideal
         self.name = name
 
     # To string ---------------------------------------------------------------
@@ -61,7 +66,31 @@ class Camera:
     @parent_interferometer.setter
     def parent_interferometer(self, _):
         raise ValueError("parent_interferometer is read-only")
+
+    # ideal property -----------------------------------------------------------
+
+    @property
+    def ideal(self) -> bool:
+        return self._ideal
+
+    @ideal.setter
+    def ideal(self, ideal: bool):
+        if not isinstance(ideal, bool):
+            raise TypeError("ideal must be a boolean")
+        self._ideal = ideal
+
+    # Name property -----------------------------------------------------------
+
+    @property
+    def name(self) -> str:
+        return self._name
     
+    @name.setter
+    def name(self, name: str):
+        if not isinstance(name, str):
+            raise TypeError("name must be a string")
+        self._name = name
+
     # Acquire -----------------------------------------------------------------
 
     def acquire_pixel(self, ψ: np.ndarray[complex]) -> int:
@@ -82,16 +111,17 @@ class Camera:
         # Expected intensity (photons/s), integrated over the exposure time (s)
         expected_photons = np.sum(np.abs(ψ)**2) * self.e.to(u.s).value
 
-        # Add photon noise
-        if expected_photons <= 2e9:
-            detected_photons = np.random.poisson(expected_photons)
-        else:
-            detected_photons = int(expected_photons + np.random.normal(0, math.sqrt(expected_photons)))
+        if self.ideal:
+            detected_photons = int(expected_photons)
 
-        # print("Acquiring pixel...\n   ψ =", ψ, "\n   Detected =", detected_photons)
+        else:
+            # Add photon noise
+            if expected_photons <= 2e9:
+                detected_photons = np.random.poisson(expected_photons)
+            else:
+                detected_photons = int(expected_photons + np.random.normal(0, math.sqrt(expected_photons)))
 
         return detected_photons
-        # return acquire_pixel_njit(ψ, self.e.to(u.s).value)
 
 #==============================================================================
 # Numba functions

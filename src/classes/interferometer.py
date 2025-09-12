@@ -8,6 +8,9 @@ from .telescope import Telescope
 from .camera import Camera
 
 class Interferometer:
+
+    __slots__ = ('_parent_ctx', '_l', '_λ', '_Δλ', '_fov', '_η', '_telescopes', '_kn', '_camera', '_name')
+
     def __init__(
             self,
             l:u.Quantity,

@@ -24,11 +24,14 @@ def fit(ctx:Context=None):
     ctx.target.companions = []
 
     # Generate data
-    N = 10000
+    N = 100000
     data = np.empty((N, 3))
+    print("⌛ Generating data...")
     for i in range(N):
+        print(f"{(i+1)/N*100:.2f}%", end='\r')
         _, k, b = ctx.observe()
         data[i] = k / b
+    print("✅ Data generation complete.")
 
     data = data[:, 0]  # Use only the first kernel
 
@@ -47,12 +50,16 @@ def fit(ctx:Context=None):
             * 1 / np.sqrt(1 + ((x - μ) / σ) ** 2) \
             * np.exp(-0.5 * (γ + δ*np.sinh((x - μ) / σ))**2)
 
-    hist, bin_edges = np.histogram(data, bins=50, density=True)
+    hist, bin_edges = np.histogram(data, bins=500, density=True)
     x = (bin_edges[:-1] + bin_edges[1:]) / 2
 
+    print("⌛ Fitting distributions...")
     cauchy_pop, _ = curve_fit(cauchy, x, hist, p0=[np.mean(data), np.std(data)])
+    print("✅ Cauchy fit complete.")
     laplace_pop, _ = curve_fit(laplace, x, hist, p0=[np.mean(data), np.std(data)])
+    print("✅ Laplace fit complete.")
     johnsonsu_pop, _ = curve_fit(johnsonsu, x, hist, p0=[np.mean(data), np.std(data), 0, 1])
+    print("✅ Johnson SU fit complete.")
 
     plt.figure(figsize=(5, 5))
     plt.hist(data, bins=50, density=True, label='Data', log=True)

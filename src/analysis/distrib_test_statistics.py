@@ -141,6 +141,7 @@ def median_of_abs(u, v):
 
 def full_sum(u, v):
     return np.sum(np.abs(u))
+    
 
 #==============================================================================
 # All tests
@@ -161,7 +162,7 @@ ALL_TESTS = {
     # 'Wasserstein distance': wasserstein_distance,
     'Flattening': flattening,
     'Median + Flattening': shift_and_flattening,
-    'Median of Abs': median_of_abs
+    'Median of Abs': median_of_abs,
 }
 
 #==============================================================================

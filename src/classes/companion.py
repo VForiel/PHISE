@@ -8,6 +8,9 @@ if TYPE_CHECKING:
 from astropy import units as u
 
 class Companion():
+
+    __slots__ = ('_parent_target', '_c', '_θ', '_α', '_name')
+
     def __init__(self, c:float, θ:u.Quantity, α:u.Quantity, name:str = "Unnamed Companion"):
         """Any light source in the sky (unresolved).
 
@@ -90,3 +93,15 @@ class Companion():
     @parent_target.setter
     def parent_target(self, target:Target):
         raise ValueError("parent_target is read-only")
+    
+    # Name property -----------------------------------------------------------
+
+    @property
+    def name(self) -> str:
+        return self._name
+    
+    @name.setter
+    def name(self, name:str):
+        if not isinstance(name, str):
+            raise TypeError("name must be a string")
+        self._name = name

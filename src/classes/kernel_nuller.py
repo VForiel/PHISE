@@ -17,6 +17,9 @@ from ..modules import phase
 #==============================================================================
 
 class KernelNuller():
+
+    __slots__ = ('_parent_interferometer', '_φ', '_σ', '_λ0', '_output_order', '_input_attenuation', '_input_opd', '_name')
+
     def __init__(
             self,
             φ: np.ndarray[u.Quantity],
