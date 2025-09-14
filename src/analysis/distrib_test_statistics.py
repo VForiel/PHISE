@@ -30,7 +30,7 @@ def get_vectors(ctx:Context=None, nmc:int=1000, size:int=1000):
     fov = ctx.interferometer.fov.to(u.mas).value
 
     for i in range(nmc):
-        print(f"Generating vectors... {round(i/nmc * 100,2)}%", end="\r")
+        print(f"⌛ Generating vectors... {round(i/nmc * 100,2)}%", end="\r")
 
         for j in range(size):
 
@@ -47,7 +47,7 @@ def get_vectors(ctx:Context=None, nmc:int=1000, size:int=1000):
             T0[:, i, j] = k_h0
             T1[:, i, j] = k_h1
     
-    print(f"Vectors generation complete ✅")
+    print(f"✅ Vectors generation complete")
     return np.concatenate(T0), np.concatenate(T1)
 
 #==============================================================================
@@ -161,7 +161,6 @@ ALL_TESTS = {
     # 'Brunner-Munzel': brunner_munzel,
     # 'Wasserstein distance': wasserstein_distance,
     'Flattening': flattening,
-    'Median + Flattening': shift_and_flattening,
     'Median of Abs': median_of_abs,
 }
 
@@ -192,12 +191,12 @@ def roc(t0:np.ndarray, t1:np.ndarray, test:callable):
 
     return np.array(pfa), np.array(pdet), thresholds
 
-def plot_rocs(t0:np.ndarray, t1:np.ndarray, tests:dict=ALL_TESTS):
+def plot_rocs(t0:np.ndarray, t1:np.ndarray, tests:dict=ALL_TESTS, figsize=(6,6)):
 
-    plt.figure(figsize=(6, 6))
+    plt.figure(figsize=figsize, constrained_layout=True)
     for name, test in tests.items():
         pfa, pdet, thresholds = roc(t0, t1, test)
-        plt.plot(pfa, pdet, label=f"{test.__name__}")
+        plt.plot(pfa, pdet, label=f"{name}")
         power = np.round(np.abs(np.trapz(pdet-pfa, pfa))*200,2)
         print(f"Power of {name}: {power}%")
     plt.plot([0, 1], [0, 1], 'k--', label="Random")
@@ -205,7 +204,6 @@ def plot_rocs(t0:np.ndarray, t1:np.ndarray, tests:dict=ALL_TESTS):
     plt.ylabel("True Positive Rate")
     plt.title("ROC Curve")
     plt.legend()
-    plt.grid(True)
     plt.show()
 
 #==============================================================================

@@ -13,7 +13,7 @@ from . import contexts
 # Instantaneous distribution
 #==============================================================================
 
-def instant_distribution(ctx:Context=None, n=10000, stat=np.median) -> np.ndarray:
+def instant_distribution(ctx:Context=None, n=10000, stat=np.median, figsize=(10, 10)) -> np.ndarray:
     """
     Get the instantaneous distribution of the kernel nuller.
 
@@ -61,7 +61,7 @@ def instant_distribution(ctx:Context=None, n=10000, stat=np.median) -> np.ndarra
     lim = np.max([np.abs(kmin), np.abs(kmax)])
 
     # Plot
-    _, axs = plt.subplots(3, 1, figsize=(10, 10), sharex=True)
+    _, axs = plt.subplots(3, 1, figsize=figsize, sharex=True, constrained_layout=True)
 
     for k in range(3):
         axs[k].hist(data[:, k], label='With companion(s)', bins=500, alpha=0.5, color='blue', density=True)

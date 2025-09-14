@@ -7,7 +7,7 @@ from copy import deepcopy as copy
 from src.classes.context import Context
 from . import contexts
 
-def plot(ctx:Context=None, β=0.5, n=1000):
+def plot(ctx:Context=None, β=0.5, n=1000, figsize=(15, 5)):
     """
     Plot the sensitivity to input noise
 
@@ -30,6 +30,7 @@ def plot(ctx:Context=None, β=0.5, n=1000):
     # Perturbated context (with manufacturing defects)
     if ctx is None:
         ctx_perturbated = contexts.get_VLTI()
+        ctx_perturbated.monochromatic = True
     else:
         ctx_perturbated = copy(ctx)
     ctx_perturbated.name = "Perturbated"
@@ -45,16 +46,23 @@ def plot(ctx:Context=None, β=0.5, n=1000):
     ctx_ideal.interferometer.kn.σ = np.zeros(14) * u.nm
     ctx_ideal.interferometer.kn.φ = np.zeros(14) * u.nm
 
-    # KN calibrated using genetic approach
+    # KN calibrated using straightforward approach
+    print("⌛ Calibrating using straightforward approach...")
     ctx_gen = copy(ctx_perturbated)
-    ctx_gen.name = "Genetic"
+    ctx_gen.name = "Straightforward"
+    ctx_gen.Γ = 0 * u.nm
     ctx_gen.calibrate_gen(β=β)
+    print("✅ Done.")
 
     # KN calibrated using obstruction approach
+    print("⌛ Calibrating using obstruction approach...")
     ctx_obs = copy(ctx_perturbated)
     ctx_obs.name = "Obstruction"
+    ctx_obs.Γ = 0 * u.nm
     ctx_obs.calibrate_obs(n=n)
+    print("✅ Done.")
 
+     # List of contexts to study
     context_list = [ctx_ideal, ctx_gen, ctx_obs]#, ctx_perturbated]
     colors = ['tab:green', 'tab:blue', 'tab:orange']#, 'tab:red']
 
@@ -65,21 +73,25 @@ def plot(ctx:Context=None, β=0.5, n=1000):
     step *= u.nm
     stds = []
 
-    _, ax = plt.subplots(1, 1, figsize=(15, 5))
+    _, ax = plt.subplots(1, 1, figsize=figsize, constrained_layout=True)
+
+    print("⌛ Computing noise sensitivity...")
 
     for i, Γ in enumerate(Γ_range):
 
+        print(f"{i+1 / len(Γ_range)*100}% (Γ = {Γ:.1f})", end='\r')
 
         for c, ctx in enumerate(context_list):
             ctx.Γ = Γ
 
             _, k_data, b_data = ctx.observation_serie(n=1000)
+            k_data = k_data[:, :, 0] # Keep only one Kernel output
 
             data = np.empty_like(k_data)
 
             for n in range(k_data.shape[0]):
                 for h in range(k_data.shape[1]):
-                    data[n, h] = k_data[n, h, :] / b_data[n, h] # Kernel output to kernel depth
+                    data[n, h] = k_data[n, h] / b_data[n, h] # Kernel output to kernel depth
 
             data = data.flatten()
 
@@ -108,6 +120,8 @@ def plot(ctx:Context=None, β=0.5, n=1000):
                 showfliers=False,
                 manage_ticks=False
             )
+
+    print("✅ Done.                      ")
 
     ax.set_ylim(-max(stds), max(stds))
     ax.set_xlabel(f"Input OPD RMS ({Γ_range.unit})")
