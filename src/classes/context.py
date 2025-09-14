@@ -707,7 +707,7 @@ class Context:
 
             shifters_history = np.array(shifters_history)
 
-            _, axs = plt.subplots(2,1, figsize=figsize)
+            _, axs = plt.subplots(2,1, figsize=figsize, constrained_layout=True)
 
             axs[0].plot(depth_history)
             axs[0].set_xlabel("Iterations")
@@ -760,7 +760,7 @@ class Context:
         total_photons = np.sum(self.pf.to(1/e.unit).value) * e.value
 
         if plot:
-            _, axs = plt.subplots(3, 3, figsize=figsize)
+            _, axs = plt.subplots(3, 3, figsize=figsize, constrained_layout=True)
             for i in range(7):
                 axs.flatten()[i].set_xlabel("Phase shift")
                 axs.flatten()[i].set_ylabel("Throughput")
