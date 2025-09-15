@@ -89,7 +89,7 @@ def print_kernel_null_depth_lab_space_atm(ctx:Context):
     print("\nPerformances in atmosphere (Γ=100 nm)")
     print_kernel_null_depth(ctx)
 
-def print_kernel_null_depth(ctx:Context, N=1000):
+def print_kernel_null_depth(ctx:Context, N=100):
     kernels = np.empty((N, 3))
     bright = np.empty(N)
     for i in range(N):

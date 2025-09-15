@@ -760,7 +760,7 @@ class Context:
         total_photons = np.sum(self.pf.to(1/e.unit).value) * e.value
 
         if plot:
-            _, axs = plt.subplots(3, 3, figsize=figsize, constrained_layout=True)
+            _, axs = plt.subplots(6, 3, figsize=figsize, constrained_layout=True)
             for i in range(7):
                 axs.flatten()[i].set_xlabel("Phase shift")
                 axs.flatten()[i].set_ylabel("Throughput")
@@ -770,8 +770,17 @@ class Context:
             x = np.linspace(0, λ.value,n)
             y = np.empty(n)
 
+            if isinstance(p,list):
+                Δp = kn.φ[p[1]-1] - kn.φ[p[0]-1]
+
             for i in range(n):
-                kn.φ[p-1] = i * λ / n
+
+                if isinstance(p,list):
+                    kn.φ[p[0]-1] = i * λ / n
+                    kn.φ[p[1]-1] = (kn.φ[p[0]-1] + Δp) % λ
+                else:
+                    kn.φ[p-1] = i * λ / n
+            
                 _, _, b = self.observe()
                 y[i] = b / total_photons
             
@@ -780,7 +789,11 @@ class Context:
             
             popt, _ = curve_fit(sin, x, y, p0=[0], maxfev = 100_000)
 
-            kn.φ[p-1] = (np.mod(popt[0]+λ.value/4, λ.value) * λ.unit).to(kn.φ.unit)
+            if isinstance(p,list):
+                kn.φ[p[0]-1] = (np.mod(popt[0]+λ.value/4, λ.value) * λ.unit).to(kn.φ.unit)
+                kn.φ[p[1]-1] = (kn.φ[p[0]-1] + Δp) % λ
+            else:
+                kn.φ[p-1] = (np.mod(popt[0]+λ.value/4, λ.value) * λ.unit).to(kn.φ.unit)
 
             if plot:
                 axs[*plt_coords].set_title(f"$|B(\phi{p})|$")
@@ -846,12 +859,22 @@ class Context:
         # Bright maximization
         self.interferometer.kn.input_attenuation = [1, 1, 0, 0]
         maximize_bright(2, plt_coords=(0,0))
+        maximize_bright([1,2], plt_coords=(1,0))
+
+        if plot:
+            axs[1,1].axis('off')
+            axs[1,2].axis('off')
+            plt.show()
+
+        return
 
         self.interferometer.kn.input_attenuation = [0, 0, 1, 1]
         maximize_bright(4, plt_coords=(0,1))
+        maximize_bright([3,4], plt_coords=(1,1))
 
         self.interferometer.kn.input_attenuation = [1, 0, 1, 0]
         maximize_bright(7, plt_coords=(0,2))
+        maximize_bright([5,7], plt_coords=(1,2))
 
         # Darks maximization
         self.interferometer.kn.input_attenuation = [1, 0, 0, -1]
