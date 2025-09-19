@@ -8,7 +8,6 @@ from copy import deepcopy as copy
 import ipywidgets as widgets
 from IPython.display import display
 
-from . import contexts
 from src.classes import Companion
 
 #==============================================================================
@@ -26,7 +25,7 @@ def gui(ctx: Context=None):
     """
 
     if ctx is None:
-        ctx = contexts.get_VLTI()  # Default context if none provided
+        ctx = Context.get_VLTI()  # Default context if none provided
         ctx.Δh = 24 * u.hourangle
         ctx.interferometer.kn.σ = np.zeros(14) * u.nm  # No manufacturing errors
         ctx.interferometer.kn.φ = np.zeros(14) * u.um  # No injected phase shifts

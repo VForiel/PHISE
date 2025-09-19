@@ -8,7 +8,6 @@ from astropy import units as u
 # Internal libs
 from src.classes import Context
 from src.modules import coordinates
-from . import contexts
 
 def plot(
         ctx: Context = None,
@@ -30,7 +29,7 @@ def plot(
     """
 
     if ctx is None:
-        ref_ctx = contexts.get_VLTI()
+        ref_ctx = Context.get_VLTI()
         ref_ctx.interferometer.kn.σ = np.zeros(14) * u.nm
     else:
         ref_ctx = copy(ctx)

@@ -9,7 +9,6 @@ from copy import deepcopy as copy
 
 # Internal libs
 from .. import Context
-from . import contexts
 
 #==============================================================================
 # Calibration approaches
@@ -20,7 +19,7 @@ from . import contexts
 def genetic_approach(ctx:Context = None, β:float = 0.9, verbose=False, figsize=(10,10), σ_rms=None):
 
     if ctx is None:
-         ctx = contexts.get_VLTI()
+         ctx = Context.get_VLTI()
     else:
         ctx = copy(ctx)
 
@@ -48,7 +47,7 @@ def genetic_approach(ctx:Context = None, β:float = 0.9, verbose=False, figsize=
 def obstruction_approach(ctx:Context = None, n:int = 1000, σ_rms=None, figsize=(10,10)):
 
     if ctx is None:
-        ctx = contexts.get_VLTI()
+        ctx = Context.get_VLTI()
     else:
         ctx = copy(ctx)
 
@@ -116,7 +115,7 @@ def print_kernel_null_depth(ctx:Context, N=100):
 def compare_approaches(ctx:Context = None, β:float = 0.9, n:int = 10_000, figsize=(10,10)):
 
     if ctx is None:
-        ctx = contexts.get_VLTI()
+        ctx = Context.get_VLTI()
         ctx.monochromatic = True
     else:
         ctx = copy(ctx)

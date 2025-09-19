@@ -1,168 +1,15 @@
-
-
 import numpy as np
-import numba as nb
 import matplotlib.pyplot as plt
 plt.rcParams['image.origin'] = 'lower'
 from copy import deepcopy as copy
 import astropy.units as u
-from scipy import stats
 
 from src.classes.context import Context
-from . import contexts
+from src.modules.test_statistics import ALL_TESTS
+from scipy.optimize import minimize
+from scipy import stats
 
-def get_vectors(ctx:Context=None, nmc:int=1000, size:int=1000):
-
-    if ctx is None:
-        ctx = contexts.get_VLTI()
-        ctx.interferometer.kn.σ = np.zeros(14) * u.m
-
-    if ctx.target.companions == []:
-        raise ValueError("No companions in the context. Please add companions to the context before generating vectors.")
-    
-    ctx_h1 = copy(ctx)
-    ctx_h0 = copy(ctx)
-    ctx_h0.target.companions = []
-
-    T0 = np.zeros((3, nmc, size))
-    T1 = np.zeros((3, nmc, size))
-
-    fov = ctx.interferometer.fov.to(u.mas).value
-
-    for i in range(nmc):
-        print(f"⌛ Generating vectors... {round(i/nmc * 100,2)}%", end="\r")
-
-        for j in range(size):
-
-            for c in ctx_h1.target.companions:
-                c.α = np.random.uniform(0, 2 * np.pi) * u.rad
-                c.θ = np.random.uniform(fov/10, fov) * u.mas
-
-            _, k_h0, b_h0 = ctx_h0.observe()
-            _, k_h1, b_h1 = ctx_h1.observe()
-
-            k_h0 /= b_h0
-            k_h1 /= b_h1
-
-            T0[:, i, j] = k_h0
-            T1[:, i, j] = k_h1
-    
-    print(f"✅ Vectors generation complete")
-    return np.concatenate(T0), np.concatenate(T1)
-
-#==============================================================================
-# Test statistics
-#==============================================================================
-
-# Mean ------------------------------------------------------------------------
-
-def mean(u, v):
-    return np.abs(np.mean(u))
-
-# Median ----------------------------------------------------------------------
-
-def median(u, v):
-    return np.abs(np.median(u))
-
-# Argmax ----------------------------------------------------------------------
-
-def argmax(u, v, bins=100):
-    maxs = np.zeros(u.shape[0])
-    hist, bin_edges = np.histogram(u, bins=bins)
-    bin_edges = (bin_edges[1:] + bin_edges[:-1]) / 2
-    return np.abs(bin_edges[np.argmax(hist)])
-
-def argmax50(u, v):
-    return argmax(u, v, 50)
-
-def argmax100(u, v):
-    return argmax(u, v, 100)
-
-def argmax500(u, v):
-    return argmax(u, v, 500)
-
-# Kolmogorov-Smirnov ----------------------------------------------------------
-
-def kolmogorov_smirnov(u, v):
-    return np.abs(stats.ks_2samp(u, v).statistic)
-
-# Cramer-von Mises ------------------------------------------------------------
-
-def cramer_von_mises(u, v):
-    return np.abs(stats.cramervonmises_2samp(u, v).statistic)
-
-# Mann-Whitney U --------------------------------------------------------------
-
-def mannwhitneyu(u, v):
-    return np.abs(stats.mannwhitneyu(u, v).statistic)
-
-# Wilcoxon --------------------------------------------------------------------
-
-def wilcoxon_mann_whitney(u, v):
-    return np.abs(stats.wilcoxon(u, v).statistic)
-
-# Anderson Darling ------------------------------------------------------------
-
-def anderson_darling(u, v):
-    return np.abs(stats.anderson_ksamp([u, v]).statistic)
-
-# Brunner-Munzel --------------------------------------------------------------
-
-def brunner_munzel(u, v):
-    return np.abs(stats.brunnermunzel(u, v).statistic)
-
-# Wasserstein distance --------------------------------------------------------
-
-def wasserstein_distance(u, v):
-    return np.abs(stats.wasserstein_distance(u, v))
-
-# Distance to median ----------------------------------------------------------
-
-# def flattening(u, v):
-#     med = np.median(u)
-#     distances = np.sort(np.abs(u - med))
-#     x = np.linspace(0, 1, len(u))
-#     auc = np.trapz(distances, x)
-#     return auc
-
-def flattening(u, v):
-    med = np.median(u)
-    return np.sum(np.abs(u - med))
-
-def shift_and_flattening(u, v):
-    med = np.median(u)
-    distances = np.sort(np.abs(u - med))
-    x = np.linspace(0, 1, len(u))
-    auc = np.trapz(distances  + np.abs(med), x)
-    return auc
-
-def median_of_abs(u, v):
-    return np.median(np.abs(u))
-
-def full_sum(u, v):
-    return np.sum(np.abs(u))
-    
-
-#==============================================================================
-# All tests
-#==============================================================================
-
-ALL_TESTS = {
-    'Mean': mean,
-    'Median': median,
-    # 'Central bin 50': argmax50,
-    # 'Central bin 100': argmax100,
-    # 'Central bin 500': argmax500,
-    'Kolmogorov-Smirnov': kolmogorov_smirnov,
-    # 'Cramer von Mises': cramer_von_mises,
-    # 'Mann-Whitney U': mannwhitneyu,
-    # 'Wilcoxon': wilcoxon_mann_whitney,
-    # 'Anderson Darling': anderson_darling,
-    # 'Brunner-Munzel': brunner_munzel,
-    # 'Wasserstein distance': wasserstein_distance,
-    'Flattening': flattening,
-    'Median of Abs': median_of_abs,
-}
+from src.modules import test_statistics as ts
 
 #==============================================================================
 # ROC curve
@@ -213,7 +60,7 @@ def plot_rocs(t0:np.ndarray, t1:np.ndarray, tests:dict=ALL_TESTS, figsize=(6,6))
 def test_power(ctx=None, tests=ALL_TESTS, nmc=100, bootstrap=10, resolution=10, maxpoints=1000):
 
     if ctx is None:
-        ctx = contexts.get_VLTI()
+        ctx = Context.get_VLTI()
 
         ctx.interferometer.kn.σ = np.zeros(14) * u.nm
         ctx.target.companions[0].c = 1e-4
@@ -236,7 +83,7 @@ def test_power(ctx=None, tests=ALL_TESTS, nmc=100, bootstrap=10, resolution=10, 
 
         # Generate dataset
 
-        t0, t1 = get_vectors(ctx=ctx, nmc=nmc, size=maxpoints)
+        t0, t1 = ts.get_vectors(ctx=ctx, nmc=nmc, size=maxpoints)
         dataset = []
         for nb in nb_values:
             # Take nb random points from t0 and t1
@@ -329,3 +176,174 @@ def plot_p_values(t0, t1, tests=ALL_TESTS):
         axs[t].set_title(f"P-values for {ts_name}")
         axs[t].legend()
     plt.show()
+
+#==============================================================================
+# Neyman-Pearson
+#==============================================================================
+
+def np_benchmark(ctx:Context=None):
+
+    # Get contexts ------------------------------------------------------------
+
+    if ctx is None:
+        ctx = Context.get_VLTI()
+
+        ctx.interferometer.kn.σ = np.zeros(14) * u.nm
+        ctx.target.companions[0].c = 1e-3
+        ctx.monochromatic = False
+
+    else:
+        ctx = copy(ctx)
+
+    ctx_star_only = copy(ctx)
+    ctx_star_only.target.companions = []
+
+    # Generate distributions --------------------------------------------------
+
+    print("⌛ Generating distributions...")
+
+    samples = 10_000
+    bins = np.sqrt(samples).astype(int)
+    
+    h0_data = np.empty(samples)
+    h1_data = np.empty(samples)
+
+    for i in range(samples):
+        print(f"{(i+1)/samples*100:.2f}% ({i+1}/{samples})", end='\r')
+        _, k, _ = ctx_star_only.observe()
+        h0_data[i] = k[0]
+        _, k, _ = ctx.observe()
+        h1_data[i] = k[0]
+
+    print("✅ Distributions generated.")
+
+    # Model definition --------------------------------------------------------
+
+    # # Laplace distribution
+
+    # def laplace(x, μ, b):
+    #     return (1/(b)) * np.exp(-np.abs((x - μ))/(b))
+
+    # def laplace_cost(params, data):
+    #     μ, b = params
+        
+    #     # True histogram (empirical density)
+    #     y, bin_edges = np.histogram(data, bins=bins, density=True)
+    #     bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+
+    #     # Model histogram
+    #     s = laplace(bin_centers, μ, b)
+    #     s /= np.sum(s)
+
+    #     return np.sum(np.abs(y - s))
+
+    # # Cauchy distribution
+    # def cauchy(x, x0, γ):
+    #     return (1/(np.pi*γ * (1 + ((x - x0)/γ)**2)))
+
+    # def cauchy_cost(params, data):
+    #     x0, γ = params
+        
+    #     # True histogram (empirical density)
+    #     y, bin_edges = np.histogram(data, bins=bins, density=True)
+    #     bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+
+    #     # Model histogram
+    #     s = cauchy(bin_centers, x0, γ)
+    #     s /= np.sum(s)
+
+    #     return np.sum(np.log(1+((y - s)/γ)**2))
+    
+    # model = cauchy
+    # cost = cauchy_cost  
+
+    # Fit model ---------------------------------------------------------------
+
+    # print("⌛ Fitting distributions...")
+
+    # # Fit for h0_data
+    # res_h0 = minimize(cost, x0=[np.median(h0_data), np.std(h0_data)/2], args=(h0_data,), method='Nelder-Mead')
+    # μ_h0, b_h0 = res_h0.x
+
+    # if res_h0.success:
+    #     print(f"✅ Fitted distrib under H0: μ={μ_h0:.3e}, b={b_h0:.3e}")
+    # else:
+    #     print("❌ Fitting for H0 did not converge:", res_h0.message)
+
+    # # Fit for h1_data
+    # res_h1 = minimize(cost, x0=[np.median(h1_data), np.std(h1_data)/2], args=(h1_data,), method='Nelder-Mead')
+    # μ_h1, b_h1 = res_h1.x
+
+    # if res_h1.success:
+    #     print(f"✅ Fitted distrib under H1: μ={μ_h1:.3e}, b={b_h1:.3e}")
+    # else:
+    #     print("❌ Fitting for H1 did not converge:", res_h1.message)
+
+    x0, γ0 = stats.cauchy.fit(h0_data)
+    x1, γ1 = stats.cauchy.fit(h1_data)
+
+    μ0, b0 = stats.laplace.fit(h0_data)
+    μ1, b1 = stats.laplace.fit(h1_data)
+
+    # Plot distributions ------------------------------------------------------
+
+    x = np.linspace(min(np.min(h0_data), np.min(h1_data)), max(np.max(h0_data), np.max(h1_data)), 1000)
+
+    plt.figure(figsize=(10, 6))
+    _, h0_bins, _ = plt.hist(h0_data, bins=bins, density=True, alpha=0.5, label='h0 data', color='blue', log=True)
+    _, h1_bins, _ = plt.hist(h1_data, bins=bins, density=True, alpha=0.5, label='h1 data', color='orange', log=True)
+
+    plt.plot(x, stats.cauchy.pdf(x, loc=x0, scale=γ0), 'b--', label='h0 cauchy fit', linewidth=2)
+    plt.plot(x, stats.cauchy.pdf(x, loc=x1, scale=γ1), 'r--', label='h1 cauchy fit', linewidth=2)
+
+    plt.plot(x, stats.laplace.pdf(x, loc=μ0, scale=b0), 'b:', label='h0 laplace fit', linewidth=2)
+    plt.plot(x, stats.laplace.pdf(x, loc=μ1, scale=b1), 'r:', label='h1 laplace fit', linewidth=2)
+
+    plt.xlabel('Test Statistic Value')
+    plt.ylabel('Density')
+    plt.title('Distributions and Fits')
+    plt.legend()
+    plt.show()
+
+    # Generate random distribution following the model ------------------------
+
+    print("⌛ Generating random distributions from the fitted models...")
+
+    nmc = 1000
+    samples = 1000
+    t0_cauchy = np.empty((nmc, samples))
+    t1_cauchy = np.empty((nmc, samples))
+    t0_laplace = np.empty((nmc, samples))
+    t1_laplace = np.empty((nmc, samples))
+
+    for i in range(nmc):
+        t0_cauchy[i] = stats.cauchy.rvs(loc=x0, scale=γ0, size=samples)
+        t1_cauchy[i] = stats.cauchy.rvs(loc=x1, scale=γ1, size=samples)
+        t0_laplace[i] = stats.laplace.rvs(loc=μ0, scale=b0, size=samples)
+        t1_laplace[i] = stats.laplace.rvs(loc=μ1, scale=b1, size=samples)
+
+    print("✅ Random distributions generated.")
+
+    # Plot ROC ----------------------------------------------------------------
+
+    print("⌛ Plotting ROC curves...")
+
+    def lr_cauchy(u, v):
+        return np.sum(np.log(
+            (1 + ((u - x0)/γ0)**2) /
+            (1 + ((u - x1)/γ1)**2)
+        ))
+    
+    def lr_laplace(u, v):
+        return np.sum(
+            (np.abs(u - μ1)/b1) - (np.abs(u - μ0)/b0)
+        )
+
+    tests = copy(ALL_TESTS)
+
+    tests['Likelihood Ratio'] = lr_cauchy
+    plot_rocs(t0_cauchy, t1_laplace, tests=tests, figsize=(6,6))
+
+    tests['Likelihood Ratio'] = lr_laplace
+    plot_rocs(t0_laplace, t1_laplace, tests=tests, figsize=(6,6))
+

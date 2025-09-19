@@ -5,7 +5,6 @@ plt.rcParams['image.origin'] = 'lower'
 from copy import deepcopy as copy
 
 from src.classes.context import Context
-from . import contexts
 
 def plot(ctx:Context=None, β=0.5, n=1000, figsize=(15, 5)):
     """
@@ -29,7 +28,7 @@ def plot(ctx:Context=None, β=0.5, n=1000, figsize=(15, 5)):
 
     # Perturbated context (with manufacturing defects)
     if ctx is None:
-        ctx_perturbated = contexts.get_VLTI()
+        ctx_perturbated = Context.get_VLTI()
         ctx_perturbated.monochromatic = True
     else:
         ctx_perturbated = copy(ctx)

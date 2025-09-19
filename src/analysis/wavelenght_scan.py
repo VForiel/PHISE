@@ -7,7 +7,6 @@ import astropy.units as u
 from scipy import stats
 
 from src.classes.context import Context
-from . import contexts
 
 def run(ctx:Context=None, Δλ=0.2*u.um, n=11, figsize=(5,5)):
 
@@ -15,7 +14,7 @@ def run(ctx:Context=None, Δλ=0.2*u.um, n=11, figsize=(5,5)):
         n += 1
 
     if ctx is None:
-        ctx = contexts.get_VLTI()
+        ctx = Context.get_VLTI()
         ctx.interferometer.kn.σ = np.zeros(14) * u.m
         ctx.Γ = 0 * u.nm
         ctx.target.companions = []

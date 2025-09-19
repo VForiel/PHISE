@@ -9,7 +9,6 @@ from copy import deepcopy as copy
 # Internal libs
 from src import Telescope
 from src import Context
-from . import contexts
 
 def gui(
         ctx:Context=None,
@@ -31,7 +30,7 @@ def gui(
 
     
     if ctx is None:
-        ref_ctx = contexts.get_VLTI()
+        ref_ctx = Context.get_VLTI()
     else:
         ref_ctx = copy(ctx)
 

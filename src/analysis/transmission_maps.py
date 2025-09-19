@@ -6,8 +6,7 @@ import ipywidgets as widgets
 from IPython.display import display
 
 # Internal libs
-from .. import *
-from . import contexts
+from src import Context
 
 
 def gui(
@@ -28,7 +27,7 @@ def gui(
     # Set default values ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     if ctx is None:
-        ref_ctx = contexts.get_VLTI()
+        ref_ctx = Context.get_VLTI()
         # Ideal kernel nuller
         ref_ctx.interferometer.kn.σ = np.zeros(14) * u.um
     else:

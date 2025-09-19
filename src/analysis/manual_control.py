@@ -9,7 +9,6 @@ from copy import deepcopy as copy
 
 # Internal libs
 from .. import *
-from . import contexts
 
 def gui(
         λ:u.Quantity = None,
@@ -19,7 +18,7 @@ def gui(
     
     # Set default values ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    ref_ctx = contexts.get_VLTI()
+    ref_ctx = Context.get_VLTI()
     
     if λ is not None:
         ref_ctx.interferometer.λ = λ
