@@ -202,18 +202,18 @@ def np_benchmark(ctx:Context=None):
 
     print("⌛ Generating distributions...")
 
-    samples = 10_000
+    samples = 1_000
     bins = np.sqrt(samples).astype(int)
     
-    h0_data = np.empty(samples)
-    h1_data = np.empty(samples)
+    h0_data_kn = np.empty(samples)
+    h1_data_kn = np.empty(samples)
 
     for i in range(samples):
         print(f"{(i+1)/samples*100:.2f}% ({i+1}/{samples})", end='\r')
         _, k, _ = ctx_star_only.observe()
-        h0_data[i] = k[0]
+        h0_data_kn[i] = k[0]
         _, k, _ = ctx.observe()
-        h1_data[i] = k[0]
+        h1_data_kn[i] = k[0]
 
     print("✅ Distributions generated.")
 
@@ -279,19 +279,22 @@ def np_benchmark(ctx:Context=None):
     # else:
     #     print("❌ Fitting for H1 did not converge:", res_h1.message)
 
-    x0, γ0 = stats.cauchy.fit(h0_data)
-    x1, γ1 = stats.cauchy.fit(h1_data)
+    x0, γ0 = stats.cauchy.fit(h0_data_kn)
+    x1, γ1 = stats.cauchy.fit(h1_data_kn)
 
-    μ0, b0 = stats.laplace.fit(h0_data)
-    μ1, b1 = stats.laplace.fit(h1_data)
+    μ0, b0 = stats.laplace.fit(h0_data_kn)
+    μ1, b1 = stats.laplace.fit(h1_data_kn)
+
+    β0, m0, s0 = stats.gennorm.fit(h0_data_kn)
+    β1, m1, s1 = stats.gennorm.fit(h1_data_kn)
 
     # Plot distributions ------------------------------------------------------
 
-    x = np.linspace(min(np.min(h0_data), np.min(h1_data)), max(np.max(h0_data), np.max(h1_data)), 1000)
+    x = np.linspace(min(np.min(h0_data_kn), np.min(h1_data_kn)), max(np.max(h0_data_kn), np.max(h1_data_kn)), 1000)
 
     plt.figure(figsize=(10, 6))
-    _, h0_bins, _ = plt.hist(h0_data, bins=bins, density=True, alpha=0.5, label='h0 data', color='blue', log=True)
-    _, h1_bins, _ = plt.hist(h1_data, bins=bins, density=True, alpha=0.5, label='h1 data', color='orange', log=True)
+    _, h0_bins, _ = plt.hist(h0_data_kn, bins=bins, density=True, alpha=0.5, label='h0 data', color='blue', log=False)
+    _, h1_bins, _ = plt.hist(h1_data_kn, bins=bins, density=True, alpha=0.5, label='h1 data', color='orange', log=False)
 
     plt.plot(x, stats.cauchy.pdf(x, loc=x0, scale=γ0), 'b--', label='h0 cauchy fit', linewidth=2)
     plt.plot(x, stats.cauchy.pdf(x, loc=x1, scale=γ1), 'r--', label='h1 cauchy fit', linewidth=2)
@@ -299,10 +302,93 @@ def np_benchmark(ctx:Context=None):
     plt.plot(x, stats.laplace.pdf(x, loc=μ0, scale=b0), 'b:', label='h0 laplace fit', linewidth=2)
     plt.plot(x, stats.laplace.pdf(x, loc=μ1, scale=b1), 'r:', label='h1 laplace fit', linewidth=2)
 
+    plt.plot(x, stats.gennorm.pdf(x, β0, m0, s0), 'b-.', label='h0 gennorm fit', linewidth=2)
+    plt.plot(x, stats.gennorm.pdf(x, β1, m1, s1), 'r-.', label='h1 gennorm fit', linewidth=2)
+
+    # Mix
+    plt.plot(x, 0.5*stats.cauchy.pdf(x, loc=x0, scale=γ0) + 0.5*stats.laplace.pdf(x, loc=μ0, scale=b0), 'b.', label='h0 mix fit', linewidth=2)
+    plt.plot(x, 0.5*stats.cauchy.pdf(x, loc=x1, scale=γ1) + 0.5*stats.laplace.pdf(x, loc=μ1, scale=b1), 'r.', label='h1 mix fit', linewidth=2)
+
     plt.xlabel('Test Statistic Value')
     plt.ylabel('Density')
     plt.title('Distributions and Fits')
     plt.legend()
+    plt.show()
+
+    # Compute moments ---------------------------------------------------------
+
+    print("⌛ Computing moments...")
+    
+    h0_data_cauchy = stats.cauchy.rvs(loc=x0, scale=γ0, size=samples)
+    h1_data_cauchy = stats.cauchy.rvs(loc=x1, scale=γ1, size=samples)
+    h0_data_laplace = stats.laplace.rvs(loc=μ0, scale=b0, size=samples)
+    h1_data_laplace = stats.laplace.rvs(loc=μ1, scale=b1, size=samples)
+    h0_data_gennorm = stats.gennorm.rvs(beta=β0, loc=m0, scale=s0, size=samples)
+    h1_data_gennorm = stats.gennorm.rvs(beta=β1, loc=m1, scale=s1, size=samples)
+
+    nb_moments = 10
+
+    # Using scipy
+    def compute_moments(data):
+        moments = np.empty(nb_moments)
+        for n in range(1, nb_moments + 1):
+            moments[n-1] = np.mean((data - np.mean(data))**n)
+        return moments
+
+    h0_kn_moments = compute_moments(h0_data_kn)
+    h1_kn_moments = compute_moments(h1_data_kn)
+    h0_cauchy_moments = compute_moments(h0_data_cauchy)
+    h1_cauchy_moments = compute_moments(h1_data_cauchy)
+    h0_laplace_moments = compute_moments(h0_data_laplace)
+    h1_laplace_moments = compute_moments(h1_data_laplace)
+    h0_gennorm_moments = compute_moments(h0_data_gennorm)
+    h1_gennorm_moments = compute_moments(h1_data_gennorm)
+
+    ref = h0_kn_moments
+
+    for n in range(nb_moments):
+        # Print H0 kn moments
+        print(f"Moment {n+1}:")
+        print(f"   H0 kn: {h0_kn_moments[n]:.3e}")
+        print(f"   H1 kn: {h1_kn_moments[n]:.3e}")
+        print(f"   H0 cauchy: {h0_cauchy_moments[n]:.3e}")
+        print(f"   H1 cauchy: {h1_cauchy_moments[n]:.3e}")
+        print(f"   H0 laplace: {h0_laplace_moments[n]:.3e}")
+        print(f"   H1 laplace: {h1_laplace_moments[n]:.3e}")
+        print(f"   H0 gennorm: {h0_gennorm_moments[n]:.3e}")
+        print(f"   H1 gennorm: {h1_gennorm_moments[n]:.3e}")
+
+    # Replace zeros by 1e-10
+    h0_kn_moments[h0_kn_moments == 0] = 1e-10
+    h1_kn_moments[h1_kn_moments == 0] = 1e-10
+    h0_cauchy_moments[h0_cauchy_moments == 0] = 1e-10
+    h1_cauchy_moments[h1_cauchy_moments == 0] = 1e-10
+    h0_laplace_moments[h0_laplace_moments == 0] = 1e-10
+    h1_laplace_moments[h1_laplace_moments == 0] = 1e-10
+    h0_gennorm_moments[h0_gennorm_moments == 0] = 1e-10
+    h1_gennorm_moments[h1_gennorm_moments == 0] = 1e-10
+
+    # Plot moments ------------------------------------------------------------
+
+    orders = np.arange(1, nb_moments + 1)
+    width = 0.1
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    ax.bar(orders - 3.5*width, h0_kn_moments/ref, width, label='H0 KN')
+    ax.bar(orders - 2.5*width, h1_kn_moments/ref, width, label='H1 KN')
+    ax.bar(orders - 1.5*width, h0_cauchy_moments/ref, width, label='H0 Cauchy')
+    ax.bar(orders - 0.5*width, h1_cauchy_moments/ref, width, label='H1 Cauchy')
+    ax.bar(orders + 0.5*width, h0_laplace_moments/ref, width, label='H0 Laplace')
+    ax.bar(orders + 1.5*width, h1_laplace_moments/ref, width, label='H1 Laplace')
+    ax.bar(orders + 2.5*width, h0_gennorm_moments/ref, width, label='H0 Gennorm')
+    ax.bar(orders + 3.5*width, h1_gennorm_moments/ref, width, label='H1 Gennorm')
+
+    plt.yscale('log')
+    ax.set_xlabel("Moment Order")
+    ax.set_ylabel("Moment Value (relative to H0 KN)")
+    ax.set_title("Comparison of Moments (relative to H0 KN)")
+    ax.set_xticks(orders)
+    ax.legend()
     plt.show()
 
     # Generate random distribution following the model ------------------------
@@ -315,12 +401,16 @@ def np_benchmark(ctx:Context=None):
     t1_cauchy = np.empty((nmc, samples))
     t0_laplace = np.empty((nmc, samples))
     t1_laplace = np.empty((nmc, samples))
+    t0_gennorm = np.empty((nmc, samples))
+    t1_gennorm = np.empty((nmc, samples))
 
     for i in range(nmc):
         t0_cauchy[i] = stats.cauchy.rvs(loc=x0, scale=γ0, size=samples)
         t1_cauchy[i] = stats.cauchy.rvs(loc=x1, scale=γ1, size=samples)
         t0_laplace[i] = stats.laplace.rvs(loc=μ0, scale=b0, size=samples)
         t1_laplace[i] = stats.laplace.rvs(loc=μ1, scale=b1, size=samples)
+        t0_gennorm[i] = stats.gennorm.rvs(beta=β0, loc=m0, scale=s0, size=samples)
+        t1_gennorm[i] = stats.gennorm.rvs(beta=β1, loc=m1, scale=s1, size=samples)
 
     print("✅ Random distributions generated.")
 
@@ -336,14 +426,22 @@ def np_benchmark(ctx:Context=None):
     
     def lr_laplace(u, v):
         return np.sum(
-            (np.abs(u - μ1)/b1) - (np.abs(u - μ0)/b0)
+            (np.abs(u - μ0)/b0) - (np.abs(u - μ1)/b1)
+        )
+
+    def lr_gennorm(u, v):
+        return np.sum(
+            (np.abs((u - m0)/s0)**β0) - (np.abs((u - m1)/s1)**β1)
         )
 
     tests = copy(ALL_TESTS)
 
     tests['Likelihood Ratio'] = lr_cauchy
-    plot_rocs(t0_cauchy, t1_laplace, tests=tests, figsize=(6,6))
+    plot_rocs(t0_cauchy, t1_cauchy, tests=tests, figsize=(6,6))
 
     tests['Likelihood Ratio'] = lr_laplace
     plot_rocs(t0_laplace, t1_laplace, tests=tests, figsize=(6,6))
+
+    tests['Likelihood Ratio'] = lr_gennorm
+    plot_rocs(t0_gennorm, t1_gennorm, tests=tests, figsize=(6,6))
 

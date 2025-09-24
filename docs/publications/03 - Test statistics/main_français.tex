@@ -80,17 +80,17 @@ Dans cette étude, nous considérons deux scénarios instrumentaux distincts pou
 
 \begin{table}[H]
 \centering
-\begin{tabular}{|l|c|c|}
+\begin{tabular}{|l|c|c|c|}
 \hline
-\textbf{Paramètre} & \textbf{VLTI} & \textbf{LIFE} \\
+\textbf{Paramètre} & \textbf{VLTI} & \textbf{LIFE} & \textbf{SVLTI} \\
 \hline
-Nombre de télescopes & 4 & 4 \\
-Diamètre des télescopes & 8 m & 2 m \\
-Configuration & Irrégulière & Régulière (rectangulaire) \\
-Ligne de base maximale & 130 m & 600 m \\
-Environnement d'exploitation & Sol & Espace \\
-Longueur d'onde & $1.55\mu$m & $4\mu$m \\
-Erreur de cophasage (RMS) & 100 nm & 1 nm \\
+Nombre de télescopes & 4 & 4 & 4 \\
+Diamètre des télescopes & 8 m & 2 m & 8 \\
+Configuration & Irrégulière & Régulière (rectangulaire) & Irrégulière \\
+Ligne de base maximale & 130 m & 600 m & 130 \\
+Environnement d'exploitation & Sol & Espace & Espace \\
+Longueur d'onde & $1.55\mu$m & $4\mu$m & $1.55\mu$m \\
+Erreur de cophasage (RMS) & 100 nm & 1 nm & 1 nm \\
 \hline
 \end{tabular}
 \caption{Paramètres instrumentaux pour les deux scénarios considérés dans cette étude.}
@@ -98,6 +98,19 @@ Erreur de cophasage (RMS) & 100 nm & 1 nm \\
 \end{table}
 
 Le scénario VLTI inclut une erreur de cophasage résiduelle de 100 nm RMS, représentative des conditions atmosphériques et des limitations du système de contrôle de phase au VLTI. Le scénario LIFE bénéficie de l'environnement spatial, permettant une réduction de l'erreur de cophasage à 1 nm RMS, reflétant la stabilité accrue attendue pour une mission spatiale telle que LIFE.\dm{Il faut expliquer en détail cette table, que le lecteur ait l'impression de voir les instruments et que tes simus simulent une réalité vraiment réaliste et des manips à portée de main, ça donnera un aspect "chaud" et concret à ton papier.}
+
+\subsection{Tests statistiques et rapport de vraisemblance}
+
+Pour discriminer entre les hypothèses $\mathcal{H}_0$ (étoile seule) et $\mathcal{H}_1$ (système étoile-planète), plusieurs statistiques de test sont utilisées dans nos simulations :
+
+\begin{itemize}
+    \item \textbf{Moyenne} : $T(u) = |\mathrm{mean}(u)|$
+    \item \textbf{Médiane} : $T(u) = |\mathrm{median}(u)|$
+    \item \textbf{Kolmogorov-Smirnov} : $T(u, v) = |D_{KS}(u, v)|$ où $D_{KS}$ est la statistique KS entre deux échantillons
+    \item \textbf{Flattening} : $T(u) = \sum_i |u_i - \mathrm{median}(u)|$
+\end{itemize}
+
+Chaque test permet de quantifier la différence entre les distributions issues des deux hypothèses. Les performances sont évaluées via les courbes ROC et l'analyse des valeurs P.
 
 Pour chaque scénario, des jeux de données sont générés sous les deux hypothèses $\mathcal{H}_0$ (étoile seule) et $\mathcal{H}_1$ (système étoile-planète), en tenant compte des paramètres instrumentaux spécifiques et des niveaux de bruit pour chaque cas. L'opération de Kernel-Nulling est supposée idéale.\dm{Je pense qu'il faut prévoir un appendice où tu résumes le principe de kernel-nulling pour que le lecteur te suive; qu'il comprenne ce que signifie faire une operaiton de kernel nulling en pratique, et lister tous les défauts qui font que ça ne peut pas être idéal. Il faut aussi différencier une operation de kernel null idéale et l'absence de bruit à la fin. Bien expliquer ce que capturent tes simulations et les fluctuations qui créent les distributions montrées en Fig. 1.}
 
@@ -126,7 +139,7 @@ Nous avons développé et comparé plusieurs statistiques de test :
 - Puis dire qu'on peut aller plus loin : il est naturel de regarder des mesures plus globales entre les distributions et là tu pars sur  KS etc. Ajoute Anderson-Darling dans cette famille.\\
 - Ensuite 1) présente tes notations (par ex, qu'est-ce que $x$ ? 2) rappelle précisément ce que tu appelles $\mathcal{H}_0$ et $\mathcal{H}_1$ en utilisant les quantitiés de  tes notations.\\
 - Ensuite, pour chaque test, de façon systématique : 0) Donne la ref du/des papiers scientifiques où il a été décrit (pas une ref à une toolbox python; un bouquin tu peux, mais il faut aussi les refs originales \#démarche scientifique vérifiable etc) 1) explique l'intuition derrière 2) donne la stat de test (en utilisant les notations définies avant) 3) explique s'il y a une formule analytique pour décrire la stat de test sous $\mathcal{H}_0$ (explique aussi avant fe lister les tests  que l'intérêt d'une formule analytique est  que ça donne accès à une p-valeur sans avoir à faire des simus de Monte Carlo, et les pbs que posent le fait de devoir faire des MC (calcul mais surtout on doit pouvoir simuler les mêmes conditions de perturbations que les données !)). Par exemple, avec le Th Centrale limite, si les $x_i$ sont i.i.d (pas forcément gaussiens comme dans notre cas), la stat de test (2) est gaussienne de variance connue donc pour (2) ça devrait être bon.\\
-- Dans les cas où une distribution est disponible, vérifier par simus et montrer que la distribution empirique correpond bien à la théorique. }
+- Dans les cas où une distribution est disponible, vérifier par simus et montrer que la distribution empirique correpond bien à la théorique.}
 \subsubsection{Moyenne}
 
 La statistique de test basée sur la moyenne compare la valeur absolue de la moyenne de la distribution à un seuil :
@@ -177,6 +190,60 @@ Cette statistique mesure l'aire entre les fonctions de distribution cumulative d
 
 \dm{Il manque aussi une 3eme approche  ici qui est un GLR : utliser le modèle direct pour calculer la vraisemblance des données selon la position du compagnon; le GLR cherche alors à maximiser la position du compagnon. C'est les formules que j'avais mises au tableau dans mon bureau et la photo est sur discord. On en re-dicte aussi je sais que ça t'avait fait gamberger. C'est important parce que ce test permet la généralisation à plusieurs kernels. \\
 D'ailleurs, il faut que tu parles de ça avant de présenter les tests : tu es en seul kernel jusqu'ici. Et il faudra ajouter  une section : Generalisation des tests considérées à plusiers kernels et/ou poses (= comment les stat de tests monokernel-obs peuvent se combiner).}
+
+\subsection{Likelihood Ratio}
+Le test du rapport de vraisemblance (LR) consiste à comparer la probabilité d'observer les données sous chaque hypothèse :
+\begin{equation}
+    \Lambda(x) = \frac{p(x;\mathcal{H}_1)}{p(x;\mathcal{H}_0)}
+\end{equation}
+où $p(x;\mathcal{H}_i)$ est la densité de probabilité de la donnée $x$ sous l'hypothèse $\mathcal{H}_i$.
+
+Exemple pour une loi gaussienne :
+Supposons que sous chaque hypothèse, la distribution soit gaussienne de moyenne $\mu_i$ et variance $\sigma_i^2$ :
+\begin{equation}
+    p(x|\mathcal{H}_i) = \frac{1}{\sqrt{2\pi\sigma_i^2}} \exp\left(-\frac{(x-\mu_i)^2}{2\sigma_i^2}\right)
+\end{equation}
+Pour $N$ observations indépendantes $\mathbf{x} = \{x_1, x_2, \ldots, x_N\}$, la vraisemblance totale sous chaque hypothèse est le produit des vraisemblances individuelles :
+\begin{equation}
+    p(\mathbf{x};\mathcal{H}_i) = \prod_{j=1}^N p(x_j;\mathcal{H}_i)
+\end{equation}
+Le rapport de vraisemblance s'écrit alors :
+\begin{align}
+    \Lambda(\mathbf{x}) &= \frac{p(\mathbf{x};\mathcal{H}_1)}{p(\mathbf{x};\mathcal{H}_0)} \\
+    &= \prod_{j=1}^N \frac{p(x_j;\mathcal{H}_1)}{p(x_j;\mathcal{H}_0)} \\
+    &= \left(\frac{\sigma_0}{\sigma_1}\right)^N \exp\left( \sum_{j=1}^N \left[ \frac{(x_j-\mu_0)^2}{2\sigma_0^2} - \frac{(x_j-\mu_1)^2}{2\sigma_1^2} \right] \right)
+\end{align}
+En pratique, pour des raisons de stabilité numérique, on utilise le logarithme du rapport de vraisemblance (en négligeant les constantes qui n'ont pas d'impact sur la décision) :
+\begin{equation}
+    \log \Lambda(\mathbf{x}) \propto \sum_{j=1}^N \left[ \frac{(x_j-\mu_0)^2}{2\sigma_0^2} - \frac{(x_j-\mu_1)^2}{2\sigma_1^2} \right]
+\end{equation}
+
+Ce principe est généralisé à d'autres lois (Cauchy, Laplace, etc.) selon la forme des distributions observées. Les paramètres sont estimés par ajustement sur les données simulées (voir section précédente).
+
+Ainsi pour Laplace, dont la densité de probabilité est :
+
+\begin{equation}
+    p(x|\mathcal{H}_i) = \frac{1}{2b_i} \exp\left(-\frac{|x-\mu_i|}{b_i}\right)
+\end{equation}
+
+le rapport de vraisemblance devient :
+
+\begin{equation}
+    \log(\Lambda(\mathbf{x})) \propto \sum_{i=1}^{n} \frac{|x_i - \mu_1|}{b_1} - \frac{|x_i - \mu_0|}{b_0}
+\end{equation}
+
+Pour Cauchy, dont la densité de probabilité est :
+
+\begin{equation}
+    p(x|\mathcal{H}_i) = \frac{1}{\pi \gamma_i \left[1 + \left(\frac{x - x_{0,i}}{\gamma_i}\right)^2\right]}
+\end{equation}
+
+le rapport de vraisemblance devient :
+
+\begin{equation}
+    \log(\Lambda(\mathbf{x})) \propto \sum_{i=1}^{n} \log\left(1 + \left(\frac{x_i - x_{0,0}}{\gamma_0}\right)^2\right) - \log\left(1 + \left(\frac{x_i - x_{0,1}}{\gamma_1}\right)^2\right)
+\end{equation}
+
 \section{Résultats}
 
 \dm{A la fin en bilan fais une lsite des pros et cons de chaque méthode. Il faut que tu déploies dans ce papier une analyse exhaustive et convaincante de la nature des données et des régimes qu'on peut y trouver, des types de distributions suivant les régimes, et des types de tests qu'on peut utiliser. A la fin on se dira que tu as plié le problème, le spécialiste de la détection sur des données kernel-nulling c'est toi !  }

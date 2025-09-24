@@ -919,7 +919,7 @@ class Context:
                 λ = λ, # Central wavelength
                 Δλ = 1 * u.nm, # Bandwidth
                 fov = 10 * u.mas, # Field of view
-                η = 0.03, # Optical efficiency
+                η = 0.02, # Optical efficiency
                 telescopes = telescope.get_VLTI_UTs(),
                 name = "VLTI", # Interferometer name
                 kn = KernelNuller(
@@ -975,7 +975,7 @@ class Context:
                 λ = λ, # Central wavelength
                 Δλ = 1 * u.nm, # Bandwidth
                 fov = 10 * u.mas, # Field of view
-                η = 0.03, # Optical efficiency
+                η = 0.02, # Optical efficiency
                 telescopes = telescope.get_VLTI_UTs(),
                 name = "LIFE", # Interferometer name
                 kn = KernelNuller(
