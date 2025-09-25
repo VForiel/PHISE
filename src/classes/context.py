@@ -1005,7 +1005,7 @@ class Context:
             - Vega as target star and an hypothetical companion at 2 mas with a contrast of 1e-6.
         """
 
-        λ = 1.65 * u.um # Central wavelength
+        λ = 1.55 * u.um # Central wavelength
 
         ctx = Context(
             interferometer = Interferometer(
@@ -1023,7 +1023,7 @@ class Context:
                     name = "First Generation Kernel-Nuller", # Kernel nuller name
                 ),
                 camera = Camera(
-                    e = 5 * u.min, # Exposure time
+                    e = 1 * u.s, # Exposure time
                     name = "Default Camera", # Camera name
                 ),
             ),
@@ -1079,7 +1079,7 @@ class Context:
                     name = "First Generation Kernel-Nuller", # Kernel nuller name
                 ),
                 camera = Camera(
-                    e = 5 * u.min, # Exposure time
+                    e = 1 * u.s, # Exposure time
                     name = "Default Camera", # Camera name
                 ),
             ),

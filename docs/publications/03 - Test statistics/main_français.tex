@@ -81,8 +81,15 @@ L'analyse de ces distributions nécessite donc des outils statistiques appropri�
 %------------------------------------------------------------------------------
 \subsection{Génération de données}
 
-Dans cette étude, nous considérons deux scénarios instrumentaux distincts pour générer des données simulées :
+Dans cette étude, nous considérons trois scénarios instrumentaux correspondent à des configurations réalistes d'interféromètres dédiés à la détection d'exoplanètes, chacune avec ses propres contraintes technologiques et performances attendues.
 
+\textbf{Le Very Large Telescope Interferometer (VLTI)} représente l'état actuel de l'art en interférométrie au sol. Cet instrument combine la lumière de quatre télescopes unitaires (UT) de 8 mètres de diamètre chacun, disposés en configuration irrégulière avec une ligne de base maximale de 130 mètres. Cette configuration permet d'atteindre une résolution angulaire théorique de l'ordre de 1 milli-arcseconde à $1.55\mu$m, longueur d'onde optimale pour l'observation dans la bande H du proche infrarouge. Cependant, les conditions atmosphériques terrestres introduisent des perturbations de phase significatives : malgré les systèmes d'optique adaptative et de correction de cophasage en temps réel, l'erreur de cophasage résiduelle demeure de l'ordre de 100 nm RMS. Cette valeur, bien que représentant une performance remarquable pour un instrument au sol, constitue néanmoins une limitation fondamentale pour la détection d'exoplanètes à très haut contraste, où la stabilité de phase doit être maintenue à des niveaux extrêmes sur des temps d'intégration longs.
+
+\textbf{La mission spatiale LIFE (Large Interferometer For Exoplanets)} incarne l'avenir de l'interférométrie dédiée à la détection d'exoplanètes. Cette mission prévoit le déploiement en orbite de quatre télescopes de 2 mètres de diamètre arrangés en formation rectangulaire avec une ligne de base pouvant atteindre 600 mètres. L'environnement spatial offre des avantages décisifs : l'absence d'atmosphère élimine les turbulences et permet un contrôle de phase d'une précision inégalée, avec des erreurs de cophasage réduites à 1 nm RMS. Cette stabilité exceptionnelle, couplée à la longueur d'onde d'observation de $4\mu$m dans l'infrarouge thermique, ouvre la voie à la détection directe d'exo-Terres et à la spectroscopie de leurs atmosphères pour la recherche de biosignatures.
+
+\textbf{Le scénario SVLTI (Space VLTI)} constitue un cas d'étude théorique permettant d'isoler l'impact spécifique de l'atmosphère terrestre sur les performances de détection. En transposant la configuration exacte du VLTI (quatre télescopes de 8 mètres, disposition irrégulière, ligne de base de 130 mètres) dans l'environnement spatial, nous conservons la même longueur d'onde d'observation ($1.55\mu$m) tout en bénéficiant de la stabilité de cophasage spatiale (1 nm RMS). Cette configuration hybride permet une analyse comparative directe : en comparant les performances VLTI/SVLTI, nous quantifions précisément la dégradation causée par les perturbations atmosphériques, tandis que la comparaison SVLTI/LIFE révèle l'impact de l'architecture instrumentale (taille des télescopes, longueur d'onde, géométrie) sur l'efficacité de détection.
+
+En résumé, nous avons donc :
 \begin{table}[H]
 \centering
 \begin{tabular}{|l|c|c|c|}
@@ -98,11 +105,11 @@ Longueur d'onde & $1.55\mu$m & $4\mu$m & $1.55\mu$m \\
 Erreur de cophasage (RMS) & 100 nm & 1 nm & 1 nm \\
 \hline
 \end{tabular}
-\caption{Paramètres instrumentaux pour les deux scénarios considérés dans cette étude.}
+\caption{Paramètres instrumentaux pour les trois scénarios considérés dans cette étude.}
 \label{tab:scenarios}
 \end{table}
 
-Le scénario VLTI inclut une erreur de cophasage résiduelle de 100 nm RMS, représentative des conditions atmosphériques et des limitations du système de contrôle de phase au VLTI. Le scénario LIFE bénéficie de l'environnement spatial, permettant une réduction de l'erreur de cophasage à 1 nm RMS, reflétant la stabilité accrue attendue pour une mission spatiale telle que LIFE.\dm{Il faut expliquer en détail cette table, que le lecteur ait l'impression de voir les instruments et que tes simus simulent une réalité vraiment réaliste et des manips à portée de main, ça donnera un aspect "chaud" et concret à ton papier.}
+Pour chacune des simulations réalisées, nous considérons une source primaire de magnitude zero (étoile type Vega) avec un compagnon hypothétique unique dont on fixe la position et le contraste. Ce travail s'intéressant aux limites théoriques atteignables en terme de capacité de détection, nous travaillons sous l'hypothèse d'une environnement thermiquement stable et d'une caméra idéale, c'est-à-dire sans bruit de lecture ni bruit de fond. Nous simulons des séries d'acquisitions de 1 seconde en intégrant les effets des erreurs de cophasage résiduelles (perturbations atmosphériques et différence de chemin optique intrasèque au système) et de bruit photonique. Pour chaque scénario, nous générons des jeux de données sous les deux hypothèses $\mathcal{H}_0$ (étoile seule) et $\mathcal{H}_1$ (système étoile-planète), en tenant compte des paramètres instrumentaux spécifiques et des niveaux de bruit pour chaque cas.
 
 
 

@@ -399,7 +399,7 @@ def np_benchmark(ctx:Context=None):
 
     print("⌛ Generating random distributions from the fitted models...")
 
-    nmc = 1000
+    nmc = 100
     samples = 1000
     t0_sim = np.empty((nmc, samples))
     t1_sim = np.empty((nmc, samples))
