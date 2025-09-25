@@ -420,6 +420,100 @@ class Context:
         plt.show()
         print(transmissions)
 
+    # Get transmission map gradiant norm --------------------------------------
+
+    def get_transmission_map_gradient_norm(self, N:int) -> np.ndarray[float]:
+        """
+        Get the norm of the gradient of the transmission maps.
+
+        Parameters
+        ----------
+        - N: Resolution of the map
+
+        Returns
+        -------
+        - Gradient norm of the null outputs map (3 x resolution x resolution)
+        - Gradient norm of the dark outputs map (6 x resolution x resolution)
+        - Gradient norm of the kernel outputs map (3 x resolution x resolution)
+        """
+
+        n_maps, d_maps, k_maps = self.get_transmission_maps(N=N)
+
+        n_grad = np.empty_like(n_maps)
+        d_grad = np.empty_like(d_maps)
+        k_grad = np.empty_like(k_maps)
+
+        for i in range(3):
+            dnx, dny = np.gradient(n_maps[i])
+            n_grad[i] = np.sqrt(dnx**2 + dny**2)
+
+            dkx, dky = np.gradient(k_maps[i])
+            k_grad[i] = np.sqrt(dkx**2 + dky**2)
+
+        for i in range(6):
+            ddx, ddy = np.gradient(d_maps[i])
+            d_grad[i] = np.sqrt(ddx**2 + ddy**2)
+
+        return n_grad, d_grad, k_grad
+    
+    # Plot transmission map gradient norm -------------------------------------
+
+    def plot_transmission_map_gradient_norm(self, N:int, return_plot:bool = False) -> None:
+        """
+        Plot the norm of the gradient of the transmission maps.
+
+        Parameters
+        ----------
+        - N: Resolution of the map
+        - return_plot: Return the image buffer instead of displaying it
+
+        Returns
+        -------
+        - None | Image buffer if return_plot is True
+        """
+
+        n_grad, d_grad, k_grad = self.get_transmission_map_gradient_norm(N=N)
+
+        _, axs = plt.subplots(2, 6, figsize=(35, 10))
+
+        fov = self.interferometer.fov
+        extent = (-fov.value/2, fov.value/2, -fov.value/2, fov.value/2)
+
+        companions_pos = []
+        for c in self.target.companions:
+            x, y = coordinates.αθ_to_xy(α=c.α, θ=c.θ, fov=self.interferometer.fov)
+            companions_pos.append((x*self.interferometer.fov/2, y*self.interferometer.fov/2))
+
+        for i in range(3):
+            im = axs[0, i].imshow(n_grad[i], aspect="equal", cmap="gray", extent=extent)
+            axs[0, i].set_title(f"Nuller output {i+1} gradient norm")
+            plt.colorbar(im, ax=axs[0, i])
+
+        for i in range(6):
+            im = axs[1, i].imshow(d_grad[i], aspect="equal", cmap="gray", extent=extent)
+            axs[1, i].set_title(f"Dark output {i+1} gradient norm")
+            axs[1, i].set_aspect("equal")
+            plt.colorbar(im, ax=axs[1, i])
+
+        for i in range(3):
+            im = axs[0, i + 3].imshow(k_grad[i], aspect="equal", cmap="gray", extent=extent)
+            axs[0, i + 3].set_title(f"Kernel {i+1} gradient norm")
+            plt.colorbar(im, ax=axs[0, i + 3])
+
+        for ax in axs.flatten():
+            ax.set_xlabel(r"$\theta_x$" + f" ({fov.unit})")
+            ax.set_ylabel(r"$\theta_y$" + f" ({fov.unit})")
+            ax.scatter(0, 0, color="yellow", marker="*", edgecolors="black", s=100)
+            for x, y in companions_pos:
+                ax.scatter(x, y, color="blue", edgecolors="black")
+
+        if return_plot:
+            plot = BytesIO()
+            plt.savefig(plot, format='png')
+            plt.close()
+            return plot.getvalue()
+        plt.show()
+
     # Input fields ------------------------------------------------------------
 
     def get_input_fields(self) -> np.ndarray[complex]:

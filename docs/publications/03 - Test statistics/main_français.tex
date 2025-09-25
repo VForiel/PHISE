@@ -41,8 +41,6 @@ glish]{babel}
 L'interférométrie à annulation par noyau (Kernel-Nulling) représente une approche prometteuse pour la détection directe d'exoplanètes. Cette technique génère des distributions d'intensité caractéristiques selon la présence ou l'absence d'un compagnon planétaire. L'analyse statistique de ces distributions est essentielle pour une détection robuste de planètes. Nous développons et comparons plusieurs tests statistiques pour discriminer efficacement entre les hypothèses $\mathcal{H}_0$ (étoile seule) et $\mathcal{H}_1$ (système étoile-planète). Nous analysons les performances de différentes statistiques de test afin d'évaluer la pertinence de chacun d'eux en fonction de la nature des données à disposition. Nous effectuons des simulations numériques pour trois scenarios instrumentaux : les configurations VLTI au sol et celle de LIFE dans l'espace ainsi qu'un scénario fictif consistant à placer le VLTI dans l'espace afin d'isoler les pertes de performance causées par l'atmosphère. Pour chaque scénario, nous générons des jeux de données sous les deux hypothèses $\mathcal{H}_0$ et $\mathcal{H}_1$, en tenant compte des paramètres instrumentaux spécifiques et des niveaux de bruit. Nous évaluons les performances des tests en utilisant les courbes ROC et l'analyse des valeurs P. \hl{Ajouter les résultats}. Cette analyse statistique, actuellement appliquée à des données simulées, ouvre la voie à une détection robuste d'exoplanètes à haut contraste utilisant l'interférométrie à annulation par noyau.
 \end{abstract}
 
-%------------------------------------------------------------------------------
-
 \dm{OK résumé de mes coms détailles ci-dessous : le plus gros boulot à faire pour l'itération suivante c'est : \\
 - en intro : biblio : recenser, comparer, contraster pour mettre en évidence l'originalité du papier\\
 - en intro : justification de l'intérêt scientifique du papier (/exoplanètes, VLTI, LIFE) et de son scope (portée attendu des simus ?) \\
@@ -50,7 +48,9 @@ L'interférométrie à annulation par noyau (Kernel-Nulling) représente une app
 - Sec. 3 : La formalisation rigoureuse des tests, classement, formules analytiques \\
 - Sec. 4 : Etude comparative des performances dans les résultats }
 
+%==============================================================================
 \section{Introduction}
+%==============================================================================
 
 L'imagerie directe d'exoplanètes demeure l'un des défis majeurs de l'astronomie moderne, nécessitant des techniques capables de surmonter les contraintes de contraste (au-delà de $10^{-8}$ pour permettre la détection d'exo-Terres) et les exigences de séparation angulaire (de l'ordre de milli-arcseconde). L'interférométrie à annulation, initialement proposée par \cite{Bracewell1979}, utilise l'interférence destructive pour supprimer la source sur l'axe (lumière stellaire) tout en préservant celles hors axe (signaux planétaires), répondant ainsi aux défis de résolution angulaire et de contraste.
 
@@ -70,10 +70,15 @@ L'analyse de ces distributions nécessite donc des outils statistiques appropri�
 \label{fig:distribution}
 \end{figure}
 
-%--------------------------------------------------------------------
 
+
+%==============================================================================
 \section{Méthodologie}
+%==============================================================================
 
+
+
+%------------------------------------------------------------------------------
 \subsection{Génération de données}
 
 Dans cette étude, nous considérons deux scénarios instrumentaux distincts pour générer des données simulées :
@@ -99,6 +104,9 @@ Erreur de cophasage (RMS) & 100 nm & 1 nm & 1 nm \\
 
 Le scénario VLTI inclut une erreur de cophasage résiduelle de 100 nm RMS, représentative des conditions atmosphériques et des limitations du système de contrôle de phase au VLTI. Le scénario LIFE bénéficie de l'environnement spatial, permettant une réduction de l'erreur de cophasage à 1 nm RMS, reflétant la stabilité accrue attendue pour une mission spatiale telle que LIFE.\dm{Il faut expliquer en détail cette table, que le lecteur ait l'impression de voir les instruments et que tes simus simulent une réalité vraiment réaliste et des manips à portée de main, ça donnera un aspect "chaud" et concret à ton papier.}
 
+
+
+%------------------------------------------------------------------------------
 \subsection{Tests statistiques et rapport de vraisemblance}
 
 Pour discriminer entre les hypothèses $\mathcal{H}_0$ (étoile seule) et $\mathcal{H}_1$ (système étoile-planète), plusieurs statistiques de test sont utilisées dans nos simulations :
@@ -114,6 +122,9 @@ Chaque test permet de quantifier la différence entre les distributions issues d
 
 Pour chaque scénario, des jeux de données sont générés sous les deux hypothèses $\mathcal{H}_0$ (étoile seule) et $\mathcal{H}_1$ (système étoile-planète), en tenant compte des paramètres instrumentaux spécifiques et des niveaux de bruit pour chaque cas. L'opération de Kernel-Nulling est supposée idéale.\dm{Je pense qu'il faut prévoir un appendice où tu résumes le principe de kernel-nulling pour que le lecteur te suive; qu'il comprenne ce que signifie faire une operaiton de kernel nulling en pratique, et lister tous les défauts qui font que ça ne peut pas être idéal. Il faut aussi différencier une operation de kernel null idéale et l'absence de bruit à la fin. Bien expliquer ce que capturent tes simulations et les fluctuations qui créent les distributions montrées en Fig. 1.}
 
+
+
+%------------------------------------------------------------------------------
 \subsection{Analyse des distributions}  \label{sec:distribution_analysis}
 
 Avant de tenter de discriminer entre les hypothèses $\mathcal{H}_0$ et $\mathcal{H}_1$, il est essentiel d'étudier les distributions obtenues pour identifier les caractéristiques qui pourraient faciliter leur analyse. À cette fin, nous comparons les distributions simulées à différentes lois de probabilité conventionnelles, en observant notamment leur symétrie et leur forme générale.
@@ -132,74 +143,161 @@ Cette observation guide le choix des tests statistiques à privilégier, en part
 \label{fig:fits}
 \end{figure}
 
+
+
+%------------------------------------------------------------------------------
 \subsection{Tests statistiques implémentés}
 
-Nous avons développé et comparé plusieurs statistiques de test :
 \dm{Expliquer la démarche : vu le pb on a logiquement envie d'implémenter  des tests globaux qui mesurent un shift (et rejustifer que c'est juste un shift si c'est bien le cas.\\
 - Puis dire qu'on peut aller plus loin : il est naturel de regarder des mesures plus globales entre les distributions et là tu pars sur  KS etc. Ajoute Anderson-Darling dans cette famille.\\
 - Ensuite 1) présente tes notations (par ex, qu'est-ce que $x$ ? 2) rappelle précisément ce que tu appelles $\mathcal{H}_0$ et $\mathcal{H}_1$ en utilisant les quantitiés de  tes notations.\\
 - Ensuite, pour chaque test, de façon systématique : 0) Donne la ref du/des papiers scientifiques où il a été décrit (pas une ref à une toolbox python; un bouquin tu peux, mais il faut aussi les refs originales \#démarche scientifique vérifiable etc) 1) explique l'intuition derrière 2) donne la stat de test (en utilisant les notations définies avant) 3) explique s'il y a une formule analytique pour décrire la stat de test sous $\mathcal{H}_0$ (explique aussi avant fe lister les tests  que l'intérêt d'une formule analytique est  que ça donne accès à une p-valeur sans avoir à faire des simus de Monte Carlo, et les pbs que posent le fait de devoir faire des MC (calcul mais surtout on doit pouvoir simuler les mêmes conditions de perturbations que les données !)). Par exemple, avec le Th Centrale limite, si les $x_i$ sont i.i.d (pas forcément gaussiens comme dans notre cas), la stat de test (2) est gaussienne de variance connue donc pour (2) ça devrait être bon.\\
 - Dans les cas où une distribution est disponible, vérifier par simus et montrer que la distribution empirique correpond bien à la théorique.}
+
+En présence d'un compagnon (hypothèse $\mathcal{H}_1$), la distribution de sortie du Kernel-Nulling est modifiée par rapport au cas de l'étoile seule (hypothèse $\mathcal{H}_0$) comme le montre la figure \ref{fig:distribution}.
+
+Cette modification se manifeste principalement par un décalage de la distribution, bien que d'autres changements dans la forme de la distribution puissent également survenir. En fonction des conditions, il est par exemple possible de constater un applatissement de la distribution. Pour détecter efficacement la présence d'un compagnon, nous avons implémenté et évalué plusieurs tests statistiques, chacun étant sensible à différents aspects des distributions.
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \subsubsection{Moyenne}
 
-La statistique de test basée sur la moyenne compare la valeur absolue de la moyenne de la distribution à un seuil :
+Le test le plus naturel a faire dans ces conditions consiste à comparer la moyenne à un seuil. Etant donné que la planète peut induire un décallage de la distribution dans les deux sens, on utilise la valeur absolue de la moyenne.
 
-\begin{equation}
-    \left|\frac{1}{N}\sum_i x_i \right| \stackrel{H_1}{\underset{H_0}{\gtrless}} \xi
-\end{equation}
+$$
+D_{M} = \left|\frac{1}{N}\sum_{i=1}^N x_i \right| \stackrel{H_1}{\underset{H_0}{\gtrless}} \xi
+$$
 
-\subsubsection{Médiane}
-Test basé sur la valeur absolue de la médiane de la distribution.
+En effet, sous l'hypothèse $\mathcal{H}_0$, la moyenne devrait être proche de zéro, équivalent à la moyenne du bruit $\bar{n}$, tandis que sous $\mathcal{H}_1$, elle sera décalée en fonction du signal de la planète $S_p$ et de sa transmission $\alpha$ au sein du système.
 
-\begin{equation}
+$$
 \begin{cases}
-\left| x_{\frac{N+1}{2}} \right| & \text{si }N\text{ est impair} \\
-\left| \frac{x_{\frac{N}{2}} + x_{\frac{N+1}{2}}}{2} \right|  & \text{si }N\text{ est pair}
+H_0 : D_M = |\bar{n}|\\
+H_1 : D_M =  |\alpha S_p + \bar{n}|
+\end{cases}
+$$
+
+En pratique, on constate que la moyenne est ici une statistique de test particulièrement peu fiable (figure \ref{fig:roc}). En effet, cette dernière est sensible aux valeurs extrêmes, or les distributions considérées ont des queues lourdes.
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsubsection{Médiane}
+Une autre statistique de test naturelle dans ce contexte est la médiane, qui est plus robuste aux valeurs extrêmes que la moyenne. La médiane est définie comme la valeur centrale d'un ensemble de données triées. Pour un ensemble de données $x_1, x_2, \ldots, x_N$ triées en ordre croissant, la médiane est alors la valeur de l'élément central si $N$ est impair, ou la moyenne des deux éléments centraux si $N$ est pair. Comme pour la moyenne, on utilise la valeur absolue de la médiane pour capturer les décalages dans les deux sens qu'on compare ensuite à un seuil.
+
+$$
+D_m = 
+\begin{cases}
+\left| x_{\frac{N+1}{2}} \right| & \text{if }N\text{ is odd} \\
+
+\left| \frac{x_{\frac{N}{2}} + x_{\frac{N+1}{2}}}{2} \right|  & \text{if }N\text{ is even}
 \end{cases}
 \quad\stackrel{H_1}{\underset{H_0}{\gtrless}} \xi
-\end{equation}
+$$
 
-\subsubsection{Argmax}
-Cette statistique examine la position du bin avec le plus grand nombre d'occurrences dans l'histogramme des données.
+De façon très analogue, sous l'hypothèse $\mathcal{H}_0$, la médiane devrait être proche de zéro, équivalent à la médiane du bruit $\tilde{n}$, tandis que sous $\mathcal{H}_1$, elle sera décalée en fonction du signal de la planète $S_p$ et de sa transmission $\alpha$ au sein du système.
 
-\hl{Décrire formèlement}
+$$
+\begin{cases}
+H_0 : D_m = |\tilde{n}|\\
+H_1 : D_m =  | \alpha S_p + \tilde{n} |
+\end{cases}
+$$
 
+Surprenament, la médiane s'avère être une statistique de test très performante dans ce contexte (figure \ref{fig:roc}), surpassant bon nombre de tests plus sophistiqués comme ceux listés dans la section \ref{sec:other_tests}. Cependant, elle necessite un grand nombre d'échantillons pour être efficace, ce qui peut être un inconvénient dans des situations où le temps d'observation est limité.
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \subsubsection{Kolmogorov-Smirnov}
 \dm{Attention c'est le 2-sided KS}
-Test comparant la distance maximale entre les fonctions de distribution cumulative des deux distributions.
 
-\hl{Décrire formèlement}
+Le test de Kolmogorov-Smirnov (KS) est un test non paramétrique qui compare deux distributions empiriques. Il est particulièrement utile lorsque les distributions ne suivent pas une loi de probabilité connue. La statistique de test KS est définie comme la distance maximale entre les fonctions de distribution cumulative (CDF) des deux échantillons.
 
-\subsubsection{Cramér-von Mises}
-Test basé sur la distance quadratique totale entre les fonctions de distribution cumulative.
+$$
+D_{KS} = \sup_x |F_1(x) - F_2(x)| \stackrel{H_1}{\underset{H_0}{\gtrless}} \xi
+$$
 
-\hl{Décrire formèlement}
+où $F_1(x)$ et $F_2(x)$ sont les CDF empiriques des deux échantillons. Le test KS est sensible aux différences globales entre les distributions, y compris les décalages, les changements de dispersion et les différences de forme.
 
-\subsubsection{Wilcoxon-Mann-Whitney}
-Test non-paramétrique pour comparer deux échantillons indépendants.
+Sous l'hypothèse $\mathcal{H}_0$, les deux échantillons proviennent de la même distribution, tandis que sous $\mathcal{H}_1$, ils proviennent de distributions différentes. Ainsi, sous $\mathcal{H}_0$, on s'attend à ce que $D_{KS}$ soit petit, proportionnel à la combinaision quadratique des bruits, tandis que sous $\mathcal{H}_1$, $D_{KS}$ sera plus grand en raison des déformations induits par la présence du compagnon.
 
-\hl{Décrire formèlement}
+$$
+\begin{cases}
+H_0 : D_{KS} \approx |\sqrt{2}\bar{n}|\\
+H_1 : D_{KS} \approx |\sqrt{2}\bar{n} + K(S_p)|
+\end{cases}
+$$
 
-\subsubsection{Aire de différence CDF}
-Cette statistique mesure l'aire entre les fonctions de distribution cumulative des deux distributions.
+Où $K(S_p)$ est une fonction croissante du signal de la planète $S_p$ qui dépend de la façon dont la distribution est modifiée par la présence de $S_p$. En pratique, le test KS s'avère être une statistique de test robuste et efficace dans ce contexte (figure \ref{fig:roc}), bien qu'elle necessite également un grand nombre d'échantillon.
 
-\hl{Décrire formèlement}
 
-\dm{N'oublie pas le Brunner-Munzel}
-%--------------------------------------------------------------------
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsubsection{Flattening}
+
+Après s'être intéressé au décalage des distributions via la médiane et la moyenne, nous nous sommes intéressé à l'effet d'applatissement que nous avons pu observer dans certaines configurations. Pour cela, nous avons défini une statistique de test que nous appelons "flattening", qui mesure la moyenne des écarts absolus entre chaque échantillon et la médiane de l'échantillon.
+
+$$
+D_f = \frac 1 N \sum_{i=1}^N |x_i - \tilde{x}| \stackrel{H_1}{\underset{H_0}{\gtrless}} \xi
+$$
+
+où $\tilde{x}$ est la médiane de l'échantillon. Sous l'hypothèse $\mathcal{H}_0$, on s'attend à ce que $D_f$ soit proportionnel à la dispersion du bruit, tandis que sous $\mathcal{H}_1$, $D_f$ sera modifié en fonction de la façon dont la distribution est aplatie par la présence du compagnon.
+
+$$
+\begin{cases}
+H_0 : D_f = \overline{|n_i - \tilde{n}|}\\
+H_1 : D_f = \overline{|n_i - \tilde{n}|} \cdot F(S_p)
+\end{cases}
+$$
+
+Où $F(S_p)$ est une fonction croissante du signal de la planète $S_p$ qui dépend de la façon dont la distribution est aplatie par la présence de $S_p$, avec $F(0)=1$. Le test de flattening seul n'a pas pour vocation à être une statistique de test très performante (figure \ref{fig:roc}), mais il met en évidence le fait que l'applatissement est un effet réel qui peut être exploité en complément d'autres statistiques de test et qui a notament motivé la création de la statistique de test suivante.
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsubsection{Median of Absolute Values}
+
+Cette statistique mesure la médiane des valeurs absolues des échantillons, offrant une mesure robuste aussi bien d'un décalage que d'un aplatissement de la distribution.
+
+$$
+D_{MAV} = \text{median}(|x_i|) \stackrel{H_1}{\underset{H_0}{\gtrless}} \xi
+$$
+
+Sous l'hypothèse $\mathcal{H}_0$, sans applattissement ni décalage, on s'attend à ce que $D_{MAV}$ soit proche de la médiane des valeurs absolues du bruit, tandis que sous $\mathcal{H}_1$, on retrouvera non seulement l'effet du décalage présent dans la médiane, mais aussi l'effet d'aplatissement présent dans le flattening.
+
+$$
+\begin{cases}
+H_0 : D_{MAV} = \text{median}(|\mathbf{n}|)\\
+H_1 : D_{MAV} = \text{median}(|\mathbf{n} \cdot F(S_p) + \alpha S_p|)
+\end{cases}
+$$
+
+Où $F(S_p)$ est la même fonction d'aplatissement que dans le test de flattening. Cette statistique de test s'avère être l'une des plus performantes avec les distribution obtenues numériquement (figure \ref{fig:roc}).
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsubsection{Autres tests considérés}\label{sec:other_tests}
+Nous avons également exploré d'autres tests statistiques, notamment :
+\begin{itemize}
+    \item Test de Cramer-von Mises
+    \item Test de Wilcoxon-Mann-Whitney
+    \item Test d'Anderson-Darling
+    \item Test de Brunner-Munzel
+\end{itemize}
+
+Cependant, ces tests n'ont pas montré de performances satisfaisantes dans notre contexte spécifique et n'ont donc pas été inclus dans les analyses détaillées présentées dans ce papier.
+
+
 
 \dm{Il manque aussi une 3eme approche  ici qui est un GLR : utliser le modèle direct pour calculer la vraisemblance des données selon la position du compagnon; le GLR cherche alors à maximiser la position du compagnon. C'est les formules que j'avais mises au tableau dans mon bureau et la photo est sur discord. On en re-dicte aussi je sais que ça t'avait fait gamberger. C'est important parce que ce test permet la généralisation à plusieurs kernels. \\
 D'ailleurs, il faut que tu parles de ça avant de présenter les tests : tu es en seul kernel jusqu'ici. Et il faudra ajouter  une section : Generalisation des tests considérées à plusiers kernels et/ou poses (= comment les stat de tests monokernel-obs peuvent se combiner).}
 
+
+
+%--------------------------------------------------------------------
 \subsection{Likelihood Ratio}
 Le test du rapport de vraisemblance (LR) consiste à comparer la probabilité d'observer les données sous chaque hypothèse :
 \begin{equation}
     \Lambda(x) = \frac{p(x;\mathcal{H}_1)}{p(x;\mathcal{H}_0)}
 \end{equation}
-où $p(x;\mathcal{H}_i)$ est la densité de probabilité de la donnée $x$ sous l'hypothèse $\mathcal{H}_i$.
+où $p(x;\mathcal{H}_i)$ est la densité de probabilité de la donnée $x$ sous l'hypothèse $\mathcal{H}_i$. Ce test est optimal au sens de Neyman-Pearson pour minimiser la probabilité d'erreur pour un taux de fausse alarme donné. Cependant, il nécessite une connaissance analytique des distributions sous chaque hypothèse, ce qui n'est pas le cas dans notre contexte comme nous en avons discuté dans la section \ref{sec:distribution_analysis}. Parmis les lois de probabilité usuels, nous avons constaté que nos distributions s'apparentaient à des lois de Cauchy ou de Laplace \ref{fig:fits}, sans pour autant parfaitement y coller.
 
-Exemple pour une loi gaussienne :
-Supposons que sous chaque hypothèse, la distribution soit gaussienne de moyenne $\mu_i$ et variance $\sigma_i^2$ :
+ Afin de comparer les tests statistiques précédents à ce test optimal, nous proposons une approche basée sur l'ajustement de modèle paramétriques, correspondant aux lois citées, aux distributions simulées. On fait ainsi l'hypothèse que les données suivent une loi de probabilité connue et que l'ensemble des statistiques de ces distributions sont compararables à celles des données simulées, n'affectant ainsi pas significativement les performances des différents tests.
+
+Supposons tout d'abord le cas classique dans lequel, sous chaque hypothèse, la distribution soit gaussienne de moyenne $\mu_i$ et variance $\sigma_i^2$ :
 \begin{equation}
     p(x|\mathcal{H}_i) = \frac{1}{\sqrt{2\pi\sigma_i^2}} \exp\left(-\frac{(x-\mu_i)^2}{2\sigma_i^2}\right)
 \end{equation}
@@ -244,6 +342,8 @@ le rapport de vraisemblance devient :
     \log(\Lambda(\mathbf{x})) \propto \sum_{i=1}^{n} \log\left(1 + \left(\frac{x_i - x_{0,0}}{\gamma_0}\right)^2\right) - \log\left(1 + \left(\frac{x_i - x_{0,1}}{\gamma_1}\right)^2\right)
 \end{equation}
 
+Il peut être utile de noter que pour chacun des cas, nous faisons toujours l'hypothèse que les distributions suivent la même loi avec ou sans compagnon, mais avec des paramètres différents.
+
 \section{Résultats}
 
 \dm{A la fin en bilan fais une lsite des pros et cons de chaque méthode. Il faut que tu déploies dans ce papier une analyse exhaustive et convaincante de la nature des données et des régimes qu'on peut y trouver, des types de distributions suivant les régimes, et des types de tests qu'on peut utiliser. A la fin on se dira que tu as plié le problème, le spécialiste de la détection sur des données kernel-nulling c'est toi !  }
@@ -254,12 +354,18 @@ Les courbes ROC (Receiver Operating Characteristic) permettent de comparer l'eff
 \begin{figure}[H]
 \centering
 \includegraphics[width=7cm]{img/roc_curves.png}
-\caption{Courbes ROC pour différentes statistiques de test.}
+\caption{Courbes ROC pour différentes statistiques de test sur les distribution simulées dans le contexte du VLTI avec un compagnon de contraste $10^{-2}$.}
 \label{fig:roc}
 \end{figure}
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=7cm]{img/neyman_pearson.png}
+\caption{Courbes ROC pour différentes statistiques de test comparées au test optimal de Neyman-Pearson, dans le contexte du VLTI avec un compagnon de contraste $10^{-3}$.}
+\label{fig:neyman-pearson}
+\end{figure}
+
 \hl{Analyse des résultats}
-\hl{Ajouter la courbe de Neyman-Pearson pour la comparaison}
 
 \subsection{Analyse des valeurs P}
 

@@ -42,6 +42,7 @@ def gui(
     run = widgets.Button(description="Run")
     export = widgets.Button(description="Export")
     plot = widgets.Image()
+    plot_gradient = widgets.Image()
     transmission = widgets.HTML()
 
     # Callbacks ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -62,6 +63,9 @@ def gui(
         )
         plot.value = img
         transmission.value = txt
+
+        img_gradient = ctx.plot_transmission_map_gradient_norm(N=N, return_plot=True)
+        plot_gradient.value = img_gradient
         
         run.button_style = ""
 
@@ -98,5 +102,5 @@ def gui(
 
     # Display ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    display(widgets.VBox([h_slider, l_slider, δ_slider, widgets.HBox([reset, run, export]), plot, transmission]))
+    display(widgets.VBox([h_slider, l_slider, δ_slider, widgets.HBox([reset, run, export]), plot, transmission, plot_gradient]))
     update_plot()

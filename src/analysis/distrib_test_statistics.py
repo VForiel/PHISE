@@ -189,7 +189,7 @@ def np_benchmark(ctx:Context=None):
         ctx = Context.get_VLTI()
 
         ctx.interferometer.kn.σ = np.zeros(14) * u.nm
-        ctx.target.companions[0].c = 1e-3
+        ctx.target.companions[0].c = 2e-3
         ctx.monochromatic = False
 
     else:
@@ -210,8 +210,12 @@ def np_benchmark(ctx:Context=None):
 
     for i in range(samples):
         print(f"{(i+1)/samples*100:.2f}% ({i+1}/{samples})", end='\r')
+
+        # Star only
         _, k, _ = ctx_star_only.observe()
         h0_data_kn[i] = k[0]
+
+        # With companion
         _, k, _ = ctx.observe()
         h1_data_kn[i] = k[0]
 
@@ -346,17 +350,17 @@ def np_benchmark(ctx:Context=None):
 
     ref = h0_kn_moments
 
-    for n in range(nb_moments):
-        # Print H0 kn moments
-        print(f"Moment {n+1}:")
-        print(f"   H0 kn: {h0_kn_moments[n]:.3e}")
-        print(f"   H1 kn: {h1_kn_moments[n]:.3e}")
-        print(f"   H0 cauchy: {h0_cauchy_moments[n]:.3e}")
-        print(f"   H1 cauchy: {h1_cauchy_moments[n]:.3e}")
-        print(f"   H0 laplace: {h0_laplace_moments[n]:.3e}")
-        print(f"   H1 laplace: {h1_laplace_moments[n]:.3e}")
-        print(f"   H0 gennorm: {h0_gennorm_moments[n]:.3e}")
-        print(f"   H1 gennorm: {h1_gennorm_moments[n]:.3e}")
+    # for n in range(nb_moments):
+    #     # Print H0 kn moments
+    #     print(f"Moment {n+1}:")
+    #     print(f"   H0 kn: {h0_kn_moments[n]:.3e}")
+    #     print(f"   H1 kn: {h1_kn_moments[n]:.3e}")
+    #     print(f"   H0 cauchy: {h0_cauchy_moments[n]:.3e}")
+    #     print(f"   H1 cauchy: {h1_cauchy_moments[n]:.3e}")
+    #     print(f"   H0 laplace: {h0_laplace_moments[n]:.3e}")
+    #     print(f"   H1 laplace: {h1_laplace_moments[n]:.3e}")
+    #     print(f"   H0 gennorm: {h0_gennorm_moments[n]:.3e}")
+    #     print(f"   H1 gennorm: {h1_gennorm_moments[n]:.3e}")
 
     # Replace zeros by 1e-10
     h0_kn_moments[h0_kn_moments == 0] = 1e-10
@@ -397,6 +401,8 @@ def np_benchmark(ctx:Context=None):
 
     nmc = 1000
     samples = 1000
+    t0_sim = np.empty((nmc, samples))
+    t1_sim = np.empty((nmc, samples))
     t0_cauchy = np.empty((nmc, samples))
     t1_cauchy = np.empty((nmc, samples))
     t0_laplace = np.empty((nmc, samples))
@@ -405,12 +411,19 @@ def np_benchmark(ctx:Context=None):
     t1_gennorm = np.empty((nmc, samples))
 
     for i in range(nmc):
+        print(f"{(i+1)/nmc*100:.2f}% ({i+1}/{nmc})", end='\r')
         t0_cauchy[i] = stats.cauchy.rvs(loc=x0, scale=γ0, size=samples)
         t1_cauchy[i] = stats.cauchy.rvs(loc=x1, scale=γ1, size=samples)
         t0_laplace[i] = stats.laplace.rvs(loc=μ0, scale=b0, size=samples)
         t1_laplace[i] = stats.laplace.rvs(loc=μ1, scale=b1, size=samples)
         t0_gennorm[i] = stats.gennorm.rvs(beta=β0, loc=m0, scale=s0, size=samples)
         t1_gennorm[i] = stats.gennorm.rvs(beta=β1, loc=m1, scale=s1, size=samples)
+
+        for j in range(samples):
+            _, k, _ = ctx_star_only.observe()
+            t0_sim[i, j] = k[0]
+            _, k, _ = ctx.observe()
+            t1_sim[i, j] = k[0]
 
     print("✅ Random distributions generated.")
 
@@ -436,12 +449,18 @@ def np_benchmark(ctx:Context=None):
 
     tests = copy(ALL_TESTS)
 
+    print("📊 Simulated case:")
+    plot_rocs(t0_sim, t1_sim, tests=tests, figsize=(4,4))
+
+    print("📊 Cauchy case:")
     tests['Likelihood Ratio'] = lr_cauchy
-    plot_rocs(t0_cauchy, t1_cauchy, tests=tests, figsize=(6,6))
+    plot_rocs(t0_cauchy, t1_cauchy, tests=tests, figsize=(4,4))
 
+    print("📊 Laplace case:")
     tests['Likelihood Ratio'] = lr_laplace
-    plot_rocs(t0_laplace, t1_laplace, tests=tests, figsize=(6,6))
+    plot_rocs(t0_laplace, t1_laplace, tests=tests, figsize=(4,4))
 
+    print("📊 Gennorm case:")
     tests['Likelihood Ratio'] = lr_gennorm
-    plot_rocs(t0_gennorm, t1_gennorm, tests=tests, figsize=(6,6))
+    plot_rocs(t0_gennorm, t1_gennorm, tests=tests, figsize=(4,4))
 
