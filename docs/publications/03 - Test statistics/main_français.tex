@@ -155,12 +155,6 @@ Cette observation guide le choix des tests statistiques à privilégier, en part
 %------------------------------------------------------------------------------
 \subsection{Tests statistiques implémentés}
 
-\dm{Expliquer la démarche : vu le pb on a logiquement envie d'implémenter  des tests globaux qui mesurent un shift (et rejustifer que c'est juste un shift si c'est bien le cas.\\
-- Puis dire qu'on peut aller plus loin : il est naturel de regarder des mesures plus globales entre les distributions et là tu pars sur  KS etc. Ajoute Anderson-Darling dans cette famille.\\
-- Ensuite 1) présente tes notations (par ex, qu'est-ce que $x$ ? 2) rappelle précisément ce que tu appelles $\mathcal{H}_0$ et $\mathcal{H}_1$ en utilisant les quantitiés de  tes notations.\\
-- Ensuite, pour chaque test, de façon systématique : 0) Donne la ref du/des papiers scientifiques où il a été décrit (pas une ref à une toolbox python; un bouquin tu peux, mais il faut aussi les refs originales \#démarche scientifique vérifiable etc) 1) explique l'intuition derrière 2) donne la stat de test (en utilisant les notations définies avant) 3) explique s'il y a une formule analytique pour décrire la stat de test sous $\mathcal{H}_0$ (explique aussi avant fe lister les tests  que l'intérêt d'une formule analytique est  que ça donne accès à une p-valeur sans avoir à faire des simus de Monte Carlo, et les pbs que posent le fait de devoir faire des MC (calcul mais surtout on doit pouvoir simuler les mêmes conditions de perturbations que les données !)). Par exemple, avec le Th Centrale limite, si les $x_i$ sont i.i.d (pas forcément gaussiens comme dans notre cas), la stat de test (2) est gaussienne de variance connue donc pour (2) ça devrait être bon.\\
-- Dans les cas où une distribution est disponible, vérifier par simus et montrer que la distribution empirique correpond bien à la théorique.}
-
 En présence d'un compagnon (hypothèse $\mathcal{H}_1$), la distribution de sortie du Kernel-Nulling est modifiée par rapport au cas de l'étoile seule (hypothèse $\mathcal{H}_0$) comme le montre la figure \ref{fig:distribution}.
 
 Cette modification se manifeste principalement par un décalage de la distribution, bien que d'autres changements dans la forme de la distribution puissent également survenir. En fonction des conditions, il est par exemple possible de constater un applatissement de la distribution. Pour détecter efficacement la présence d'un compagnon, nous avons implémenté et évalué plusieurs tests statistiques, chacun étant sensible à différents aspects des distributions.
@@ -212,7 +206,6 @@ Surprenament, la médiane s'avère être une statistique de test très performan
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \subsubsection{Kolmogorov-Smirnov}
-\dm{Attention c'est le 2-sided KS}
 
 Le test de Kolmogorov-Smirnov (KS) est un test non paramétrique qui compare deux distributions empiriques. Il est particulièrement utile lorsque les distributions ne suivent pas une loi de probabilité connue. La statistique de test KS est définie comme la distance maximale entre les fonctions de distribution cumulative (CDF) des deux échantillons.
 
@@ -379,9 +372,6 @@ Les courbes ROC (Receiver Operating Characteristic) permettent de comparer l'eff
 \dm{Attention Fig.4 c'est faux : ce ne sont pas les p-valeurs car les p-valeurs ne dépendent pas d'un seuil, seulement des données.}
 
 Les valeurs P fournissent une mesure de confiance pour rejeter l'hypothèse nulle. Une valeur P inférieure à 0,05 est généralement considérée comme significative. \dm{Non ça ça dépend des applications. Donne la définition précise de la p-valeur tout de suite, comme ça on sait de quoi on parle. }\\
-
-\dm{Pour l'approche Neyman-Pearson (ou Likelihood-Ratio), il faut en faire une section à part dans la section d'avant en explicitant le Likelihood-Ratio et les paramètres dont il dépend sous les 2 hypothèses, puis en tirer la stat de test que ça donne en prenant le log etc .\\
-Expliquer aussi l'intérêt du NP.}.
 
 
 \begin{figure}[H]

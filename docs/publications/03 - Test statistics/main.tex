@@ -25,7 +25,7 @@
 
 \newcommand{\mi}{\mathrm{i}}
 
-\title{Statistical analysis of Kernel-Nulling output distributions for high contrast detection of exoplanets in VLTI and LIFE configurations}
+\title{Statistical analysis of Kernel-Nulling output distributions for high-contrast exoplanet detection in VLTI and LIFE configurations}
 
 \author{Vincent Foriel,
         David Mary,
@@ -37,10 +37,8 @@
 \maketitle
 
 \begin{abstract}
-Kernel-nulling interferometry represents a promising approach for direct exoplanet detection. This technique generates characteristic kernel-null depth distributions depending on the presence or absence of a planetary companion. Statistical analysis of these distributions is essential for robust planet detection. We develop and compare several statistical tests to efficiently discriminate between the $\mathcal{H}_0$ (star-only) and $\mathcal{H}_1$ (star-planet system) hypotheses. We analyze the performance of different test statistics including mean, median, mode, Kolmogorov-Smirnov, Cramér-von Mises, and Wilcoxon-Mann-Whitney tests. We conduct numerical simulations for two instrumental scenarios: ground-based VLTI and space-based LIFE configurations. For each scenario, we generate datasets under both $\mathcal{H}_0$ and $\mathcal{H}_1$ hypotheses, accounting for specific instrumental parameters and noise levels. We evaluate test performance using ROC curves and P-value analysis. \hl{Ajouter les résultats}. This statistical analysis, currently applied to simulated data, paves the way for robust high-contrast exoplanet detection using kernel-nulling interferometry.
+Kernel-Nulling interferometry represents a promising approach for direct detection of exoplanets. This technique generates characteristic intensity distributions depending on the presence or absence of a planetary companion. Statistical analysis of these distributions is essential for robust planet detection. We develop and compare several statistical tests to efficiently discriminate between hypotheses $\mathcal{H}_0$ (star alone) and $\mathcal{H}_1$ (star-planet system). We analyze the performance of different test statistics to evaluate the relevance of each according to the nature of the available data. We perform numerical simulations for three instrumental scenarios: ground-based VLTI configurations and the LIFE space mission, as well as a fictional scenario consisting of placing the VLTI in space to isolate performance losses caused by the atmosphere. For each scenario, we generate datasets under both hypotheses $\mathcal{H}_0$ and $\mathcal{H}_1$, taking into account specific instrumental parameters and noise levels. We evaluate test performance using ROC curves and P-value analysis. \hl{Add results}. This statistical analysis, currently applied to simulated data, paves the way for robust detection of high-contrast exoplanets using kernel-nulling interferometry.
 \end{abstract}
-
-%------------------------------------------------------------------------------
 
 \dm{OK résumé de mes coms détailles ci-dessous : le plus gros boulot à faire pour l'itération suivante c'est : \\
 - en intro : biblio : recenser, comparer, contraster pour mettre en évidence l'originalité du papier\\
@@ -49,21 +47,15 @@ Kernel-nulling interferometry represents a promising approach for direct exoplan
 - Sec. 3 : La formalisation rigoureuse des tests, classement, formules analytiques \\
 - Sec. 4 : Etude comparative des performances dans les résultats }
 
+%==============================================================================
 \section{Introduction}
+%==============================================================================
 
-Direct imaging of exoplanets remains one of the major challenges in modern astronomy, requiring techniques capable of overcoming contrast constraints (beyond $10^{-8}$ to allow exo-Earth detection) and angular separation requirements (on the order of milli-arcseconds). Nulling interferometry, initially proposed by \cite{Bracewell1979}, uses destructive interference to suppress on-axis source (star light) while preserving the off-axis ones (planetary signals), thus addressing both angular resolution and contrast challenges.
+Direct imaging of exoplanets remains one of the major challenges in modern astronomy, requiring techniques capable of overcoming contrast constraints (beyond $10^{-8}$ to enable detection of Earth-like exoplanets) and angular separation requirements (on the order of milli-arcseconds). Nulling interferometry, initially proposed by \cite{Bracewell1979}, uses destructive interference to suppress the on-axis source (stellar light) while preserving off-axis sources (planetary signals), thus addressing both angular resolution and contrast challenges.
 
----
+Kernel-Nulling (\cite{Martinache2018}) improves this approach by focusing on the difference between pairs of symmetric beam combinations that are robust to first-order phase aberrations (\cite{Martinache2018}). Due to various perturbation sources, the output of the nulling operation - as well as the Kernel-Nulling operation - is a statistical distribution of intensities. This distribution is influenced by various instrumental parameters such as input co-phasing errors, amplitude errors, number of frames, sky background or even other sources of undesirable light such as background stars (\cite{Hanot2011}, \cite{Cvetojevic2022}). The presence of a companion induces a systematic co-phasing error that cannot be approximated by a first-order perturbation, leading to a global shift in the Kernel-Null output distributions. This results in distinct statistical distributions for the kernel-null output depending on whether a companion is present or not (see Fig. \ref{fig:distribution}). In realistic scenarios, the shift induced by the companion's presence is small compared to the dispersion due to various perturbation sources, making the $\mathcal{H}_0$ and $\mathcal{H}_1$ distributions difficult to distinguish. The number of frames used in the simulation also affects the spread and smoothness of distributions. A detailed analysis of the influence of these parameters and resulting distribution families is provided in Sec. \ref{sec:distribution_analysis}. However, these distributions do not follow standard probability laws, and their analytical form is unknown a priori. This makes the discrimination problem difficult, particularly when the companion contrast is high and the distributions overlap significantly.
 
-Kernel-Nulling \cite{Martinache2018} improves this approach by looking  at the difference between two symetric beam combinations. by using four telescopes and phase-quadrature signals, enabling the creation of signal combinations (Kernel-Nulls) that are robust to first-order phase aberrations. This technique generates characteristic statistical distributions depending on the presence or absence of a planetary companion \dm{$<= $ expliquer intuitivement pourquoi (/interféro)} (Fig \ref{fig:distribution}).\dm{Expliquer la Fig. 1 elle en dit trop ou pas assez. Expliquer : pourquoi la rouge est centrée et pas la bleue ?; est-ce seulement un shift ou la distribution peut changer aussi (et pourquoi)? la forme des distributions  dépend de quoi ? Quels sont les paramètres des simus ici ? Parler du nombre de trames... Anticipe toutes les questions que le lecteur peut se poser. Ce qu'il va se demander mais à quoi tu ne peux pas répondre, dis-lui dans quelle section il peut trovuer la réponse. } However, these distributions do not follow conventional probability laws (discussed in Sec. \ref{sec:distribution_analysis}\dm{$<=$ oui dire en particulier que tu étudies en détail la zoologie des cas qu'on rencontrer dans cette section}).\dm{Conventional ne veut pas dire grand-chose : standard ? classical ? Et il faut résumer les difficultés spécifiques ici : par exemple  distributions inconnues a priori (pourquoi) ? mélange de distribution ? probablement faible différences à mettre en évidence si contraste élevé ?}
-
----
-
-Kernel-Nulling \cite{Martinache2018} improves this approach by focusing on the difference between pairs of symetric beam combination that are robust to first-order phase aberrations. Due to different sources of perturbations, the output of the nulling operation - as well as the Kernel-Nulling operation - is a statistical distribution of intensities. This distribution is influenced by various instrumental parameters such as input cophasing errors, amplitude errors, the number of frames, the sky background or even other undesired sources of light (e.g., background stars). The presence of a companion induce a systematic cophasing error that cannot be approximated to a first order perturbation, leading to a global shift in the Kernel-Null output distributions. This results in distinct statistical distributions for the kernel-null output depending on whether a companion is present or not (see Fig. \ref{fig:distribution}). In realistic scenarios, the shift induced by the companion source is small compared to the dispertion due to the different sources of perturbation, making the $\mathcal{H}_0$ and $\mathcal{H}_1$ distributions hard to distinguish. The number of frames used in the simulation also affects the spread and smoothness of the distributions. A detailed analysis of the influence of these parameters and the resulting distribution families is provided in Sec. \ref{sec:distribution_analysis}. However, these distributions do not follow standard probability laws, and their analytical form is unknown a priori due to the complex interplay of instrumental noise and astrophysical parameters. This makes the discrimination problem challenging, especially when the companion contrast is high and the distributions overlap significantly. \hl{Ajouter une phrase sur le mélange de distributions si pertinent, et sur les difficultés spécifiques à ce contexte.}
-
----
-
-Analysis of these distributions therefore requires appropriate statistical tools to efficiently discriminate \dm{$<=$ va droit au but : Henfe, dedicated statistical tools are required to} between the two hypotheses: $\mathcal{H}_0$ (star-only) and $\mathcal{H}_1$ (star-planet system). In this work, we develop and compare several statistical tests to optimize exoplanet detection using Kernel-Nulling.
+The analysis of these distributions therefore requires appropriate statistical tools to efficiently discriminate between the two hypotheses: $\mathcal{H}_0$ (star alone) and $\mathcal{H}_1$ (star-planet system). In this work, we develop and compare several statistical tests to optimize exoplanet detection using Kernel-Nulling.
 
 \dm{Il manque :\\
 - Une biblio minutieuse de ce pb : mettre en évidence des différence entre des distributions dans un contexte exoplanètes, et plus généralement astro, ça existe où ? Comment les gens font ? Qu'est-ce que tu prends d'eux et qu'est ce que tu vas apporter de nouveau ? Quelles différences entre les problématiques connexes que tu as trouvées et la tienne ? Expliquer points communs et différences.\\
@@ -73,48 +65,61 @@ Analysis of these distributions therefore requires appropriate statistical tools
 \begin{figure}[H]
 \centering
 \includegraphics[width=\linewidth]{img/output_distribution.png}
-\caption{Example of kernel-null depth distributions for $\mathcal{H}_0$ (star-only) and $\mathcal{H}_1$ (with companion) hypotheses. This example scenario is highly exagerated with a companion that has low contrast in order to induce a significant shift of the distribution. In practice, the two distributions are usually much closer and hard to distinguish.\dm{Cf texte; aussi prends l'habitude d'être ultra-spécifique, c'est un papier scientifique. Là tu es bcp trop vague : "low contrast" (c'est quoi low ?) "much closer" (=?..)}.}
+\caption{Example of kernel nulling depth distributions for hypotheses $\mathcal{H}_0$ (star alone) and $\mathcal{H}_1$ (with companion). This example scenario is heavily exaggerated with a companion having low contrast to induce a significant distribution shift. In practice, the two distributions are generally much closer and difficult to distinguish.\dm{Cf texte; aussi prends l'habitude d'être ultra-spécifique, c'est un papier scientifique. Là tu es bcp trop vague : "low contrast" (c'est quoi low ?) "much closer" (=?..)}.}
 \label{fig:distribution}
 \end{figure}
 
-%--------------------------------------------------------------------
 
+
+%==============================================================================
 \section{Methodology}
+%==============================================================================
 
+
+
+%------------------------------------------------------------------------------
 \subsection{Data generation}
 
-In this study, we consider two distinct instrumental scenarios for generating simulated data:
+In this study, we consider three instrumental scenarios corresponding to realistic configurations of interferometers dedicated to exoplanet detection, each with its own technological constraints and expected performance.
 
+\textbf{The Very Large Telescope Interferometer (VLTI)} is a ground-based interferometer composed of four 8-meter diameter unit telescopes (UT), arranged in an irregular configuration with a maximum baseline of 130 meters. This configuration allows achieving a theoretical angular resolution on the order of 1 milli-arcsecond at $1.55\mu$m, the optimal wavelength for observation in the H-band of the near infrared. However, terrestrial atmospheric conditions introduce significant phase perturbations: despite adaptive optics systems and real-time co-phasing correction, residual co-phasing error remains on the order of 100 nm RMS. This value, while representing remarkable performance for a ground-based instrument, nevertheless constitutes a fundamental limitation for very high-contrast exoplanet detection, where phase stability must be maintained at extreme levels over long integration times.
+
+\textbf{The LIFE space mission (Large Interferometer For Exoplanets)} embodies the future of interferometry dedicated to exoplanet detection. This mission plans the orbital deployment of four 2-meter diameter telescopes arranged in a rectangular formation with a baseline that can reach 600 meters. The space environment offers decisive advantages: the absence of atmosphere eliminates turbulence and allows unprecedented phase control precision, with co-phasing errors reduced to 1 nm RMS. This exceptional stability, coupled with the observation wavelength of $4\mu$m in the thermal infrared, opens the way to direct detection of Earth-like exoplanets and spectroscopy of their atmospheres for the search for biosignatures.
+
+\textbf{The SVLTI scenario (Space VLTI)} constitutes a theoretical case study allowing isolation of the specific impact of Earth's atmosphere on detection performance. By transposing the exact VLTI configuration (four 8-meter telescopes, irregular arrangement, 130-meter baseline) into the space environment, we maintain the same observation wavelength ($1.55\mu$m) while benefiting from space co-phasing stability (1 nm RMS). This hybrid configuration allows direct comparative analysis: by comparing VLTI/SVLTI performance, we precisely quantify the degradation caused by atmospheric perturbations, while the SVLTI/LIFE comparison reveals the impact of instrumental architecture (telescope size, wavelength, geometry) on detection efficiency.
+
+In summary, we have:
 \begin{table}[H]
 \centering
-\begin{tabular}{|l|c|c|}
+\begin{tabular}{|l|c|c|c|}
 \hline
-\textbf{Parameter} & \textbf{VLTI} & \textbf{LIFE} \\
+\textbf{Parameter} & \textbf{VLTI} & \textbf{LIFE} & \textbf{SVLTI} \\
 \hline
-Number of telescopes & 4 & 4 \\
-Telescope diameter & 8 m & 2 m \\
-Configuration & Irregular & Regular (rectangular) \\
-Maximum baseline & 130 m & 600 m \\
-Operating environment & Ground & Space \\
-Wavelength & $1.55\mu$m & $4\mu$m \\
-Cophasing error (RMS) & 100 nm & 1 nm \\
+Number of telescopes & 4 & 4 & 4 \\
+Telescope diameter & 8 m & 2 m & 8 m \\
+Configuration & Irregular & Regular (rectangular) & Irregular \\
+Maximum baseline & 130 m & 600 m & 130 m \\
+Operating environment & Ground & Space & Space \\
+Wavelength & $1.55\mu$m & $4\mu$m & $1.55\mu$m \\
+Co-phasing error (RMS) & 100 nm & 1 nm & 1 nm \\
 \hline
 \end{tabular}
-\caption{Instrumental parameters for the two scenarios considered in this study.}
+\caption{Instrumental parameters for the three scenarios considered in this study.}
 \label{tab:scenarios}
 \end{table}
 
-The VLTI scenario includes residual cophasing error of 100 nm RMS, representative of atmospheric conditions and phase control system limitations at VLTI. The LIFE scenario benefits from the space environment, allowing a reduction of the cophasing error to 1 nm RMS, reflecting the increased stability expected for a space mission such as LIFE.\dm{Il faut expliquer en détail cette table, que le lecteur ait l'impression de voir les instruments et que tes simus simulent une réalité vraiment réaliste et des manips à portée de main, ça donnera un aspect "chaud" et concret à ton papier.}
+For each of the simulations performed, we consider a zero-magnitude primary source (Vega-type star) with a single hypothetical companion whose position and contrast are fixed. This work being interested in the theoretical limits achievable in terms of detection capability, we work under the assumption of a thermally stable environment and an ideal camera, i.e., without readout noise or background noise. We simulate series of 1-second acquisitions integrating the effects of residual co-phasing errors (atmospheric perturbations and intrinsic optical path difference of the system) and photon noise. For each scenario, we generate datasets under both hypotheses $\mathcal{H}_0$ (star alone) and $\mathcal{H}_1$ (star-planet system), taking into account specific instrumental parameters and noise levels for each case.
 
-For each scenario, datasets are generated under both $\mathcal{H}_0$ (star-only) and $\mathcal{H}_1$ (star-planet system) hypotheses, accounting for specific instrumental parameters and noise levels for each case. The Kernel-Nulling operation is supposed ideal.\dm{Je pense qu'il faut prévoir un appendice où tu résumes le principe de kernel-nulling pour que le lecteur te suive; qu'il comprenne ce que signifie faire une operaiton de kernel nulling en pratique, et lister tous les défauts qui font que ça ne peut pas être idéal. Il faut aussi différencier une operation de kernel null idéale et l'absence de bruit à la fin. Bien expliquer ce que capturent tes simulations et les fluctuations qui créent les distributions montrées en Fig. 1.}
 
+
+%------------------------------------------------------------------------------
 \subsection{Distribution analysis}  \label{sec:distribution_analysis}
 
-Before attempting to discriminate between the $\mathcal{H}_0$ and $\mathcal{H}_1$ hypotheses, it is essential to study the obtained distributions to identify characteristics that might facilitate their analysis. For this purpose, we compare simulated distributions to different conventional probability laws, notably observing their symmetry and general shape.
+Before attempting to discriminate between hypotheses $\mathcal{H}_0$ and $\mathcal{H}_1$, it is essential to study the obtained distributions to identify characteristics that could facilitate their analysis. To this end, we compare the simulated distributions to different conventional probability laws, particularly observing their symmetry and general form.
 
-We find that no conventional law perfectly matches the observed distributions. \dm{$<=$ Ca c'est une conclusion. Pour que cette phrase ait du poids, il faut présenter une analyse détaillée de ces distributions (comme le titre le suggère) : montrer comment les variations combinées de tous les paramètres importants mènent à des distributions différentes. Identifier et montrer tous les différents régimes de paramètres menant à des familles de distributions différentes. Lister aussi tous les pramètres qui vont entrer en compte dans les perfs de détections : contraste et position du compagnon, longueur d'onde donc, nombre de trames, puissance des erreurs de phase, D telescope,... tu peux faire une table. Une étude scientifique est vraiment une étude scientifique : on essaie d'être exhaustif dans l'analyse, et ensuite de faire une synthèse quantifiée et bien rangée qui reflète clairement tous les cas pour le lecteur. Le but est d'en faire un expert en lui donnant toutes les infos pour qu'ils le deviennent en lisant le papier, et puisse reproduire les résultats s'il le souhaite (c'est le propre de la démarche scientifique, éviter d'être juste déclaratif ce qui revient à proposer des arguments d'autorité; préférer systématiquement être aussi précis que possible et donner toutes les infos, ce qui revient à proposer des arguments d'expertise.} Among the tested laws, the Cauchy distribution seems to \dm{c'est faible et pas quantifié, et vu la fig.2 ça ne colle pas comme tu le dis} offer a relatively satisfactory fit (Fig. \ref{fig:fits}), although not perfect, especially on the wings when the number of sample is high.
+We find that no conventional law perfectly matches the observed distributions. \dm{$<=$ Ca c'est une conclusion. Pour que cette phrase ait du poids, il faut présenter une analyse détaillée de ces distributions (comme le titre le suggère) : montrer comment les variations combinées de tous les paramètres importants mènent à des distributions différentes. Identifier et montrer tous les différents régimes de paramètres menant à des familles de distributions différentes. Lister aussi tous les pramètres qui vont entrer en compte dans les perfs de détections : contraste et position du compagnon, longueur d'onde donc, nombre de trames, puissance des erreurs de phase, D telescope,... tu peux faire une table. Une étude scientifique est vraiment une étude scientifique : on essaie d'être exhaustif dans l'analyse, et ensuite de faire une synthèse quantifiée et bien rangée qui reflète clairement tous les cas pour le lecteur. Le but est d'en faire un expert en lui donnant toutes les infos pour qu'ils le deviennent en lisant le papier, et puisse reproduire les résultats s'il le souhaite (c'est le propre de la démarche scientifique, éviter d'être juste déclaratif ce qui revient à proposer des arguments d'autorité; préférer systématiquement être aussi précis que possible et donner toutes les infos, ce qui revient à proposer des arguments d'expertise.} Among the tested laws, the Cauchy distribution seems \dm{c'est faible et pas quantifié, et vu la fig.2 ça ne colle pas comme tu le dis} to offer a relatively satisfactory fit (Fig. \ref{fig:fits}), although not perfect, particularly on the tails when the number of samples is high.
 
-This observation guides the choice of statistical tests to favor, particularly those effective for detecting shifts in symmetric distributions.\dm{Justifier théoriquement et/ou empiriquement (via l'optique et le ssimus) si les distribution doivent être symétriques. Ajouter éveutellement des acquisitions de frames sur banc pour appuyer à un moment ces hypothèses. } Furthermore, this suggests that data fitting by minimizing \dm{$<=$ data fitting of what ? Pas le fit de d'une distribution empirique par une autre en tout cas... on en discutera. }square error (MSE) will most likely not be very effective due to the heavy tails of the distribution. Instead, we should use a cost function derived from the Cauchy law, which is more robust to outliers:\dm{Non je pense que la fin de la section n'est pas bonne.}
+This observation guides the choice of statistical tests to favor, particularly those effective for detecting shifts in symmetric distributions.\dm{Justifier théoriquement et/ou empiriquement (via l'optique et le ssimus) si les distribution doivent être symétriques. Ajouter éveutellement des acquisitions de frames sur banc pour appuyer à un moment ces hypothèses. } Furthermore, this suggests that data fitting by minimizing \dm{$<=$ data fitting of what ? Pas le fit de d'une distribution empirique par une autre en tout cas... on en discutera. } mean squared error (MSE) will very likely not be very efficient due to the heavy tails of the distribution. Instead, we should use a cost function derived from the Cauchy law, which is more robust to outliers:\dm{Non je pense que la fin de la section n'est pas bonne.}
 \begin{equation}
     \text{Cost}(x, y) = \sum_i \log \left( 1 + \left( y_i - s(x_i )\right)^2 \right)
 \end{equation}
@@ -122,111 +127,250 @@ This observation guides the choice of statistical tests to favor, particularly t
 \begin{figure}[H]
 \centering
 \includegraphics[width=6cm]{img/fits.png}
-\caption{Fitting of conventional probability laws to simulated distributions.The Fitter python package was used to perform the fitting of most of the usual laws. This figure show the fit of the three most relevant laws the package pointed out.}
+\caption{Fitting of conventional probability laws to simulated distributions. The Python Fitter package was used to perform fitting of most common laws. This figure shows the fitting of the three most relevant laws identified by the package.}
 \label{fig:fits}
 \end{figure}
 
-\subsection{Statistical tests implemented}
 
-We have developed and compared several test statistics:
-\dm{Expliquer la démarche : vu le pb on a logiquement envie d'implémenter  des tests globaux qui mesurent un shift (et rejustifer que c'est juste un shift si c'est bien le cas.\\
-- Puis dire qu'on peut aller plus loin : il est naturel de regarder des mesures plus globales entre les distributions et là tu pars sur  KS etc. Ajoute Anderson-Darling dans cette famille.\\
-- Ensuite 1) présente tes notations (par ex, qu'est-ce que $x$ ? 2) rappelle précisément ce que tu appelles $\mathcal{H}_0$ et $\mathcal{H}_1$ en utilisant les quantitiés de  tes notations.\\
-- Ensuite, pour chaque test, de façon systématique : 0) Donne la ref du/des papiers scientifiques où il a été décrit (pas une ref à une toolbox python; un bouquin tu peux, mais il faut aussi les refs originales \#démarche scientifique vérifiable etc) 1) explique l'intuition derrière 2) donne la stat de test (en utilisant les notations définies avant) 3) explique s'il y a une formule analytique pour décrire la stat de test sous $\mathcal{H}_0$ (explique aussi avant fe lister les tests  que l'intérêt d'une formule analytique est  que ça donne accès à une p-valeur sans avoir à faire des simus de Monte Carlo, et les pbs que posent le fait de devoir faire des MC (calcul mais surtout on doit pouvoir simuler les mêmes conditions de perturbations que les données !)). Par exemple, avec le Th Centrale limite, si les $x_i$ sont i.i.d (pas forcément gaussiens comme dans notre cas), la stat de test (2) est gaussienne de variance connue donc pour (2) ça devrait être bon.\\
-- Dans les cas où une distribution est disponible, vérifier par simus et montrer que la distribution empirique correpond bien à la théorique. }
+
+%------------------------------------------------------------------------------
+\subsection{Implemented statistical tests}
+
+In the presence of a companion (hypothesis $\mathcal{H}_1$), the Kernel-Nulling output distribution is modified compared to the star-alone case (hypothesis $\mathcal{H}_0$) as shown in figure \ref{fig:distribution}.
+
+This modification manifests primarily as a distribution shift, although other changes in distribution shape may also occur. Depending on conditions, it is for example possible to observe a flattening of the distribution. To effectively detect the presence of a companion, we have implemented and evaluated several statistical tests, each being sensitive to different aspects of the distributions.
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \subsubsection{Mean}
 
-The test statistic based on the mean compares the absolute value of the distribution mean to a threshold:
+The most natural test to perform under these conditions consists of comparing the mean to a threshold. Given that the planet can induce a distribution shift in both directions, we use the absolute value of the mean.
 
-\begin{equation}
-    \left|\frac{1}{N}\sum_i x_i \right| \stackrel{H_1}{\underset{H_0}{\gtrless}} \xi
-\end{equation}
+$$
+D_{M} = \left|\frac{1}{N}\sum_{i=1}^N x_i \right| \stackrel{H_1}{\underset{H_0}{\gtrless}} \xi
+$$
 
+Indeed, under hypothesis $\mathcal{H}_0$, the mean should be close to zero, equivalent to the noise mean $\bar{n}$, while under $\mathcal{H}_1$, it will be shifted according to the planet signal $S_p$ and its transmission $\alpha$ within the system.
+
+$$
+\begin{cases}
+H_0 : D_M = |\bar{n}|\\
+H_1 : D_M =  |\alpha S_p + \bar{n}|
+\end{cases}
+$$
+
+In practice, we observe that the mean is here a particularly unreliable test statistic (figure \ref{fig:roc}). Indeed, the latter is sensitive to extreme values, yet the considered distributions have heavy tails.
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \subsubsection{Median}
-Test based on the absolute value of the distribution median.
+Another natural test statistic in this context is the median, which is more robust to extreme values than the mean. The median is defined as the central value of a sorted dataset. For a dataset $x_1, x_2, \ldots, x_N$ sorted in ascending order, the median is then the value of the central element if $N$ is odd, or the mean of the two central elements if $N$ is even. As with the mean, we use the absolute value of the median to capture shifts in both directions which we then compare to a threshold.
 
-\begin{equation}
+$$
+D_m = 
 \begin{cases}
 \left| x_{\frac{N+1}{2}} \right| & \text{if }N\text{ is odd} \\
+
 \left| \frac{x_{\frac{N}{2}} + x_{\frac{N+1}{2}}}{2} \right|  & \text{if }N\text{ is even}
 \end{cases}
 \quad\stackrel{H_1}{\underset{H_0}{\gtrless}} \xi
-\end{equation}
+$$
 
-\subsubsection{Argmax}
-This statistic examines the position of the bin with the highest number of occurrences in the data histogram.
+Very analogously, under hypothesis $\mathcal{H}_0$, the median should be close to zero, equivalent to the noise median $\tilde{n}$, while under $\mathcal{H}_1$, it will be shifted according to the planet signal $S_p$ and its transmission $\alpha$ within the system.
 
-\hl{Décrire formèlement}
+$$
+\begin{cases}
+H_0 : D_m = |\tilde{n}|\\
+H_1 : D_m =  | \alpha S_p + \tilde{n} |
+\end{cases}
+$$
 
+Surprisingly, the median proves to be a very efficient test statistic in this context (figure \ref{fig:roc}), surpassing many more sophisticated tests like those listed in section \ref{sec:other_tests}. However, it requires a large number of samples to be effective, which can be a disadvantage in situations where observation time is limited.
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \subsubsection{Kolmogorov-Smirnov}
-\dm{Attention c'est le 2-sided KS}
-Test comparing the maximum distance between the cumulative distribution functions of the two distributions.
 
-\hl{Décrire formèlement}
+The Kolmogorov-Smirnov (KS) test is a non-parametric test that compares two empirical distributions. It is particularly useful when distributions do not follow a known probability law. The KS test statistic is defined as the maximum distance between the cumulative distribution functions (CDF) of the two samples.
 
-\subsubsection{Cramér-von Mises}
-Test based on the total quadratic distance between cumulative distribution functions.
+$$
+D_{KS} = \sup_x |F_1(x) - F_2(x)| \stackrel{H_1}{\underset{H_0}{\gtrless}} \xi
+$$
 
-\hl{Décrire formèlement}
+where $F_1(x)$ and $F_2(x)$ are the empirical CDFs of the two samples. The KS test is sensitive to global differences between distributions, including shifts, dispersion changes, and shape differences.
 
-\subsubsection{Wilcoxon-Mann-Whitney}
-Non-parametric test for comparing two independent samples.
+Under hypothesis $\mathcal{H}_0$, both samples come from the same distribution, while under $\mathcal{H}_1$, they come from different distributions. Thus, under $\mathcal{H}_0$, we expect $D_{KS}$ to be small, proportional to the quadratic combination of noises, while under $\mathcal{H}_1$, $D_{KS}$ will be larger due to deformations induced by the companion's presence.
 
-\hl{Décrire formèlement}
+$$
+\begin{cases}
+H_0 : D_{KS} \approx |\sqrt{2}\bar{n}|\\
+H_1 : D_{KS} \approx |\sqrt{2}\bar{n} + K(S_p)|
+\end{cases}
+$$
 
-\subsubsection{CDF difference area}
-This statistic measures the area between the cumulative distribution functions of the two distributions.
+Where $K(S_p)$ is an increasing function of the planet signal $S_p$ that depends on how the distribution is modified by the presence of $S_p$. In practice, the KS test proves to be a robust and efficient test statistic in this context (figure \ref{fig:roc}), although it also requires a large number of samples.
 
-\hl{Décrire formèlement}
 
-\dm{N'oublie pas le Brunner-Munzel}
-%--------------------------------------------------------------------
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsubsection{Flattening}
+
+After studying the distribution shift via median and mean, we investigated the flattening effect we could observe in certain configurations. For this, we defined a test statistic we call "flattening", which measures the mean of absolute deviations between each sample and the sample median.
+
+$$
+D_f = \frac 1 N \sum_{i=1}^N |x_i - \tilde{x}| \stackrel{H_1}{\underset{H_0}{\gtrless}} \xi
+$$
+
+where $\tilde{x}$ is the sample median. Under hypothesis $\mathcal{H}_0$, we expect $D_f$ to be proportional to the noise dispersion, while under $\mathcal{H}_1$, $D_f$ will be modified according to how the distribution is flattened by the companion's presence.
+
+$$
+\begin{cases}
+H_0 : D_f = \overline{|n_i - \tilde{n}|}\\
+H_1 : D_f = \overline{|n_i - \tilde{n}|} \cdot F(S_p)
+\end{cases}
+$$
+
+Where $F(S_p)$ is an increasing function of the planet signal $S_p$ that depends on how the distribution is flattened by the presence of $S_p$, with $F(0)=1$. The flattening test alone is not intended to be a very efficient test statistic (figure \ref{fig:roc}), but it highlights the fact that flattening is a real effect that can be exploited in addition to other test statistics and which notably motivated the creation of the following test statistic.
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsubsection{Median of Absolute Values}
+
+This statistic measures the median of absolute values of samples, offering a robust measure of both a shift and flattening of the distribution.
+
+$$
+D_{MAV} = \text{median}(|x_i|) \stackrel{H_1}{\underset{H_0}{\gtrless}} \xi
+$$
+
+Under hypothesis $\mathcal{H}_0$, without flattening or shift, we expect $D_{MAV}$ to be close to the median of absolute noise values, while under $\mathcal{H}_1$, we will recover not only the shift effect present in the median, but also the flattening effect present in the flattening test.
+
+$$
+\begin{cases}
+H_0 : D_{MAV} = \text{median}(|\mathbf{n}|)\\
+H_1 : D_{MAV} = \text{median}(|\mathbf{n} \cdot F(S_p) + \alpha S_p|)
+\end{cases}
+$$
+
+Where $F(S_p)$ is the same flattening function as in the flattening test. This test statistic proves to be one of the most efficient with numerically obtained distributions (figure \ref{fig:roc}).
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsubsection{Other tests considered}\label{sec:other_tests}
+We also explored other statistical tests, notably:
+\begin{itemize}
+    \item Cramér-von Mises test
+    \item Wilcoxon-Mann-Whitney test
+    \item Anderson-Darling test
+    \item Brunner-Munzel test
+\end{itemize}
+
+However, these tests did not show satisfactory performance in our specific context and were therefore not included in the detailed analyses presented in this paper.
+
+
 
 \dm{Il manque aussi une 3eme approche  ici qui est un GLR : utliser le modèle direct pour calculer la vraisemblance des données selon la position du compagnon; le GLR cherche alors à maximiser la position du compagnon. C'est les formules que j'avais mises au tableau dans mon bureau et la photo est sur discord. On en re-dicte aussi je sais que ça t'avait fait gamberger. C'est important parce que ce test permet la généralisation à plusieurs kernels. \\
 D'ailleurs, il faut que tu parles de ça avant de présenter les tests : tu es en seul kernel jusqu'ici. Et il faudra ajouter  une section : Generalisation des tests considérées à plusiers kernels et/ou poses (= comment les stat de tests monokernel-obs peuvent se combiner).}
+
+
+
+%--------------------------------------------------------------------
+\subsection{Likelihood Ratio}
+The likelihood ratio (LR) test consists of comparing the probability of observing the data under each hypothesis:
+\begin{equation}
+    \Lambda(x) = \frac{p(x;\mathcal{H}_1)}{p(x;\mathcal{H}_0)}
+\end{equation}
+where $p(x;\mathcal{H}_i)$ is the probability density of data $x$ under hypothesis $\mathcal{H}_i$. This test is optimal in the Neyman-Pearson sense for minimizing the probability of error for a given false alarm rate. However, it requires analytical knowledge of distributions under each hypothesis, which is not the case in our context as we discussed in section \ref{sec:distribution_analysis}. Among the usual probability laws, we observed that our distributions resembled Cauchy or Laplace laws \ref{fig:fits}, without perfectly fitting them.
+
+ To compare the previous statistical tests to this optimal test, we propose an approach based on parametric model fitting, corresponding to the cited laws, to simulated distributions. We thus assume that the data follow a known probability law and that all statistics of these distributions are comparable to those of simulated data, thus not significantly affecting the performance of different tests.
+
+Let us first consider the classical case where, under each hypothesis, the distribution is Gaussian with mean $\mu_i$ and variance $\sigma_i^2$:
+\begin{equation}
+    p(x|\mathcal{H}_i) = \frac{1}{\sqrt{2\pi\sigma_i^2}} \exp\left(-\frac{(x-\mu_i)^2}{2\sigma_i^2}\right)
+\end{equation}
+For $N$ independent observations $\mathbf{x} = \{x_1, x_2, \ldots, x_N\}$, the total likelihood under each hypothesis is the product of individual likelihoods:
+\begin{equation}
+    p(\mathbf{x};\mathcal{H}_i) = \prod_{j=1}^N p(x_j;\mathcal{H}_i)
+\end{equation}
+The likelihood ratio is then written:
+\begin{align}
+    \Lambda(\mathbf{x}) &= \frac{p(\mathbf{x};\mathcal{H}_1)}{p(\mathbf{x};\mathcal{H}_0)} \\
+    &= \prod_{j=1}^N \frac{p(x_j;\mathcal{H}_1)}{p(x_j;\mathcal{H}_0)} \\
+    &= \left(\frac{\sigma_0}{\sigma_1}\right)^N \exp\left( \sum_{j=1}^N \left[ \frac{(x_j-\mu_0)^2}{2\sigma_0^2} - \frac{(x_j-\mu_1)^2}{2\sigma_1^2} \right] \right)
+\end{align}
+In practice, for numerical stability reasons, we use the logarithm of the likelihood ratio (neglecting constants that have no impact on the decision):
+\begin{equation}
+    \log \Lambda(\mathbf{x}) \propto \sum_{j=1}^N \left[ \frac{(x_j-\mu_0)^2}{2\sigma_0^2} - \frac{(x_j-\mu_1)^2}{2\sigma_1^2} \right]
+\end{equation}
+
+This principle is generalized to other laws (Cauchy, Laplace, etc.) according to the shape of observed distributions. Parameters are estimated by fitting to simulated data (see previous section).
+
+Thus for Laplace, whose probability density is:
+
+\begin{equation}
+    p(x|\mathcal{H}_i) = \frac{1}{2b_i} \exp\left(-\frac{|x-\mu_i|}{b_i}\right)
+\end{equation}
+
+the likelihood ratio becomes:
+
+\begin{equation}
+    \log(\Lambda(\mathbf{x})) \propto \sum_{i=1}^{n} \frac{|x_i - \mu_1|}{b_1} - \frac{|x_i - \mu_0|}{b_0}
+\end{equation}
+
+For Cauchy, whose probability density is:
+
+\begin{equation}
+    p(x|\mathcal{H}_i) = \frac{1}{\pi \gamma_i \left[1 + \left(\frac{x - x_{0,i}}{\gamma_i}\right)^2\right]}
+\end{equation}
+
+the likelihood ratio becomes:
+
+\begin{equation}
+    \log(\Lambda(\mathbf{x})) \propto \sum_{i=1}^{n} \log\left(1 + \left(\frac{x_i - x_{0,0}}{\gamma_0}\right)^2\right) - \log\left(1 + \left(\frac{x_i - x_{0,1}}{\gamma_1}\right)^2\right)
+\end{equation}
+
+It may be useful to note that for each case, we always assume that distributions follow the same law with or without companion, but with different parameters.
+
 \section{Results}
 
 \dm{A la fin en bilan fais une lsite des pros et cons de chaque méthode. Il faut que tu déploies dans ce papier une analyse exhaustive et convaincante de la nature des données et des régimes qu'on peut y trouver, des types de distributions suivant les régimes, et des types de tests qu'on peut utiliser. A la fin on se dira que tu as plié le problème, le spécialiste de la détection sur des données kernel-nulling c'est toi !  }
 \subsection{ROC curves}
 
-ROC (Receiver Operating Characteristic) curves allow comparing the effectiveness \dm{$<=$ power } of different test statistics by representing the proportion of true detections as a function of false alarm probability.
+ROC (Receiver Operating Characteristic) curves allow comparing the efficiency \dm{$<=$ power } of different test statistics by representing the proportion of true detections as a function of false alarm probability.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=7cm]{img/roc_curves.png}
-\caption{ROC curves for different test statistics.}
+\caption{ROC curves for different test statistics on simulated distributions in the VLTI context with a companion of contrast $10^{-2}$.}
 \label{fig:roc}
 \end{figure}
 
-\hl{Analyse des résultats}
-\hl{Ajouter la courbe de Neyman-Pearson pour la comparaison}
+\begin{figure}[H]
+\centering
+\includegraphics[width=7cm]{img/neyman_pearson.png}
+\caption{ROC curves for different test statistics compared to the optimal Neyman-Pearson test, in the VLTI context with a companion of contrast $10^{-3}$.}
+\label{fig:neyman-pearson}
+\end{figure}
+
+\hl{Results analysis}
 
 \subsection{P-value analysis}
 
 \dm{Attention Fig.4 c'est faux : ce ne sont pas les p-valeurs car les p-valeurs ne dépendent pas d'un seuil, seulement des données.}
 
-P-values provide a confidence measure for rejecting the null hypothesis. A P-value below 0.05 is generally considered significant. \dm{Non ça ça dépend des applications. Donne la définition précise de la p-valeur tout de suite, comme ça on sait de quoi on parle. }\\
-
-\dm{Pour l'approche Neyman-Pearson (ou Likelihood-Ratio), il faut en faire une section à part dans la section d'avant en explicitant le Likelihood-Ratio et les paramètres dont il dépend sous les 2 hypothèses, puis en tirer la stat de test que ça donne en prenant le log etc .\\
-Expliquer aussi l'intérêt du NP.}.
+P-values provide a confidence measure for rejecting the null hypothesis. A P-value less than 0.05 is generally considered significant. \dm{Non ça ça dépend des applications. Donne la définition précise de la p-valeur tout de suite, comme ça on sait de quoi on parle. }\\
 
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=10cm]{img/p-values.png}
-\caption{Evolution of P-values as a function of threshold for different test statistics. The red dotted line indicates the significance threshold at 0.05. \hl{Plot à refaire pour se focaliser sur un seul Kernel (+ correction des bugs)} \dm{Oui. On peut par exemple montrer la calibration théorique p-valeur(stat de test - pas seuil !) et comparer à la calibration empirique pour chaque test }}
+\caption{Evolution of P-values as a function of threshold for different test statistics. The red dashed line indicates the significance threshold at 0.05. \hl{Plot to redo to focus on a single Kernel (+ bug corrections)} \dm{Oui. On peut par exemple montrer la calibration théorique p-valeur(stat de test - pas seuil !) et comparer à la calibration empirique pour chaque test }}
 
 
 \label{fig:pvalues}
 \end{figure}
 
-\hl{Analyse des résultats}
+\hl{Results analysis}
 
 %--------------------------------------------------------------------
 
 \section{Discussion}
 
-\subsection{Comparative test performance}
+\subsection{Comparative performance of tests}
 
 \hl{ToDo}
 
