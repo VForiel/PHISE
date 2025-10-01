@@ -304,7 +304,7 @@ class Context:
         ax.set_aspect("equal")
         ax.set_xlabel(f"x [{self.p.unit}]")
         ax.set_ylabel(f"y [{self.p.unit}]")
-        ax.set_title(f"Projected telescope positions over the time (8h long)")
+        ax.set_title(f"Projected telescope positions over the time ({ctx.Δh.to(u.hourangle).value * u.h} long)")
         plt.legend()
 
         if return_image:
@@ -1023,7 +1023,7 @@ class Context:
                     name = "First Generation Kernel-Nuller", # Kernel nuller name
                 ),
                 camera = Camera(
-                    e = 1 * u.s, # Exposure time
+                    e = 5 * u.min, # Exposure time
                     name = "Default Camera", # Camera name
                 ),
             ),
@@ -1079,7 +1079,7 @@ class Context:
                     name = "First Generation Kernel-Nuller", # Kernel nuller name
                 ),
                 camera = Camera(
-                    e = 1 * u.s, # Exposure time
+                    e = 5 * u.min, # Exposure time
                     name = "Default Camera", # Camera name
                 ),
             ),

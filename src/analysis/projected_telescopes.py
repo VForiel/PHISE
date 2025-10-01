@@ -28,12 +28,10 @@ def gui(
 
     # Set default values ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    
     if ctx is None:
         ref_ctx = Context.get_VLTI()
     else:
         ref_ctx = copy(ctx)
-
 
     # GUI elements ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
