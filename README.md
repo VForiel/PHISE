@@ -17,8 +17,7 @@ This project focuses on the development and optimization of a tunable Kernel-Nul
 
 ### Prerequisites
 
-- Python 3.11 or higher
-- PDM (Python Dependency Manager)
+- Anaconda or Miniconda (or another Conda distribution)
 
 ### Key Dependencies
 
@@ -29,20 +28,34 @@ This project focuses on the development and optimization of a tunable Kernel-Nul
 - `numba` - High-performance numerical functions
 - `ipywidgets` - Interactive widgets for Jupyter notebooks
 
-### Installation
+### Installation (use Conda)
 
 1. Clone the repository:
-```bash
+```powershell
 git clone https://github.com/your-username/Tunable-Kernel-Nulling.git
 cd Tunable-Kernel-Nulling
 ```
 
-2. Install project dependencies (using [PDM](https://pdm-project.org/)):
-```bash
-pdm install
+2. Create the Conda environment from the provided `environment.yml`:
+```powershell
+conda env create -f environment.yml
 ```
 
-Thes open the main simulation notebook "`numerical_simulation.ipynb`" and select the appropriate kernel for your environment.
+3. Activate the environment:
+```powershell
+conda activate kn
+```
+
+4. Install the local project package editable (optional but useful for development):
+```powershell
+pip install -e .
+```
+
+Notes:
+- The `environment.yml` uses `conda-forge` and pins key package versions from the repository lockfile. A few packages (for example private or pip-only packages such as `LRFutils`) are installed via `pip` inside the Conda environment — see the `pip:` section of `environment.yml`.
+- I left existing PDM files (`pyproject.toml`, `pdm.lock`) untouched so you can still reproduce the original PDM environment if needed. Remove them only if you are sure you no longer need PDM configuration.
+
+Now open the main simulation notebook `numerical_simulation.ipynb` and select the appropriate kernel for the activated Conda environment.
 
 ## 🔬 Scientific Approach
 
