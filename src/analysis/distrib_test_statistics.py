@@ -221,67 +221,7 @@ def np_benchmark(ctx:Context=None):
 
     print("✅ Distributions generated.")
 
-    # Model definition --------------------------------------------------------
-
-    # # Laplace distribution
-
-    # def laplace(x, μ, b):
-    #     return (1/(b)) * np.exp(-np.abs((x - μ))/(b))
-
-    # def laplace_cost(params, data):
-    #     μ, b = params
-        
-    #     # True histogram (empirical density)
-    #     y, bin_edges = np.histogram(data, bins=bins, density=True)
-    #     bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
-
-    #     # Model histogram
-    #     s = laplace(bin_centers, μ, b)
-    #     s /= np.sum(s)
-
-    #     return np.sum(np.abs(y - s))
-
-    # # Cauchy distribution
-    # def cauchy(x, x0, γ):
-    #     return (1/(np.pi*γ * (1 + ((x - x0)/γ)**2)))
-
-    # def cauchy_cost(params, data):
-    #     x0, γ = params
-        
-    #     # True histogram (empirical density)
-    #     y, bin_edges = np.histogram(data, bins=bins, density=True)
-    #     bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
-
-    #     # Model histogram
-    #     s = cauchy(bin_centers, x0, γ)
-    #     s /= np.sum(s)
-
-    #     return np.sum(np.log(1+((y - s)/γ)**2))
-    
-    # model = cauchy
-    # cost = cauchy_cost  
-
     # Fit model ---------------------------------------------------------------
-
-    # print("⌛ Fitting distributions...")
-
-    # # Fit for h0_data
-    # res_h0 = minimize(cost, x0=[np.median(h0_data), np.std(h0_data)/2], args=(h0_data,), method='Nelder-Mead')
-    # μ_h0, b_h0 = res_h0.x
-
-    # if res_h0.success:
-    #     print(f"✅ Fitted distrib under H0: μ={μ_h0:.3e}, b={b_h0:.3e}")
-    # else:
-    #     print("❌ Fitting for H0 did not converge:", res_h0.message)
-
-    # # Fit for h1_data
-    # res_h1 = minimize(cost, x0=[np.median(h1_data), np.std(h1_data)/2], args=(h1_data,), method='Nelder-Mead')
-    # μ_h1, b_h1 = res_h1.x
-
-    # if res_h1.success:
-    #     print(f"✅ Fitted distrib under H1: μ={μ_h1:.3e}, b={b_h1:.3e}")
-    # else:
-    #     print("❌ Fitting for H1 did not converge:", res_h1.message)
 
     x0, γ0 = stats.cauchy.fit(h0_data_kn)
     x1, γ1 = stats.cauchy.fit(h1_data_kn)
@@ -297,8 +237,8 @@ def np_benchmark(ctx:Context=None):
     x = np.linspace(min(np.min(h0_data_kn), np.min(h1_data_kn)), max(np.max(h0_data_kn), np.max(h1_data_kn)), 1000)
 
     plt.figure(figsize=(10, 6))
-    _, h0_bins, _ = plt.hist(h0_data_kn, bins=bins, density=True, alpha=0.5, label='h0 data', color='blue', log=False)
-    _, h1_bins, _ = plt.hist(h1_data_kn, bins=bins, density=True, alpha=0.5, label='h1 data', color='orange', log=False)
+    _, h0_bins, _ = plt.hist(h0_data_kn, bins=bins, density=True, alpha=0.5, label='h0 data', color='blue', log=True)
+    _, h1_bins, _ = plt.hist(h1_data_kn, bins=bins, density=True, alpha=0.5, label='h1 data', color='orange', log=True)
 
     plt.plot(x, stats.cauchy.pdf(x, loc=x0, scale=γ0), 'b--', label='h0 cauchy fit', linewidth=2)
     plt.plot(x, stats.cauchy.pdf(x, loc=x1, scale=γ1), 'r--', label='h1 cauchy fit', linewidth=2)
@@ -317,82 +257,6 @@ def np_benchmark(ctx:Context=None):
     plt.ylabel('Density')
     plt.title('Distributions and Fits')
     plt.legend()
-    plt.show()
-
-    # Compute moments ---------------------------------------------------------
-
-    print("⌛ Computing moments...")
-    
-    h0_data_cauchy = stats.cauchy.rvs(loc=x0, scale=γ0, size=samples)
-    h1_data_cauchy = stats.cauchy.rvs(loc=x1, scale=γ1, size=samples)
-    h0_data_laplace = stats.laplace.rvs(loc=μ0, scale=b0, size=samples)
-    h1_data_laplace = stats.laplace.rvs(loc=μ1, scale=b1, size=samples)
-    h0_data_gennorm = stats.gennorm.rvs(beta=β0, loc=m0, scale=s0, size=samples)
-    h1_data_gennorm = stats.gennorm.rvs(beta=β1, loc=m1, scale=s1, size=samples)
-
-    nb_moments = 10
-
-    # Using scipy
-    def compute_moments(data):
-        moments = np.empty(nb_moments)
-        for n in range(1, nb_moments + 1):
-            moments[n-1] = np.mean((data - np.mean(data))**n)
-        return moments
-
-    h0_kn_moments = compute_moments(h0_data_kn)
-    h1_kn_moments = compute_moments(h1_data_kn)
-    h0_cauchy_moments = compute_moments(h0_data_cauchy)
-    h1_cauchy_moments = compute_moments(h1_data_cauchy)
-    h0_laplace_moments = compute_moments(h0_data_laplace)
-    h1_laplace_moments = compute_moments(h1_data_laplace)
-    h0_gennorm_moments = compute_moments(h0_data_gennorm)
-    h1_gennorm_moments = compute_moments(h1_data_gennorm)
-
-    ref = h0_kn_moments
-
-    # for n in range(nb_moments):
-    #     # Print H0 kn moments
-    #     print(f"Moment {n+1}:")
-    #     print(f"   H0 kn: {h0_kn_moments[n]:.3e}")
-    #     print(f"   H1 kn: {h1_kn_moments[n]:.3e}")
-    #     print(f"   H0 cauchy: {h0_cauchy_moments[n]:.3e}")
-    #     print(f"   H1 cauchy: {h1_cauchy_moments[n]:.3e}")
-    #     print(f"   H0 laplace: {h0_laplace_moments[n]:.3e}")
-    #     print(f"   H1 laplace: {h1_laplace_moments[n]:.3e}")
-    #     print(f"   H0 gennorm: {h0_gennorm_moments[n]:.3e}")
-    #     print(f"   H1 gennorm: {h1_gennorm_moments[n]:.3e}")
-
-    # Replace zeros by 1e-10
-    h0_kn_moments[h0_kn_moments == 0] = 1e-10
-    h1_kn_moments[h1_kn_moments == 0] = 1e-10
-    h0_cauchy_moments[h0_cauchy_moments == 0] = 1e-10
-    h1_cauchy_moments[h1_cauchy_moments == 0] = 1e-10
-    h0_laplace_moments[h0_laplace_moments == 0] = 1e-10
-    h1_laplace_moments[h1_laplace_moments == 0] = 1e-10
-    h0_gennorm_moments[h0_gennorm_moments == 0] = 1e-10
-    h1_gennorm_moments[h1_gennorm_moments == 0] = 1e-10
-
-    # Plot moments ------------------------------------------------------------
-
-    orders = np.arange(1, nb_moments + 1)
-    width = 0.1
-    fig, ax = plt.subplots(figsize=(12, 6))
-
-    ax.bar(orders - 3.5*width, h0_kn_moments/ref, width, label='H0 KN')
-    ax.bar(orders - 2.5*width, h1_kn_moments/ref, width, label='H1 KN')
-    ax.bar(orders - 1.5*width, h0_cauchy_moments/ref, width, label='H0 Cauchy')
-    ax.bar(orders - 0.5*width, h1_cauchy_moments/ref, width, label='H1 Cauchy')
-    ax.bar(orders + 0.5*width, h0_laplace_moments/ref, width, label='H0 Laplace')
-    ax.bar(orders + 1.5*width, h1_laplace_moments/ref, width, label='H1 Laplace')
-    ax.bar(orders + 2.5*width, h0_gennorm_moments/ref, width, label='H0 Gennorm')
-    ax.bar(orders + 3.5*width, h1_gennorm_moments/ref, width, label='H1 Gennorm')
-
-    plt.yscale('log')
-    ax.set_xlabel("Moment Order")
-    ax.set_ylabel("Moment Value (relative to H0 KN)")
-    ax.set_title("Comparison of Moments (relative to H0 KN)")
-    ax.set_xticks(orders)
-    ax.legend()
     plt.show()
 
     # Generate random distribution following the model ------------------------

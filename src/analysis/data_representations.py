@@ -56,22 +56,45 @@ def instant_distribution(ctx:Context=None, n=10000, stat=np.median, figsize=(10,
         _, k, b = ref_ctx.observe()
         ref_data[i] = k / b
 
-    kmin, kmax = np.percentile(np.concatenate([data, ref_data]), [1, 99])
-    lim = np.max([np.abs(kmin), np.abs(kmax)])
-
     # Plot
     _, axs = plt.subplots(3, 1, figsize=figsize, sharex=True, constrained_layout=True)
 
+    kmin_k = np.zeros(3)
+    kmax_k = np.zeros(3)
     for k in range(3):
-        axs[k].hist(data[:, k], label='With companion(s)', bins=500, alpha=0.5, color='blue', density=True)
+        # Build common bins for this kernel using the combined data of both samples
+        combined = np.concatenate([data[:, k], ref_data[:, k]])
+        kmin_k[k], kmax_k[k] = np.percentile(combined, [5, 95])
+    kmin_k = np.min(kmin_k)
+    kmax_k = np.max(kmax_k)
+
+    for k in range(3):
+        # Use 2*sqrt(samples) as number of bins
+        bins = np.linspace(kmin_k, kmax_k, 2*int(np.sqrt(n)) + 1)
+
+        # Recompute combined for this kernel for x-limits
+        combined = np.concatenate([data[:, k], ref_data[:, k]])
+
+        # Convert counts to percentages per bin
+        weights_data = np.ones_like(data[:, k]) * (100.0 / data.shape[0])
+        axs[k].hist(data[:, k], label='With companion(s)', bins=bins, alpha=0.5, color='blue', weights=weights_data)
         axs[k].axvline(stat(data[:, k]), color='blue', linestyle='--')
-        axs[k].hist(ref_data[:, k], label='Star only', bins=500, alpha=0.5, color='red', density=True)
+
+        weights_ref = np.ones_like(ref_data[:, k]) * (100.0 / ref_data.shape[0])
+        axs[k].hist(ref_data[:, k], label='Star only', bins=bins, alpha=0.5, color='red', weights=weights_ref)
         axs[k].axvline(stat(ref_data[:, k]), color='red', linestyle='--')
-        axs[k].set_ylabel(f'Occurrences')
+
+        axs[k].set_ylabel('Occurrences (%)')
         axs[k].set_xlabel('Kernel-Null depth')
         axs[k].set_title(f'Kernel {k+1}')
         axs[k].legend()
-        axs[k].set_xlim(-lim, lim)
+
+        # Limit x-axis to exclude the most extreme 5% of values on each side
+        xmin_plot, xmax_plot = np.percentile(combined, [5, 95])
+        if xmin_plot == xmax_plot:
+            xmin_plot -= 1e-12
+            xmax_plot += 1e-12
+        axs[k].set_xlim(xmin_plot, xmax_plot)
 
     plt.show()
 
