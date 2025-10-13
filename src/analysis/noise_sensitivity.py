@@ -48,7 +48,7 @@ def plot(ctx:Context=None, β=0.5, n=1000, figsize=(15, 5)):
     # KN calibrated using straightforward approach
     print("⌛ Calibrating using straightforward approach...")
     ctx_gen = copy(ctx_perturbated)
-    ctx_gen.name = "Straightforward"
+    ctx_gen.name = "Trial & Error"
     ctx_gen.Γ = 0 * u.nm
     ctx_gen.calibrate_gen(β=β)
     print("✅ Done.")
@@ -62,7 +62,7 @@ def plot(ctx:Context=None, β=0.5, n=1000, figsize=(15, 5)):
     print("✅ Done.")
 
      # List of contexts to study
-    context_list = [ctx_ideal, ctx_gen, ctx_obs]#, ctx_perturbated]
+    context_list = [ctx_ideal, ctx_perturbated]
     colors = ['tab:green', 'tab:blue', 'tab:orange']#, 'tab:red']
 
     # Input perturbation ------------------------------------------------------
