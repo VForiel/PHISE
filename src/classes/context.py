@@ -1008,6 +1008,11 @@ class Context:
         λ = 1.55 * u.um # Central wavelength
 
         ctx = Context(
+            h = 0 * u.hourangle, # Central hour angle
+            Δh = 8 * u.hourangle, # Hour angle range
+            Γ = 100 * u.nm, # Input cophasing error (RMS)
+            monochromatic=False,
+            name="Default Context", # Context name
             interferometer = Interferometer(
                 l = -24.6275 * u.deg, # Latitude
                 λ = λ, # Central wavelength
@@ -1040,10 +1045,6 @@ class Context:
                     ),
                 ],
             ),
-            h = 0 * u.hourangle, # Central hour angle
-            Δh = 8 * u.hourangle, # Hour angle range
-            Γ = 100 * u.nm, # Input cophasing error (RMS)
-            name="Default Context", # Context name
         )
 
         return ctx
