@@ -153,11 +153,69 @@ Cette observation guide le choix des tests statistiques à privilégier, en part
 
 
 %------------------------------------------------------------------------------
-\subsection{Tests statistiques implémentés}
+\subsection{Tests statistiques}
 
 En présence d'un compagnon (hypothèse $\mathcal{H}_1$), la distribution de sortie du Kernel-Nulling est modifiée par rapport au cas de l'étoile seule (hypothèse $\mathcal{H}_0$) comme le montre la figure \ref{fig:distribution}.
 
 Cette modification se manifeste principalement par un décalage de la distribution, bien que d'autres changements dans la forme de la distribution puissent également survenir. En fonction des conditions, il est par exemple possible de constater un applatissement de la distribution. Pour détecter efficacement la présence d'un compagnon, nous avons implémenté et évalué plusieurs tests statistiques, chacun étant sensible à différents aspects des distributions.
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+\subsubsection{Likelihood Ratio}
+Le test du rapport de vraisemblance (LR) consiste à comparer la probabilité d'observer les données sous chaque hypothèse :
+\begin{equation}
+    \Lambda(x) = \frac{p(x;\mathcal{H}_1)}{p(x;\mathcal{H}_0)}
+\end{equation}
+où $p(x;\mathcal{H}_i)$ est la densité de probabilité de la donnée $x$ sous l'hypothèse $\mathcal{H}_i$. Ce test est optimal au sens de Neyman-Pearson pour minimiser la probabilité d'erreur pour un taux de fausse alarme donné. Cependant, il nécessite une connaissance analytique des distributions sous chaque hypothèse, ce qui n'est pas le cas dans notre contexte comme nous en avons discuté dans la section \ref{sec:distribution_analysis}. Parmis les lois de probabilité usuels, nous avons constaté que nos distributions s'apparentaient à des lois de Cauchy ou de Laplace \ref{fig:fits}, sans pour autant parfaitement y coller.
+
+ Afin de comparer les tests statistiques précédents à ce test optimal, nous proposons une approche basée sur l'ajustement de modèle paramétriques, correspondant aux lois citées, aux distributions simulées. On fait ainsi l'hypothèse que les données suivent une loi de probabilité connue et que l'ensemble des statistiques de ces distributions sont compararables à celles des données simulées, n'affectant ainsi pas significativement les performances des différents tests.
+
+Supposons tout d'abord le cas classique dans lequel, sous chaque hypothèse, la distribution soit gaussienne de moyenne $\mu_i$ et variance $\sigma_i^2$ :
+\begin{equation}
+    p(x|\mathcal{H}_i) = \frac{1}{\sqrt{2\pi\sigma_i^2}} \exp\left(-\frac{(x-\mu_i)^2}{2\sigma_i^2}\right)
+\end{equation}
+Pour $N$ observations indépendantes $\mathbf{x} = \{x_1, x_2, \ldots, x_N\}$, la vraisemblance totale sous chaque hypothèse est le produit des vraisemblances individuelles :
+\begin{equation}
+    p(\mathbf{x};\mathcal{H}_i) = \prod_{j=1}^N p(x_j;\mathcal{H}_i)
+\end{equation}
+Le rapport de vraisemblance s'écrit alors :
+\begin{align}
+    \Lambda(\mathbf{x}) &= \frac{p(\mathbf{x};\mathcal{H}_1)}{p(\mathbf{x};\mathcal{H}_0)} \\
+    &= \prod_{j=1}^N \frac{p(x_j;\mathcal{H}_1)}{p(x_j;\mathcal{H}_0)} \\
+    &= \left(\frac{\sigma_0}{\sigma_1}\right)^N \exp\left( \sum_{j=1}^N \left[ \frac{(x_j-\mu_0)^2}{2\sigma_0^2} - \frac{(x_j-\mu_1)^2}{2\sigma_1^2} \right] \right)
+\end{align}
+En pratique, pour des raisons de stabilité numérique, on utilise le logarithme du rapport de vraisemblance (en négligeant les constantes qui n'ont pas d'impact sur la décision) :
+\begin{equation}
+    \log \Lambda(\mathbf{x}) \propto \sum_{j=1}^N \left[ \frac{(x_j-\mu_0)^2}{2\sigma_0^2} - \frac{(x_j-\mu_1)^2}{2\sigma_1^2} \right]
+\end{equation}
+
+Ce principe est généralisé à d'autres lois (Cauchy, Laplace, etc.) selon la forme des distributions observées. Les paramètres sont estimés par ajustement sur les données simulées (voir section précédente).
+
+Ainsi pour Laplace, dont la densité de probabilité est :
+
+\begin{equation}
+    p(x|\mathcal{H}_i) = \frac{1}{2b_i} \exp\left(-\frac{|x-\mu_i|}{b_i}\right)
+\end{equation}
+
+le rapport de vraisemblance devient :
+
+\begin{equation}
+    \log(\Lambda(\mathbf{x})) \propto \sum_{i=1}^{n} \frac{|x_i - \mu_1|}{b_1} - \frac{|x_i - \mu_0|}{b_0}
+\end{equation}
+
+Pour Cauchy, dont la densité de probabilité est :
+
+\begin{equation}
+    p(x|\mathcal{H}_i) = \frac{1}{\pi \gamma_i \left[1 + \left(\frac{x - x_{0,i}}{\gamma_i}\right)^2\right]}
+\end{equation}
+
+le rapport de vraisemblance devient :
+
+\begin{equation}
+    \log(\Lambda(\mathbf{x})) \propto \sum_{i=1}^{n} \log\left(1 + \left(\frac{x_i - x_{0,0}}{\gamma_0}\right)^2\right) - \log\left(1 + \left(\frac{x_i - x_{0,1}}{\gamma_1}\right)^2\right)
+\end{equation}
+
+Il peut être utile de noter que pour chacun des cas, nous faisons toujours l'hypothèse que les distributions suivent la même loi avec ou sans compagnon, mais avec des paramètres différents.
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \subsubsection{Moyenne}
@@ -285,64 +343,7 @@ Cependant, ces tests n'ont pas montré de performances satisfaisantes dans notre
 \dm{Il manque aussi une 3eme approche  ici qui est un GLR : utliser le modèle direct pour calculer la vraisemblance des données selon la position du compagnon; le GLR cherche alors à maximiser la position du compagnon. C'est les formules que j'avais mises au tableau dans mon bureau et la photo est sur discord. On en re-dicte aussi je sais que ça t'avait fait gamberger. C'est important parce que ce test permet la généralisation à plusieurs kernels. \\
 D'ailleurs, il faut que tu parles de ça avant de présenter les tests : tu es en seul kernel jusqu'ici. Et il faudra ajouter  une section : Generalisation des tests considérées à plusiers kernels et/ou poses (= comment les stat de tests monokernel-obs peuvent se combiner).}
 
-
-
 %--------------------------------------------------------------------
-\subsection{Likelihood Ratio}
-Le test du rapport de vraisemblance (LR) consiste à comparer la probabilité d'observer les données sous chaque hypothèse :
-\begin{equation}
-    \Lambda(x) = \frac{p(x;\mathcal{H}_1)}{p(x;\mathcal{H}_0)}
-\end{equation}
-où $p(x;\mathcal{H}_i)$ est la densité de probabilité de la donnée $x$ sous l'hypothèse $\mathcal{H}_i$. Ce test est optimal au sens de Neyman-Pearson pour minimiser la probabilité d'erreur pour un taux de fausse alarme donné. Cependant, il nécessite une connaissance analytique des distributions sous chaque hypothèse, ce qui n'est pas le cas dans notre contexte comme nous en avons discuté dans la section \ref{sec:distribution_analysis}. Parmis les lois de probabilité usuels, nous avons constaté que nos distributions s'apparentaient à des lois de Cauchy ou de Laplace \ref{fig:fits}, sans pour autant parfaitement y coller.
-
- Afin de comparer les tests statistiques précédents à ce test optimal, nous proposons une approche basée sur l'ajustement de modèle paramétriques, correspondant aux lois citées, aux distributions simulées. On fait ainsi l'hypothèse que les données suivent une loi de probabilité connue et que l'ensemble des statistiques de ces distributions sont compararables à celles des données simulées, n'affectant ainsi pas significativement les performances des différents tests.
-
-Supposons tout d'abord le cas classique dans lequel, sous chaque hypothèse, la distribution soit gaussienne de moyenne $\mu_i$ et variance $\sigma_i^2$ :
-\begin{equation}
-    p(x|\mathcal{H}_i) = \frac{1}{\sqrt{2\pi\sigma_i^2}} \exp\left(-\frac{(x-\mu_i)^2}{2\sigma_i^2}\right)
-\end{equation}
-Pour $N$ observations indépendantes $\mathbf{x} = \{x_1, x_2, \ldots, x_N\}$, la vraisemblance totale sous chaque hypothèse est le produit des vraisemblances individuelles :
-\begin{equation}
-    p(\mathbf{x};\mathcal{H}_i) = \prod_{j=1}^N p(x_j;\mathcal{H}_i)
-\end{equation}
-Le rapport de vraisemblance s'écrit alors :
-\begin{align}
-    \Lambda(\mathbf{x}) &= \frac{p(\mathbf{x};\mathcal{H}_1)}{p(\mathbf{x};\mathcal{H}_0)} \\
-    &= \prod_{j=1}^N \frac{p(x_j;\mathcal{H}_1)}{p(x_j;\mathcal{H}_0)} \\
-    &= \left(\frac{\sigma_0}{\sigma_1}\right)^N \exp\left( \sum_{j=1}^N \left[ \frac{(x_j-\mu_0)^2}{2\sigma_0^2} - \frac{(x_j-\mu_1)^2}{2\sigma_1^2} \right] \right)
-\end{align}
-En pratique, pour des raisons de stabilité numérique, on utilise le logarithme du rapport de vraisemblance (en négligeant les constantes qui n'ont pas d'impact sur la décision) :
-\begin{equation}
-    \log \Lambda(\mathbf{x}) \propto \sum_{j=1}^N \left[ \frac{(x_j-\mu_0)^2}{2\sigma_0^2} - \frac{(x_j-\mu_1)^2}{2\sigma_1^2} \right]
-\end{equation}
-
-Ce principe est généralisé à d'autres lois (Cauchy, Laplace, etc.) selon la forme des distributions observées. Les paramètres sont estimés par ajustement sur les données simulées (voir section précédente).
-
-Ainsi pour Laplace, dont la densité de probabilité est :
-
-\begin{equation}
-    p(x|\mathcal{H}_i) = \frac{1}{2b_i} \exp\left(-\frac{|x-\mu_i|}{b_i}\right)
-\end{equation}
-
-le rapport de vraisemblance devient :
-
-\begin{equation}
-    \log(\Lambda(\mathbf{x})) \propto \sum_{i=1}^{n} \frac{|x_i - \mu_1|}{b_1} - \frac{|x_i - \mu_0|}{b_0}
-\end{equation}
-
-Pour Cauchy, dont la densité de probabilité est :
-
-\begin{equation}
-    p(x|\mathcal{H}_i) = \frac{1}{\pi \gamma_i \left[1 + \left(\frac{x - x_{0,i}}{\gamma_i}\right)^2\right]}
-\end{equation}
-
-le rapport de vraisemblance devient :
-
-\begin{equation}
-    \log(\Lambda(\mathbf{x})) \propto \sum_{i=1}^{n} \log\left(1 + \left(\frac{x_i - x_{0,0}}{\gamma_0}\right)^2\right) - \log\left(1 + \left(\frac{x_i - x_{0,1}}{\gamma_1}\right)^2\right)
-\end{equation}
-
-Il peut être utile de noter que pour chacun des cas, nous faisons toujours l'hypothèse que les distributions suivent la même loi avec ou sans compagnon, mais avec des paramètres différents.
 
 \section{Résultats}
 
