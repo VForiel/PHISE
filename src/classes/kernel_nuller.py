@@ -430,20 +430,30 @@ def propagate_fields_njit(
     - Bright output electric fields
     """
 
-    λ_ratio = λ / λ0
+    λ_ratio = λ0/λ
 
+    # Nuller matrix at λ0
     N = 1/np.sqrt(2) * np.array([
         [1+0j,   1+0j],
         [1+0j,  np.exp(-1j * np.pi * λ_ratio)],
     ], dtype=np.complex128)
 
-    θ:float=np.pi/2
+    # Adjust phase shifts and nullers for wavelength λ
+    Na = np.abs(N)
+    Nφ = np.angle(N)
+    N = Na * np.exp(1j * Nφ * λ_ratio)
 
-    # Cross recombiner matrix
+    # Cross recombiner matrix at λ0
+    θ:float=np.pi/2
     R = 1/np.sqrt(2) * np.array([
-        [np.exp(1j*θ/2*λ_ratio), np.exp(-1j*θ/2*λ_ratio)],
-        [np.exp(-1j*θ/2*λ_ratio), np.exp(1j*θ/2*λ_ratio)]
+        [np.exp(1j*θ/2), np.exp(-1j*θ/2)],
+        [np.exp(-1j*θ/2), np.exp(1j*θ/2)]
     ])
+
+    # Adjust phase shifts and recombiner for wavelength λ
+    Ra = np.abs(R)
+    Rφ = np.angle(R)
+    R = Ra * np.exp(1j * Rφ * λ_ratio)
 
     φ = phase.bound_njit(φ + σ, λ)
 

@@ -34,7 +34,7 @@ def run(ctx:Context=None, Δλ=0.2*u.um, n=11, figsize=(5,5)):
         print(f"⌛ Calibrating at {round(λ.value,3)} um... {round(i/n * 100,2)}%", end="\r")
         ctx.interferometer.λ = λ
         # ctx.calibrate_obs(n=1_000)
-        ctx.calibrate_gen(β=0.961, verbose=False)
+        ctx.calibrate_obs(β=0.961, verbose=False)
         _, k, b = ctx.observe()
         data[i] = np.mean(np.abs(k) / b)
 

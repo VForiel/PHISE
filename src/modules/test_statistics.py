@@ -152,7 +152,7 @@ ALL_TESTS = {
     # 'Central bin 100': argmax100,
     # 'Central bin 500': argmax500,
     'Kolmogorov-Smirnov': kolmogorov_smirnov,
-    # 'Cramer von Mises': cramer_von_mises,
+    'Cramer von Mises': cramer_von_mises,
     # 'Mann-Whitney U': mannwhitneyu,
     # 'Wilcoxon': wilcoxon_mann_whitney,
     # 'Anderson Darling': anderson_darling,
