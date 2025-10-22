@@ -1,4 +1,13 @@
-# External libs
+
+"""Gestion du contexte d'observation.
+
+Ce module définit la classe `Context` qui combine un interféromètre,
+une cible astronomique et des paramètres d'observation (heure, intervalle,
+erreurs de cophasage...). Le `Context` fournit des utilitaires pour
+projeter la géométrie des télescopes, calculer le flux photonique et
+générer des cartes de transmission.
+"""
+
 import numpy as np
 import astropy.units as u
 import astropy.constants as const
@@ -8,7 +17,14 @@ import matplotlib.pyplot as plt
 
 from src.classes import telescope
 from src.classes.camera import Camera
-plt.rcParams['image.origin'] = 'lower'
+try:
+    import matplotlib.pyplot as plt
+    try:
+        plt.rcParams['image.origin'] = 'lower'
+    except Exception:
+        pass
+except Exception:
+    plt = None
 from io import BytesIO
 from LRFutils import color
 from scipy.optimize import curve_fit
@@ -38,16 +54,24 @@ class Context:
             monochromatic = False,
             name:str = "Unnamed Context",
         ):
-        """
-        Parameters
+        """Créer un contexte d'observation.
+
+        Paramètres
         ----------
-        - instrument: Instrument object
-        - target: Target object
-        - h: Central hourangle of the observation
-        - Δh: Hourangle range of the observation
-        - Γ: Input cophasing error (rms)
-        - monochromatic: Whether to use monochromatic aproximation or not
-        - name: Name of the scene
+        interferometer : Interferometer
+            Objet décrivant l'instrument et sa géométrie.
+        target : Target
+            Objet décrivant la cible (coordonnées, flux, compagnons).
+        h : astropy.units.Quantity
+            Heure locale/angle horaire central de l'observation.
+        Δh : astropy.units.Quantity
+            Durée / intervalle en angle horaire observé.
+        Γ : astropy.units.Quantity
+            Erreur de cophasage RMS (quantité en longueur).
+        monochromatic : bool, optionnel
+            Si True, utiliser l'approximation monochromatique.
+        name : str, optionnel
+            Nom du contexte.
         """
 
         self._initialized = False
@@ -216,10 +240,12 @@ class Context:
         raise ValueError("pf is a read-only property. Use update_photon_flux() to set it accordingly to the other parameters in this context.")
 
     def update_photon_flux(self):
-        """
-        Update the photon flux in the context.
-        ❗ Assumption: the spectral flux is constant over the bandwidth.
-        ❗ If Δλ=0 (monochromatic case), the photon flux is given for 1 nm of bandwidth
+        """Calculer et stocker le flux photonique reçu par chaque télescope.
+
+        Hypothèses
+        ----------
+        - Le flux spectral de la cible est supposé constant sur la bande Δλ.
+        - Si Δλ == 0 (cas monochromatique), la valeur est normalisée par 1 nm.
         """
 
         f = self.target.f.to(u.W / u.m**2 / u.nm)
@@ -257,8 +283,10 @@ class Context:
         raise ValueError("p is a read-only property. Use project_telescopes_position() to set it accordingly to the other parameters in this context.")
 
     def project_telescopes_position(self):
-        """
-        Project the telescopes position in a plane perpendicular to the line of sight.
+        """Projeter les positions des télescopes dans un plan perpendiculaire.
+
+        Met en place la propriété `p` (positions projetées en mètres) à partir
+        des positions locales des télescopes et de l'angle horaire `h`.
         """
         h = self.h.to(u.rad).value
         l = self.interferometer.l.to(u.rad).value
@@ -894,13 +922,13 @@ class Context:
                 kn.φ[p-1] = (np.mod(popt[0]+λ.value/4, λ.value) * λ.unit).to(kn.φ.unit)
 
             if plot:
-                axs[*plt_coords].set_title(f"$|B(\phi{p})|$")
-                axs[*plt_coords].scatter(x, y, label='Data', color='tab:blue')
-                axs[*plt_coords].plot(x, sin(x, *popt), label='Fit', color='tab:orange')
-                axs[*plt_coords].axvline(x=np.mod(popt[0]+λ.value/4, λ.value), color='k', linestyle='--', label='Optimal phase shift')
-                axs[*plt_coords].set_xlabel(f"Phase shift ({λ.unit})")
-                axs[*plt_coords].set_ylabel("Bright throughput")
-                axs[*plt_coords].legend()
+                axs[plt_coords].set_title(f"$|B(\phi{p})|$")
+                axs[plt_coords].scatter(x, y, label='Data', color='tab:blue')
+                axs[plt_coords].plot(x, sin(x, *popt), label='Fit', color='tab:orange')
+                axs[plt_coords].axvline(x=np.mod(popt[0]+λ.value/4, λ.value), color='k', linestyle='--', label='Optimal phase shift')
+                axs[plt_coords].set_xlabel(f"Phase shift ({λ.unit})")
+                axs[plt_coords].set_ylabel("Bright throughput")
+                axs[plt_coords].legend()
 
         def minimize_kernel(p, m, plt_coords=None):
 
@@ -920,13 +948,13 @@ class Context:
             kn.φ[p-1] = (np.mod(popt[0], λ.value) * λ.unit).to(kn.φ.unit)
 
             if plot:
-                axs[*plt_coords].set_title(f"$K_{m}(\phi{p})$")
-                axs[*plt_coords].scatter(x, y, label='Data', color='tab:blue')
-                axs[*plt_coords].plot(x, sin(x, *popt), label='Fit', color='tab:orange')
-                axs[*plt_coords].axvline(x=np.mod(popt[0], λ.value), color='k', linestyle='--', label='Optimal phase shift')
-                axs[*plt_coords].set_xlabel(f"Phase shift ({λ.unit})")
-                axs[*plt_coords].set_ylabel("Kernel throughput")
-                axs[*plt_coords].legend()
+                axs[plt_coords].set_title(f"$K_{m}(\phi{p})$")
+                axs[plt_coords].scatter(x, y, label='Data', color='tab:blue')
+                axs[plt_coords].plot(x, sin(x, *popt), label='Fit', color='tab:orange')
+                axs[plt_coords].axvline(x=np.mod(popt[0], λ.value), color='k', linestyle='--', label='Optimal phase shift')
+                axs[plt_coords].set_xlabel(f"Phase shift ({λ.unit})")
+                axs[plt_coords].set_ylabel("Kernel throughput")
+                axs[plt_coords].legend()
 
         def maximize_darks(p, ds, plt_coords=None):
 
@@ -946,13 +974,13 @@ class Context:
             kn.φ[p-1] = (np.mod(popt[0]+λ.value/4, λ.value) * λ.unit).to(kn.φ.unit)
 
             if plot:
-                axs[*plt_coords].set_title(f"$|D_{ds[0]}(\phi{p})| + |D_{ds[1]}(\phi{p})|$")
-                axs[*plt_coords].scatter(x, y, label='Data', color='tab:blue')
-                axs[*plt_coords].plot(x, sin(x, *popt), label='Fit', color='tab:orange')
-                axs[*plt_coords].axvline(x=np.mod(popt[0]+λ.value/4, λ.value), color='k', linestyle='--', label='Optimal phase shift')
-                axs[*plt_coords].set_xlabel(f"Phase shift ({λ.unit})")
-                axs[*plt_coords].set_ylabel(f"Dark pair {ds} throughput")
-                axs[*plt_coords].legend()
+                axs[plt_coords].set_title(f"$|D_{ds[0]}(\phi{p})| + |D_{ds[1]}(\phi{p})|$")
+                axs[plt_coords].scatter(x, y, label='Data', color='tab:blue')
+                axs[plt_coords].plot(x, sin(x, *popt), label='Fit', color='tab:orange')
+                axs[plt_coords].axvline(x=np.mod(popt[0]+λ.value/4, λ.value), color='k', linestyle='--', label='Optimal phase shift')
+                axs[plt_coords].set_xlabel(f"Phase shift ({λ.unit})")
+                axs[plt_coords].set_ylabel(f"Dark pair {ds} throughput")
+                axs[plt_coords].legend()
 
         # Bright maximization
         self.interferometer.kn.input_attenuation = [1, 1, 0, 0]

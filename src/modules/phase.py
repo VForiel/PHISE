@@ -1,79 +1,36 @@
+"""Module generated docstring."""
 from astropy import units as u
 import numpy as np
 import numba as nb
-
-# Phase shift -----------------------------------------------------------------
+from typing import Union
 
 @nb.njit()
-def shift_njit(
-    ψ: complex | np.ndarray[complex],
-    δφ: float | np.ndarray[float],
-    λ: float,
-) -> complex | np.ndarray[complex]:
-    """
-    De-phase the input beam by heating the fiber with an electrical current.
+def shift_njit(ψ: Union[complex, np.ndarray[complex]], δφ: Union[float, np.ndarray[float]], λ: float) -> Union[complex, np.ndarray[complex]]:
+    """Version numba-jittée de la rotation de phase d'un champ électrique.
 
-    Parameters
-    ----------
-    - ψ: input beam complex amplitude
-    - δφ: phase to add (in same unit as wavelenght)
-    - λ: wavelength
-
-    Returns
-    -------
-    - Output beam complex amplitude
+    Applique un déphasage δφ au champ ψ à la longueur d'onde λ.
     """
     return ψ * np.exp(1j * 2 * np.pi * δφ / λ)
 
+def shift(ψ: Union[complex, np.ndarray[complex]], δφ: u.Quantity, λ: u.Quantity) -> Union[complex, np.ndarray[complex]]:
+    """Appliquer un déphasage (interface utilisateur).
 
-def shift(
-    ψ: complex | np.ndarray[complex],
-    δφ: u.Quantity,
-    λ: u.Quantity,
-) -> complex | np.ndarray[complex]:
-    """
-    De-phase the input beam by heating the fiber with an electrical current.
-
-    Parameters
-    ----------
-    - ψ: input beam complex amplitude
-    - δφ: phase to add
-    - λ: wavelength
-
-    Returns
-    -------
-    - Output beam complex amplitude
+    Convertit les Quantity en valeurs numériques puis appelle
+    `shift_njit`.
     """
     δφ = δφ.to(λ.unit).value
     λ = λ.value
     return shift_njit(ψ, δφ, λ)
 
-# Bound phase -----------------------------------------------------------------
+def bound(φ: u.Quantity, λ: u.Quantity) -> u.Quantity:
+    """Ramener une phase dans l'intervalle [0, λ[.
 
-# We only consider relative phases, so we only consider phase shift in [0,wavelenght[
-
-def bound(
-        φ:u.Quantity,
-        λ:u.Quantity,
-    ) -> u.Quantity:
-    """Bring a phase to the interval [0, wavelenght[.
-
-    Parameters
-    ----------
-    - φ: Phase to bound (any distance unit)
-    - λ: Wavelenght of the light (any distance unit)
-
-    Returns
-    -------
-    - Phase in the interval [0, wavelenght]
+    Les deux arguments sont des Quantities en unités de longueur.
     """
     return bound_njit(φ.value, λ.to(φ.unit).value) * φ.unit
 
 @nb.njit()
-def bound_njit(
-        φ:float,
-        λ:float,
-    ) -> float:
+def bound_njit(φ: float, λ: float) -> float:
     """Bring a phase to the interval [0, wavelenght[.
 
     Parameters
@@ -87,25 +44,11 @@ def bound_njit(
     """
     return np.mod(φ, λ)
 
-# Perturbation ----------------------------------------------------------------
+def perturb(φ: np.ndarray[u.Quantity], rms: u.Quantity) -> u.Quantity:
+    """Ajouter un bruit gaussien aux phases avec dispersion `rms`.
 
-def perturb(
-        φ:np.ndarray[u.Quantity],
-        rms:u.Quantity,
-    ) -> u.Quantity:
-    """Add a random perturbation to a phase.
-
-    Parameters
-    ----------
-    - φ: Phase to perturb
-    - rms: Perturbation RMS
-
-    Returns
-    -------
-    - Perturbed phase
+    Renvoie un Quantity de même forme que `φ`.
     """
-
     rms = rms.to(φ.unit).value
     err = np.random.normal(0, rms, size=len(φ)) * φ.unit
-
     return φ + err
