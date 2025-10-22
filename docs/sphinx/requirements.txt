@@ -1,0 +1,8 @@
+sphinx
+numpy
+matplotlib
+astropy
+scipy
+numba
+LRFutils
+gitpython
