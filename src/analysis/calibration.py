@@ -9,7 +9,7 @@ import astropy.units as u
 from LRFutils import color
 from scipy.stats import linregress
 from copy import deepcopy as copy
-from .. import Context
+from phise.classes import Context
 
 def genetic_approach(ctx: Context=None, β: float=0.9, verbose=False, figsize=(10, 10), σ_rms=None):
     """"genetic_approach.

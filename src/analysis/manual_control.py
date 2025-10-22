@@ -9,7 +9,9 @@ except Exception:
 import ipywidgets as widgets
 import astropy.units as u
 from copy import deepcopy as copy
-from .. import *
+from phise.classes import Context
+from phise.classes import Companion, Target, Telescope, KernelNuller, Interferometer, Camera
+from phise.modules import *
 
 def gui(λ: u.Quantity=None, φ: u.Quantity=None, σ: u.Quantity=None):
     """"gui.
