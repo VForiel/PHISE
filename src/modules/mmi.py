@@ -1,12 +1,9 @@
+"""Module generated docstring."""
 import numpy as np
 import numba as nb
 
-# Nuller ----------------------------------------------------------------------
-
 @nb.njit()
-def nuller_2x2(
-        beams:np.ndarray[complex]
-    ) -> np.ndarray[complex]:
+def nuller_2x2(beams: np.ndarray[complex]) -> np.ndarray[complex]:
     """
     Simulate a 2 input beam nuller.
 
@@ -20,20 +17,11 @@ def nuller_2x2(
         - 1st output is the bright channel
         - 2nd output is the dark channel
     """
-
-    # Nuller matrix
-    N = 1/np.sqrt(2) * np.array([
-        [1,   1],
-        [1,  -1],
-    ], dtype=np.complex128)
-
-    # Operation
+    N = 1 / np.sqrt(2) * np.array([[1, 1], [1, -1]], dtype=np.complex128)
     return N @ beams
 
-# Cross Recombiner ------------------------------------------------------------
-
 @nb.njit()
-def cross_recombiner_2x2(beams:np.array) -> np.array:
+def cross_recombiner_2x2(beams: np.array) -> np.array:
     """
     Simulate a 2x2 cross recombiner MMI
 
@@ -45,14 +33,6 @@ def cross_recombiner_2x2(beams:np.array) -> np.array:
     -------
     - Array of 2 output beams complex amplitudes
     """
-
-    θ:float=np.pi/2
-
-    # Cross recombiner matrix
-    S = 1/np.sqrt(2) * np.array([
-        [np.exp(1j*θ/2), np.exp(-1j*θ/2)],
-        [np.exp(-1j*θ/2), np.exp(1j*θ/2)]
-    ])
-
-    # Operation
+    θ: float = np.pi / 2
+    S = 1 / np.sqrt(2) * np.array([[np.exp(1j * θ / 2), np.exp(-1j * θ / 2)], [np.exp(-1j * θ / 2), np.exp(1j * θ / 2)]])
     return S @ beams
