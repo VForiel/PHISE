@@ -5,6 +5,9 @@ __pycache__/
 .pdm-python
 pdm.lock
 
+# Sphinx build artifacts
+docs/sphinx/_build/
+
 # LaTeX generated files
 *.aux
 *.bbl
