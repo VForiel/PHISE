@@ -11,9 +11,10 @@ permissions:
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
+    # Minimal permissions: we only need to read repository contents to trigger a
+    # remote build on ReadTheDocs. Do not grant write unless necessary.
     permissions:
-      contents: write
-      pages: write
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
@@ -30,12 +31,74 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r docs/sphinx/requirements.txt
 
+      - name: Install jq (JSON pretty print for curl output)
+        run: |
+          sudo apt-get update && sudo apt-get install -y jq
+
       - name: Build docs
         run: |
           python -m sphinx -b html docs/sphinx docs/sphinx/_build/html
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/sphinx/_build/html
+      # Instead of pushing to GitHub Pages from here we trigger a ReadTheDocs
+      # build. ReadTheDocs will pull the repository and build the docs on its
+      # side (recommended for consistency with RTD environment and integrations).
+      #
+      # Secrets required (add them in Settings → Secrets and variables → Actions):
+      # - RTD_API_TOKEN : a ReadTheDocs API token (from your RTD account)
+      # - RTD_PROJECT_SLUG : the project slug on ReadTheDocs (e.g. 'owner/project')
+      - name: Trigger ReadTheDocs build and wait
+        env:
+          RTD_API_TOKEN: ${{ secrets.RTD_API_TOKEN }}
+          RTD_PROJECT_SLUG: ${{ secrets.RTD_PROJECT_SLUG }}
+        run: |
+          set -eux
+          if [ -z "$RTD_API_TOKEN" ] || [ -z "$RTD_PROJECT_SLUG" ]; then
+            echo "Missing RTD_API_TOKEN or RTD_PROJECT_SLUG. Add them to repository secrets.";
+            exit 1;
+          fi
+
+          echo "Triggering ReadTheDocs build for $RTD_PROJECT_SLUG"
+          resp=$(curl -sS -X POST \
+            -H "Authorization: Token $RTD_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"build": true}' \
+            "https://readthedocs.org/api/v3/projects/$RTD_PROJECT_SLUG/builds/")
+
+          echo "$resp" | jq .
+          build_url=$(echo "$resp" | jq -r '.resource_uri // .url // empty')
+          # older/newer API shapes differ, try to find build id/url
+          if [ -z "$build_url" ] || [ "$build_url" = "null" ]; then
+            build_id=$(echo "$resp" | jq -r '.id // empty')
+            if [ -n "$build_id" ]; then
+              build_url="https://readthedocs.org/api/v3/build/$build_id/"
+            fi
+          fi
+
+          if [ -z "$build_url" ]; then
+            echo "Could not determine RTD build URL from API response.";
+            exit 0
+          fi
+
+          echo "Polling RTD build status at $build_url"
+          # Poll status until finished (timeout after ~15 minutes)
+          timeout=$((60*15))
+          interval=10
+          elapsed=0
+          while [ $elapsed -lt $timeout ]; do
+            st=$(curl -sS -H "Authorization: Token $RTD_API_TOKEN" "$build_url" | jq -r '.status // .state // empty')
+            echo "RTD build status: $st"
+            case "$st" in
+              finished|success|built)
+                echo "RTD build finished successfully: $st";
+                exit 0;
+                ;;
+              failed|error)
+                echo "RTD build failed: $st";
+                exit 1;
+                ;;
+            esac
+            sleep $interval
+            elapsed=$((elapsed+interval))
+          done
+          echo "Timed out waiting for RTD build after $timeout seconds";
+          exit 2

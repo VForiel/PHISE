@@ -1,8 +1,11 @@
 sphinx
+myst-parser
+furo
+sphinx-copybutton
+pyyaml
 numpy
 matplotlib
 astropy
 scipy
 numba
-LRFutils
 gitpython
