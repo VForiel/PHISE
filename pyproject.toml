@@ -20,6 +20,7 @@ dependencies = [
     "nbformat>=5.10.4",
     "pip>=25.1.1",
     "gitpython>=3.1.44",
+    "toml",
 ]
 requires-python = ">=3.11.0"
 readme = "README.md"
