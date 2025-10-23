@@ -1,131 +1,45 @@
-# Tunable Kernel-Nulling for Direct Exoplanet Detection
+## PHISE — PHotonic Interferometric Simulation for Exoplanets
 
-[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+PHISE is a Python package for simulation and analysis of interferometric instruments using layered photonic chips. It provides high-level classes (telescopes, interferometer, kernel nuller, camera, target scene) and numerical modules (propagation, coordinates, MMI recombiners, test statistics) to build scenarios, simulate the instrument chain, and visualize responses (transmission maps, projected baselines, null/dark/bright outputs, etc.).
 
-## 📜 Abstract
+The repository also ships demo notebooks and a complete documentation
 
-This project focuses on the development and optimization of a tunable Kernel-Nulling interferometer for direct detection of exoplanets. The work combines numerical simulations, calibration algorithms, and statistical analysis techniques to achieve high-contrast detection capabilities using a four-telescope architecture with integrated photonic components.
+## Requirements and installation
 
-## 🎯 Objectives
+- Python 3.11 or upper.
+- Main dependencies: numpy, astropy, scipy, matplotlib, numba, ipywidgets, sympy, LRFutils, etc. (handled automatically).
 
-- **Direct exoplanet detection** with contrasts beyond 10⁻⁸
-- **Phase aberration correction** using active photonic components with 14 electro-optic phase shifters
-- **Performance optimization** through advanced calibration algorithms
-- **Statistical analysis** of kernel-null depth distributions
+Two installation paths:
 
-## 🚀 Getting Started
+1) Conda environment (recommended)
 
-### Prerequisites
-
-- Anaconda or Miniconda (or another Conda distribution)
-
-### Key Dependencies
-
-- `numpy` - Numerical computations
-- `astropy` - Astronomical units and calculations
-- `matplotlib` - Plotting and visualization
-- `scipy` - Scientific computing
-- `numba` - High-performance numerical functions
-- `ipywidgets` - Interactive widgets for Jupyter notebooks
-
-### Installation (use Conda)
-
-1. Clone the repository:
-```powershell
-git clone https://github.com/your-username/Tunable-Kernel-Nulling.git
-cd Tunable-Kernel-Nulling
-```
-
-2. Create the Conda environment from the provided `environment.yml`:
 ```powershell
 conda env create -f environment.yml
+conda activate phise
 ```
 
-3. Activate the environment:
-```powershell
-conda activate kn
-```
+2) pip editable install (dev mode)
 
-4. Install the local project package editable (optional but useful for development):
 ```powershell
 pip install -e .
 ```
 
-Notes:
-- The `environment.yml` uses `conda-forge` and pins key package versions from the repository lockfile. A few packages (for example private or pip-only packages such as `LRFutils`) are installed via `pip` inside the Conda environment — see the `pip:` section of `environment.yml`.
-- I left existing PDM files (`pyproject.toml`, `pdm.lock`) untouched so you can still reproduce the original PDM environment if needed. Remove them only if you are sure you no longer need PDM configuration.
+## Documentation
 
-Now open the main simulation notebook `numerical_simulation.ipynb` and select the appropriate kernel for the activated Conda environment.
+A complete documentation is available at https://phise.readthedocs.io/
 
-## 🔬 Scientific Approach
+## Design notes
 
-### Architecture
+- Physical quantities are handled with `astropy.units` and validated in property setters to ensure unit consistency.
+- Heavy computations rely on `numpy` and `numba` where appropriate.
+- High-level methods (`Context`) automatically propagate parameter changes (e.g., recompute projected positions and photon flux).
 
-The system employs a four-telescope Kernel-Nulling architecture using integrated optical components:
+## Credits
 
-- **4 Telescopes**: Collecting light from target star and potential companions
-- **14 Phase Shifters**: Electro-optic elements for phase correction
-- **MMI Components**: Multi-mode interferometers for signal processing
-- **7 Outputs**: 1 bright output + 6 dark outputs → 3 kernel outputs
+- Lead author: Vincent Foriel.
+- If you use PHISE in scientific work, please cite the repository and/or your related publications.
 
-### Key Features
+## Questions, bugs, contributions
 
-1. **Calibration Algorithms**:
-   - Genetic algorithm approach
-   - Input obstruction method
-   - Performance comparison and optimization
+Issues and contributions are welcome. Feel free to propose improvements (docs, tests, examples, new utilities in `modules/`, etc.) by opening an issue or a pull request.
 
-2. **Statistical Analysis**:
-   - ROC curve analysis
-   - P-value computation
-   - Multiple test statistics (mean, median, Kolmogorov-Smirnov, etc.)
-
-3. **Simulation Scenarios**:
-   - **VLTI**: Ground-based, 8m telescopes, 130m baseline, λ=1.55μm
-   - **LIFE**: Space-based, 2m telescopes, 600m baseline, λ=4μm
-
-### Applications
-
-- Direct imaging of exoplanets
-- High-contrast astronomy
-- Interferometric nulling techniques
-- Statistical detection methods
-
-## 📊 Key Results
-
-- Achievable contrasts: 10⁻⁵ to 10⁻⁶ (limited by phase perturbations)
-- Robust performance against first-order phase aberrations
-- Statistical tests demonstrate reliable planet detection capabilities
-- Successful calibration algorithms for component optimization
-
-## 📚 Publications
-
-This work has contributed to several scientific publications:
-
-1. **SPIE Proceedings** - "Tunable Kernel-Nulling interferometry for direct exoplanet detection"
-2. **A&A Paper (in preparation)** - "Tunable Kernel-Nulling for direct detection of exoplanets: 1. Calibration and performance"
-3. **Statistical Analysis Paper (in preparation)** - "Statistical data analysis techniques for kernel-nulling interferometry"
-
-## 👥 Contributors
-
-- **Vincent Foriel** - PhD Student, Primary Developer
-- **David Mary** - Supervisor, Statistical Analysis
-- **Frantz Martinache** - Supervisor, Interferometry Expert
-- **Nick Cvetojevic** - Photonics Specialist
-- **Romain Laugier** - Kernel-Nulling Theory
-- **Marc-Antoine Martinod** - Technical Support
-- **Sylvie Robbe-Dubois** - Project Coordination
-- **Roxanne Ligi** - Scientific Advisor
-
-## 🏢 Affiliations
-
-- **Université Côte d'Azur, Observatoire de la Côte d'Azur Nice**
-- **CNRS, Laboratoire Lagrange, Nice, France**
-- **KU Leuven University, Leuven, Belgium**
-
-## 📞 Contact
-
-For questions or collaborations:
-- **Vincent Foriel**: vincent.foriel@oca.eu
-- **Frantz Martinache**: frantz.martinache@oca.eu
-- **David Mary**: david.mary@oca.eu
