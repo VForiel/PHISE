@@ -1,4 +1,4 @@
-# API References
+# 🧩 API References
 
 PHISE include a core set of classes to model the main entities manipulated by the library and several modules providing additional functionalities.
 

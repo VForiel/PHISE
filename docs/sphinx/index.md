@@ -5,5 +5,7 @@
 :hidden:
 :maxdepth: 2
 
+quickstart.md
 api_references.md
+contribute.md
 ```

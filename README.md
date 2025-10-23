@@ -1,6 +1,6 @@
-## PHISE — PHotonic Interferometric Simulation for Exoplanets
+## PHISE
 
-PHISE is a Python package for simulation and analysis of interferometric instruments using layered photonic chips. It provides high-level classes (telescopes, interferometer, kernel nuller, camera, target scene) and numerical modules (propagation, coordinates, MMI recombiners, test statistics) to build scenarios, simulate the instrument chain, and visualize responses (transmission maps, projected baselines, null/dark/bright outputs, etc.).
+PHISE (PHotonic Interferometry Simulation for Exoplanets) is a Python package for simulation and analysis of interferometric instruments using layered photonic chips. It provides high-level classes (telescopes, interferometer, kernel nuller, camera, target scene) and numerical modules (propagation, coordinates, MMI recombiners, test statistics) to build scenarios, simulate the instrument chain, and visualize responses (transmission maps, projected baselines, null/dark/bright outputs, etc.).
 
 The repository also ships demo notebooks and a complete documentation
 
