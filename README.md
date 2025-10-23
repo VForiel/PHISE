@@ -4,6 +4,9 @@ PHISE is a Python package for simulation and analysis of interferometric instrum
 
 The repository also ships demo notebooks and a complete documentation
 
+> **Note**
+> PHISE is currently under active development and is still a part of a PhD research project. The API and functionalities may change at any time.
+
 ## Requirements and installation
 
 - Python 3.11 or upper.
