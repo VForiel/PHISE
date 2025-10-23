@@ -1,6 +1,6 @@
 [project]
 name = "phise"
-version = "0.1.0"
+version = "0.1.1"
 description = "Package for tunable kernel nulling / interferometry utilities (phise)"
 authors = [
     {name = "Vincent Foriel", email = "vincent.foriel@gmail.com"},
