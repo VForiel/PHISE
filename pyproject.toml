@@ -1,6 +1,6 @@
 [project]
 name = "phise"
-version = "0.1.0"
+version = "0.1.1"
 description = "Package for tunable kernel nulling / interferometry utilities (phise)"
 authors = [
     {name = "Vincent Foriel", email = "vincent.foriel@gmail.com"},
@@ -21,7 +21,7 @@ dependencies = [
     "pip>=25.1.1",
     "gitpython>=3.1.44",
 ]
-requires-python = ">=3.11.*"
+requires-python = ">=3.11.0"
 readme = "README.md"
 license = {text = "MIT"}
 
