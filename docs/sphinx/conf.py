@@ -67,27 +67,6 @@ myst_fence_as_directive = [
     'autoclass', 'automodule', 'autofunction', 'autodata', 'autoexception', 'autosummary'
 ]
 
-# Get version -----------------------------------------------------------------
-
-# Get version from pyproject.toml
-try:
-    import toml
-    pyproject_file = os.path.join(os.path.dirname(__file__), '../..', 'pyproject.toml')
-    with open(pyproject_file, 'r') as f:
-        pyproject = toml.load(f)
-    version = pyproject['project']['version']
-except Exception as e:
-    print("❌ Error: Could not retrieve version information.")
-    print(f"ℹ️ {e}")
-
-# Try to get current commit (if in a git repo)
-try:
-    import subprocess
-    commit = subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode('ascii').strip()
-    version += f"+{commit[:7]}"
-except Exception:
-    pass
-
 # HTML settings ---------------------------------------------------------------
 
 html_logo = "../phise_logo.png"
@@ -97,11 +76,5 @@ html_context = {
     "github_repo": "Tunable-Kernel-Nulling",
     "github_version": "main",
     "doc_path": "docs",
-    "current_version": version,
     "version_switcher": "https://raw.githubusercontent.com/aksiome/breeze/refs/heads/main/docs/_static/switcher.json",
-    "languages": [
-        ("English", f"/en/{version}/%s/", "en"),
-        ("Français", f"/fr/{version}/%s/", "fr"),
-        ("中文", f"/zh/{version}/%s/", "zh"),
-    ],
 }
