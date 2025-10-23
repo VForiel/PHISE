@@ -1,11 +1,16 @@
-"""Module generated docstring."""
+"""Ajustement de lois statistiques aux sorties du nuller.
+
+Contient des routines pour générer des échantillons, ajuster des
+distributions (Cauchy, Laplace, Johnson SU, ...) et tracer les
+résultats.
+"""
 from copy import deepcopy as copy
 from astropy import units as u
 import numpy as np
 import fitter
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
-from src import Context
+from phise import Context
 
 def fit(ctx: Context=None):
     """"fit.

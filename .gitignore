@@ -1,5 +1,5 @@
 __pycache__/
-/.venv/
+.venv/
 .vscode/
 .idea/
 .pdm-python
@@ -17,3 +17,10 @@ docs/sphinx/_build/
 *.fls
 *.synctex.gz
 *.out
+
+# Package distribution files
+dist/
+*.eggs-info/
+
+# Doc
+_build/

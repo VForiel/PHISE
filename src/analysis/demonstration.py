@@ -1,4 +1,8 @@
-"""Module generated docstring."""
+"""Exemples et démonstrations symboliques.
+
+Contient des petites démonstrations utilisant SymPy pour illustrer la
+décomposition des contributions de champs et intensités.
+"""
 from IPython.display import display
 import sympy as sp
 

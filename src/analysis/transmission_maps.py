@@ -1,10 +1,14 @@
-"""Module generated docstring."""
+"""Interfaces et affichage des cartes de transmission du nuller.
+
+Contient des widgets et fonctions pour calculer/afficher les cartes de
+transmission, gradients et exporter des images.
+"""
 from copy import deepcopy as copy
 import astropy.units as u
 import numpy as np
 import ipywidgets as widgets
 from IPython.display import display
-from src import Context
+from phise import Context
 
 def gui(ctx: Context=None, N: int=100):
     """

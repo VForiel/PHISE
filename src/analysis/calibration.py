@@ -1,4 +1,8 @@
-"""Module generated docstring."""
+"""Fonctions d'algorithmes de calibration et routines de comparaison.
+
+Contient des approches de calibration (génétique et par obstruction),
+et des utilitaires pour afficher la profondeur de nulling obtenue.
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 try:
@@ -9,7 +13,7 @@ import astropy.units as u
 from LRFutils import color
 from scipy.stats import linregress
 from copy import deepcopy as copy
-from phise.classes import Context
+from phise import Context
 
 def genetic_approach(ctx: Context=None, β: float=0.9, verbose=False, figsize=(10, 10), σ_rms=None):
     """"genetic_approach.

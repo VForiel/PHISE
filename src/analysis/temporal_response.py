@@ -1,14 +1,19 @@
-"""Module generated docstring."""
+"""Analyse temporelle et outils pour la réponse horaire du nuller.
+
+Interfaces graphiques et fonctions d'ajustement pour étudier la
+variation des kernels en fonction de l'angle horaire et des
+compagnes artificielles.
+"""
 from io import BytesIO
 import numpy as np
 from astropy import units as u
-from src import Context
+from phise import Context
 from scipy.optimize import minimize
 import matplotlib.pyplot as plt
 from copy import deepcopy as copy
 import ipywidgets as widgets
 from IPython.display import display
-from src.classes import Companion
+from phise.classes import Companion
 
 def gui(ctx: Context=None):
     """

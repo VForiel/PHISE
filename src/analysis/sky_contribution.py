@@ -1,4 +1,8 @@
-"""Module generated docstring."""
+"""Cartographie de la contribution des noyaux sur le ciel.
+
+Fournit des fonctions pour calculer et afficher les cartes de
+transmission des différents kernels et la zone de contribution totale.
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 try:
@@ -7,8 +11,8 @@ except Exception:
     pass
 from copy import deepcopy as copy
 from astropy import units as u
-from src.classes import Context
-from src.modules import coordinates
+from phise.classes import Context
+from phise.modules import coordinates
 
 def plot(ctx: Context=None, resolution: int=100, n=100, map=np.median):
     """

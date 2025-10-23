@@ -1,6 +1,7 @@
 @echo off
 setlocal
-set SPHINXBUILD=sphinx-build
+rem Use python -m sphinx to avoid relying on sphinx-build being on PATH
+set SPHINXBUILD=python -m sphinx
 set SOURCEDIR=.
 set BUILDDIR=_build
 

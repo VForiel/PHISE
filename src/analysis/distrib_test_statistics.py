@@ -1,4 +1,3 @@
-"""Module generated docstring."""
 import numpy as np
 import matplotlib.pyplot as plt
 try:
@@ -7,11 +6,18 @@ except Exception:
     pass
 from copy import deepcopy as copy
 import astropy.units as u
-from src.classes.context import Context
-from src.modules.test_statistics import ALL_TESTS
 from scipy.optimize import minimize
 from scipy import stats
-from src.modules import test_statistics as ts
+from phise import Context
+from phise.modules.test_statistics import ALL_TESTS
+import phise.modules.test_statistics as ts
+
+"""Tests statistiques et outils ROC.
+
+Fournit des fonctions pour calculer et tracer les courbes ROC, évaluer
+la puissance des tests statistiques sur des simulations et comparer
+différentes lois ajustées aux données.
+"""
 
 def roc(t0: np.ndarray, t1: np.ndarray, test: callable):
     """"roc.

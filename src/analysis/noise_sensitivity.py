@@ -1,4 +1,8 @@
-"""Module generated docstring."""
+"""Analyse de la sensibilité du nuller au bruit d'entrée.
+
+Fonctions pour calibrer, simuler et tracer la dépendance de la
+profondeur de nulling à l'OPD et autres paramètres bruités.
+"""
 import astropy.units as u
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7,7 +11,7 @@ try:
 except Exception:
     pass
 from copy import deepcopy as copy
-from src.classes.context import Context
+from phise.classes.context import Context
 
 def plot(ctx: Context=None, β=0.5, n=1000, figsize=(15, 5)):
     """

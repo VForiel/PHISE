@@ -1,6 +1,5 @@
 sphinx
 myst-parser
-furo
 sphinx-copybutton
 pyyaml
 numpy
@@ -9,3 +8,6 @@ astropy
 scipy
 numba
 gitpython
+sphinx-breeze-theme
+linkify-it-py
+toml

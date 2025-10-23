@@ -1,4 +1,9 @@
-"""Module generated docstring."""
+"""Visualisations et transformations des distributions issues des
+observations du kernel-nuller.
+
+Fonctions pour calculer et tracer la distribution instantanée, les
+évolutions temporelles et autres représentations des données.
+"""
 import numpy as np
 import astropy.units as u
 from copy import deepcopy as copy
@@ -7,7 +12,7 @@ try:
     plt.rcParams['image.origin'] = 'lower'
 except Exception:
     pass
-from src import Context
+from phise import Context
 
 def instant_distribution(ctx: Context=None, n=10000, stat=np.median, figsize=(10, 10)) -> np.ndarray:
     """

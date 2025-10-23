@@ -1,6 +1,6 @@
 # Makefile for Sphinx documentation
 
-SPHINXBUILD   = sphinx-build
+SPHINXBUILD   = python -m sphinx
 SOURCEDIR     = .
 BUILDDIR      = _build
 

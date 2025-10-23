@@ -1,4 +1,9 @@
-"""Module generated docstring."""
+"""Interface interactive pour contrôle manuel et visualisation.
+
+Ce module expose des interfaces Jupyter/IPython (widgets) pour tester
+manuellement des configurations d'entrée, observer les sorties du
+nuller et visualiser phases, intensités et cartes.
+"""
 import os
 import numpy as np
 import matplotlib.pyplot as plt

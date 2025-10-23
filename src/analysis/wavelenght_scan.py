@@ -1,4 +1,8 @@
-"""Module generated docstring."""
+"""Analyse et balayage en longueur d'onde.
+
+Fonctions pour simuler et afficher la réponse du nuller en fonction de
+la longueur d'onde.
+"""
 import numpy as np
 import numba as nb
 import matplotlib.pyplot as plt
@@ -9,7 +13,7 @@ except Exception:
 from copy import deepcopy as copy
 import astropy.units as u
 from scipy import stats
-from src.classes.context import Context
+from phise.classes.context import Context
 
 def run(ctx: Context=None, Δλ=0.2 * u.um, n=11, figsize=(5, 5)):
     """"run.
@@ -40,7 +44,7 @@ Returns
     for (i, λ) in enumerate(λs):
         print(f'⌛ Calibrating at {round(λ.value, 3)} um... {round(i / n * 100, 2)}%', end='\r')
         ctx.interferometer.λ = λ
-        ctx.calibrate_obs(β=0.961, verbose=False)
+        ctx.calibrate_obs(n=1000)
         (_, k, b) = ctx.observe()
         data[i] = np.mean(np.abs(k) / b)
         if λ == λ0:

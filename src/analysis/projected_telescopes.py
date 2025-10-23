@@ -1,12 +1,16 @@
-"""Module generated docstring."""
+"""Outils de visualisation pour positions projetées des télescopes.
+
+Contient une interface graphique minimale pour afficher la géométrie
+du réseau de télescopes projetée sur le plan du ciel.
+"""
 import numpy as np
 import astropy.units as u
 from ipywidgets import widgets
 from IPython.display import display
 from io import BytesIO
 from copy import deepcopy as copy
-from src import Telescope
-from src import Context
+from phise import Telescope
+from phise import Context
 
 def gui(ctx: Context=None, n=10) -> None:
     """
