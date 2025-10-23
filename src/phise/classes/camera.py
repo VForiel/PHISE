@@ -1,43 +1,35 @@
-"""Gestion d'une caméra virtuelle pour la simulation d'interférométrie.
+"""Virtual camera for interferometric simulations.
 
-Ce module fournit la classe Camera qui représente un capteur simple utilisé
-pour convertir des champs électriques complexes (visibilités) en un nombre
-de photons détectés pendant une durée d'exposition. La classe est volontairement
-minimaliste et conçue pour être utilisée par un objet `Interferometer` (type
-indiqué dans les annotations) qui agit comme parent.
+This module provides the `Camera` class, a minimal sensor that converts
+complex electric fields (visibilities) into a detected photon count over an
+exposure time. It is designed to be used within an `Interferometer` object
+that acts as its parent.
 
-Principales responsabilités
-- stocker le temps d'exposition (attribut `e`) sous la forme d'une
-    quantité Astropy en secondes;
-- simuler la détection de photons via la méthode `acquire_pixel` à partir
-    d'un tableau de champs électriques complexes ;
-- supporter un mode `ideal` (pas de bruit, valeur entière tronquée)
-    ou un mode réaliste (bruit de Poisson / approximations gaussiennes pour
-    grands nombres de photons).
+Responsibilities
+- Store the exposure time (`e`) as an Astropy quantity in seconds.
+- Simulate photon detection with `acquire_pixel` from an array of complex
+    electric fields.
+- Support an `ideal` mode (no noise, truncated integer value) or a realistic
+    mode (Poisson noise / Gaussian approximation for very large counts).
 
-Classe exposée
-- Camera
+Example
+    >>> from phise.classes.camera import Camera
+    >>> import numpy as np
+    >>> import astropy.units as u
+    >>> cam = Camera(e=0.5 * u.s, ideal=False, name="CamSim")
+    >>> psi = np.array([1+0j, 0.5+0.5j])  # complex electric fields
+    >>> n = cam.acquire_pixel(psi)
 
-Exemple minimal
----------------
->>> from phise.classes.camera import Camera
->>> import numpy as np
->>> import astropy.units as u
->>> cam = Camera(e=0.5 * u.s, ideal=False, name='CamSim')
->>> psi = np.array([1+0j, 0.5+0.5j])  # champs électriques complexes
->>> n = cam.acquire_pixel(psi)
-
-Erreurs levées
-- TypeError si `e` n'est pas une `astropy.units.Quantity` ou si `ideal`
-    / `name` ne sont pas des types attendus.
-- ValueError si `e` ne peut pas être converti en unité de temps.
+Raises
+- TypeError: If `e` is not an `astropy.units.Quantity` or if `ideal`/`name`
+    are not of the expected types.
+- ValueError: If `e` cannot be converted to a time unit.
 
 Notes
-- Les valeurs d'entrée et sortie sont minimales par conception :
-    - `ψ` (psi) est attendu comme un numpy.ndarray de nombres complexes où
-        |ψ|^2 donne un flux en s^-1 par élément ;
-    - `acquire_pixel` retourne un entier correspondant au nombre de photons
-        détectés pendant l'exposition `e`.
+- Inputs and outputs are intentionally minimal:
+    - `ψ` (psi) is a numpy.ndarray of complex numbers where |ψ|^2 yields a flux in s^-1 per element.
+    - `acquire_pixel` returns an integer equal to the number of detected photons
+        during exposure `e`.
 """
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
@@ -49,40 +41,31 @@ import numba as nb
 import math
 
 class Camera:
-    """Représentation d'une caméra virtuelle utilisée pour la détection de photons.
+    """Virtual camera used to simulate photon detection.
 
-    Cette classe encapsule des paramètres simples d'un capteur (temps
-    d'exposition, nom, mode idéal) et fournit une méthode pour convertir
-    des champs électriques complexes en nombre de photons détectés durant
-    l'exposition.
+    Encapsulates simple sensor parameters (exposure time, name, ideal mode)
+    and provides a method to convert complex electric fields into detected
+    photon counts over the exposure.
     """
 
     __slots__ = ('_parent_interferometer', '_e', '_name', '_ideal')
 
     def __init__(self, e: Optional[u.Quantity] = None, ideal: bool = False, name: str = 'Unnamed Camera'):
-        """Initialise la caméra.
+        """Initialize the camera.
 
-        Paramètres
-        ----------
-        e : Optional[astropy.units.Quantity]
-            Temps d'exposition. Doit être une quantité avec une unité de temps
-            (par exemple ``1 * u.s``). Si ``None`` la valeur par défaut ``1 s``
-            est utilisée lorsque possible.
-        ideal : bool
-            Si True, la caméra est considérée idéale et renverra la valeur
-            entière attendue sans bruit (tronquée). Si False, un bruit de
-            comptage (Poisson) est simulé.
-        name : str
-            Nom lisible pour la caméra.
+        Args:
+            e (Optional[u.Quantity]): Exposure time as an Astropy quantity in a
+                time unit (e.g. ``1 * u.s``). If ``None``, a default of ``1 s``
+                is used when possible.
+            ideal (bool): If ``True``, the camera is considered ideal and
+                returns the expected integer value without noise (truncated).
+                If ``False``, Poisson counting noise is simulated.
+            name (str): Human-readable name for the camera.
 
-        Exceptions
-        ----------
-        TypeError
-            Si ``ideal`` n'est pas un booléen ou si ``name`` n'est pas une
-            chaîne de caractères.
-        ValueError
-            Si la quantité ``e`` ne peut pas être convertie en unité de
-            temps.
+        Raises:
+            TypeError: If ``ideal`` is not a boolean or ``name`` is not a
+                string.
+            ValueError: If ``e`` cannot be converted to a time unit.
         """
         self._parent_interferometer = None
         # avoid evaluating `1 * u.s` at import time which may fail when astropy is mocked
@@ -105,29 +88,24 @@ class Camera:
 
     @property
     def e(self) -> u.Quantity:
-        """Temps d'exposition de la caméra en secondes.
+        """Camera exposure time in seconds.
 
-        Retourne une ``astropy.units.Quantity`` exprimée en secondes. L'accesseur
-        n'effectue pas de conversion supplémentaire ; la conversion est gérée
-        dans le setter.
+        Returns:
+            u.Quantity: Exposure time expressed in seconds. Conversion is
+                handled in the setter.
         """
         return self._e
 
     @e.setter
     def e(self, e: u.Quantity):
-        """Définit le temps d'exposition.
+        """Set the exposure time.
 
-        Paramètres
-        ----------
-        e : astropy.units.Quantity
-            Quantité représentant un temps (ex : ``0.5 * u.s``).
+        Args:
+            e (u.Quantity): Time quantity (e.g. ``0.5 * u.s``).
 
-        Exceptions
-        ----------
-        TypeError
-            Si ``e`` n'est pas un ``astropy.units.Quantity``.
-        ValueError
-            Si la quantité ne peut pas être convertie en une unité de temps.
+        Raises:
+            TypeError: If ``e`` is not an ``astropy.units.Quantity``.
+            ValueError: If the quantity cannot be converted to a time unit.
         """
         if not isinstance(e, u.Quantity):
             raise TypeError('e must be an astropy Quantity')
@@ -139,45 +117,42 @@ class Camera:
 
     @property
     def parent_interferometer(self) -> Interferometer:
-        """Référence en lecture seule vers l'interféromètre parent.
+        """Read-only reference to the parent interferometer.
 
-        Le setter est en lecture seule et l'attribut doit être configuré par
-        l'objet parent (ex. une instance d'``Interferometer``) si nécessaire.
+        The setter is read-only; the attribute is set by the parent object
+        (e.g., an instance of ``Interferometer``).
         """
         return self._parent_interferometer
 
     @parent_interferometer.setter
     def parent_interferometer(self, _):
-        """Tentative d'écriture interdite pour `parent_interferometer`.
+        """Setter is disabled; ``parent_interferometer`` is read-only.
 
-        Cette propriété est en lecture seule ; toute affectation directe
-        déclenche une exception.
+        Raises:
+            ValueError: Always raised; property is read-only.
         """
         raise ValueError('parent_interferometer is read-only')
 
     @property
     def ideal(self) -> bool:
-        """Indique si la caméra est en mode idéal (sans bruit).
+        """Whether the camera is in ideal (noise-free) mode.
 
-        Retourne ``True`` lorsque le bruit de détection est désactivé. Le mode
-        idéal est utile pour des tests déterministes.
+        Returns:
+            bool: ``True`` when detection noise is disabled; useful for
+                deterministic tests.
         """
         return self._ideal
 
     @ideal.setter
     def ideal(self, ideal: bool):
-        """Définit le mode idéal de la caméra.
+        """Set the ideal mode for the camera.
 
-        Paramètres
-        ----------
-        ideal : bool
-            ``True`` pour un capteur sans bruit, ``False`` pour simuler le
-            bruit de comptage.
+        Args:
+            ideal (bool): ``True`` for a noise-free sensor, ``False`` to
+                simulate counting noise.
 
-        Exceptions
-        ----------
-        TypeError
-            Si ``ideal`` n'est pas un booléen.
+        Raises:
+            TypeError: If ``ideal`` is not a boolean.
         """
         if not isinstance(ideal, bool):
             raise TypeError('ideal must be a boolean')
@@ -185,57 +160,52 @@ class Camera:
 
     @property
     def name(self) -> str:
-        """Nom lisible de la caméra.
+        """Human-readable camera name.
 
-        Retourne une chaîne de caractères représentant le nom de l'objet.
+        Returns:
+            str: Object name.
         """
         return self._name
 
     @name.setter
     def name(self, name: str):
-        """Définit le nom de la caméra.
+        """Set the camera name.
 
-        Paramètres
-        ----------
-        name : str
-            Nom lisible. Une ``TypeError`` est levée si ``name`` n'est pas une
-            chaîne.
+        Args:
+            name (str): Human-readable name.
+
+        Raises:
+            TypeError: If ``name`` is not a string.
         """
         if not isinstance(name, str):
             raise TypeError('name must be a string')
         self._name = name
 
     def acquire_pixel(self, ψ: np.ndarray[complex]) -> int:
-        """Simule l'acquisition d'un pixel à partir de champs électriques.
+        """Simulate acquisition of a pixel from complex electric fields.
 
-        La méthode calcule le nombre moyen de photons attendus comme la somme
-        des puissances |ψ|^2 multipliée par le temps d'exposition ``e``. Puis
-        elle simule la détection selon le mode :
+        Computes the expected number of photons as the sum of powers |ψ|^2
+        multiplied by the exposure time ``e``. Detection is then simulated as:
 
-        - si ``ideal`` : retourne la valeur entière tronquée de l'espérance
-          (déterministe) ;
-        - sinon : pour des espérances raisonnables (<= 2e9) on tire d'une loi
-          de Poisson ; pour des espérances très grandes on utilise une
-          approximation gaussienne pour éviter des problèmes de performance.
+        - If ``ideal``: return the truncated integer of the expectation
+          (deterministic).
+        - Else: draw from a Poisson law for reasonable expectations (<= 2e9),
+          or use a Gaussian approximation for very large expectations to avoid
+          performance issues.
 
-        Paramètres
-        ----------
-        ψ : numpy.ndarray de nombres complexes
-            Tableau 1D (ou broadcastable) contenant les amplitudes complexes
-            du champ électrique (unités : s**(-1/2)).
+        Args:
+            ψ (np.ndarray[complex]): 1D array (or broadcastable) of complex
+                electric field amplitudes (units: s**(-1/2)).
 
-        Retour
-        -----
-        int
-            Nombre de photons détectés pendant l'exposition.
+        Returns:
+            int: Number of detected photons during the exposure.
 
-        Remarques
-        ---------
-        - La méthode retourne un entier >= 0. Les détails numériques (seuil
-          2e9) sont choisis empiriquement pour basculer vers une approximation
-          normale lorsque la loi de Poisson devient coûteuse.
-        - Pour des usages reproductibles, régler le germe du générateur aléatoire
-          avant d'appeler la méthode (par ex. via ``np.random.seed(...)``).
+        Notes:
+            - The method returns an integer >= 0. The numeric threshold (2e9)
+              is an empirical switch to the normal approximation when the
+              Poisson draw becomes too costly.
+            - For reproducibility, seed the RNG before calling (e.g.
+              ``np.random.seed(...)``).
         """
         expected_photons = np.sum(np.abs(ψ) ** 2) * self.e.to(u.s).value
         if self.ideal:

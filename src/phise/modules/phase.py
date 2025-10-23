@@ -1,53 +1,87 @@
-"""Module generated docstring."""
+"""Phase operations: shifting, wrapping and random perturbations.
+
+Utility functions to apply wavelength-dependent phase shifts, wrap phases
+into an interval, and add Gaussian noise.
+"""
 from astropy import units as u
 import numpy as np
 import numba as nb
 from typing import Union
 
 @nb.njit()
-def shift_njit(ψ: Union[complex, np.ndarray[complex]], δφ: Union[float, np.ndarray[float]], λ: float) -> Union[complex, np.ndarray[complex]]:
-    """Version numba-jittée de la rotation de phase d'un champ électrique.
+def shift_njit(
+    ψ: Union[complex, np.ndarray],
+    δφ: Union[float, np.ndarray],
+    λ: float,
+) -> Union[complex, np.ndarray]:
+    """Phase rotation (njit) of an electric field.
 
-    Applique un déphasage δφ au champ ψ à la longueur d'onde λ.
+    Args:
+        ψ: Complex electric field (scalar or array).
+        δφ: Applied phase shift (same unit as ``λ`` once converted).
+        λ: Wavelength (scalar, in length units).
+
+    Returns:
+        Field with phase shift applied, same shape as ``ψ``.
     """
     return ψ * np.exp(1j * 2 * np.pi * δφ / λ)
 
-def shift(ψ: Union[complex, np.ndarray[complex]], δφ: u.Quantity, λ: u.Quantity) -> Union[complex, np.ndarray[complex]]:
-    """Appliquer un déphasage (interface utilisateur).
+def shift(
+    ψ: Union[complex, np.ndarray],
+    δφ: u.Quantity,
+    λ: u.Quantity,
+) -> Union[complex, np.ndarray]:
+    """Apply a phase shift with unit handling.
 
-    Convertit les Quantity en valeurs numériques puis appelle
-    `shift_njit`.
+    Converts ``Quantity`` inputs to numeric values then calls
+    :func:`shift_njit`.
+
+    Args:
+        ψ: Complex electric field (scalar or array).
+        δφ: Phase shift (length ``Quantity``, e.g. meters).
+        λ: Wavelength (length ``Quantity``) used in 2π δφ/λ.
+
+    Returns:
+        Field with phase shift applied, same shape as ``ψ``.
     """
     δφ = δφ.to(λ.unit).value
     λ = λ.value
     return shift_njit(ψ, δφ, λ)
 
 def bound(φ: u.Quantity, λ: u.Quantity) -> u.Quantity:
-    """Ramener une phase dans l'intervalle [0, λ[.
+    """Wrap a phase into [0, λ[ while preserving units.
 
-    Les deux arguments sont des Quantities en unités de longueur.
+    Args:
+        φ: Phase (length ``Quantity``) to wrap.
+        λ: Wavelength (length ``Quantity``) defining the interval.
+
+    Returns:
+        Wrapped phase in [0, λ[ with the unit of ``φ``.
     """
     return bound_njit(φ.value, λ.to(φ.unit).value) * φ.unit
 
 @nb.njit()
 def bound_njit(φ: float, λ: float) -> float:
-    """Bring a phase to the interval [0, wavelenght[.
+    """Wrap a scalar phase into [0, λ[ (njit version).
 
-    Parameters
-    ----------
-    - φ: Phase to bound (in distance unit)
-    - λ: Wavelenght of the light (same unit as phase) 
+    Args:
+        φ: Scalar phase to wrap.
+        λ: Scalar wavelength defining the interval.
 
-    Returns
-    -------
-    - Phase in the interval [0, wavelenght]
+    Returns:
+        Wrapped phase in [0, λ[ (implicit same unit as inputs).
     """
     return np.mod(φ, λ)
 
-def perturb(φ: np.ndarray[u.Quantity], rms: u.Quantity) -> u.Quantity:
-    """Ajouter un bruit gaussien aux phases avec dispersion `rms`.
+def perturb(φ: np.ndarray, rms: u.Quantity) -> u.Quantity:
+    """Add Gaussian noise to phases with standard deviation ``rms``.
 
-    Renvoie un Quantity de même forme que `φ`.
+    Args:
+        φ: Array of phases as ``Quantity`` (all with the same unit).
+        rms: Noise standard deviation, same unit as ``φ``.
+
+    Returns:
+        ``Quantity`` array of the same shape as ``φ`` with noisy phases.
     """
     rms = rms.to(φ.unit).value
     err = np.random.normal(0, rms, size=len(φ)) * φ.unit

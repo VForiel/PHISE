@@ -1,7 +1,7 @@
 # Test statistics
 
 ```{eval-rst}
-.. automodule:: phise.test_statistics
+.. automodule:: phise.modules.test_statistics
    :members:
    :show-inheritance:
 ```

@@ -1,13 +1,14 @@
-"""Module generated docstring."""
+"""Multi-Mode Interferometer (MMI) class utilities."""
 import numpy as np
 
 class MMI:
-    """"MMI class.
+    """Multi-Mode Interferometer (MMI).
 
-Attributes
-----------
-(Automatically added placeholder.)
-"""
+    Args:
+        matrix (np.ndarray): Unitary transfer matrix (U @ U* = I).
+        λ0 (float): Reference wavelength.
+        name (str): Readable name.
+    """
 
     def __init__(self, matrix: np.ndarray, λ0: float, name: str):
         self.matrix = matrix
@@ -16,30 +17,23 @@ Attributes
 
     @property
     def matrix(self) -> np.ndarray:
-        """"matrix.
+        """Unitary transfer matrix.
 
-Parameters
-----------
-(Automatically added placeholder.)
-
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Returns:
+            np.ndarray: Complex-valued square unitary matrix.
+        """
         return self._matrix
 
     @matrix.setter
     def matrix(self, value: np.ndarray):
-        """"matrix.
+        """Set unitary transfer matrix.
 
-Parameters
-----------
-(Automatically added placeholder.)
+        Args:
+            value (np.ndarray): Complex-valued square matrix.
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Raises:
+            ValueError: If not convertible to complex array or not unitary.
+        """
         try:
             value = np.array(value, dtype=complex)
         except Exception as e:
@@ -50,75 +44,63 @@ Returns
 
     @property
     def λ0(self) -> float:
-        """"λ0.
+        """Reference wavelength.
 
-Parameters
-----------
-(Automatically added placeholder.)
-
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Returns:
+            float: Reference wavelength value.
+        """
         return self._λ0
 
     @λ0.setter
     def λ0(self, value: float):
-        """"λ0.
+        """Set reference wavelength.
 
-Parameters
-----------
-(Automatically added placeholder.)
+        Args:
+            value (float): Reference wavelength.
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Raises:
+            ValueError: If not a float-like value.
+        """
         if not isinstance(value, (float, int)):
             raise ValueError('λ0 must be a float.')
         self._λ0 = float(value)
 
     @property
     def name(self) -> str:
-        """"name.
+        """MMI name.
 
-Parameters
-----------
-(Automatically added placeholder.)
-
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Returns:
+            str: Readable name.
+        """
         return self._name
 
     @name.setter
     def name(self, value: str):
-        """"name.
+        """Set MMI name.
 
-Parameters
-----------
-(Automatically added placeholder.)
+        Args:
+            value (str): Readable name.
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Raises:
+            ValueError: If not a string.
+        """
         if not isinstance(value, str):
             raise ValueError('Name must be a string.')
         self._name = value
 
     def propagate(self, input_signal: np.ndarray, λ: float) -> np.ndarray:
-        """"propagate.
+        """Propagate an input signal through the MMI.
 
-Parameters
-----------
-(Automatically added placeholder.)
+        Args:
+            input_signal (np.ndarray): Complex input vector.
+            λ (float): Wavelength.
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Returns:
+            np.ndarray: Complex output vector with same size as input.
+
+        Raises:
+            ValueError: If input size doesn't match the matrix input dimension.
+        """
         input_signal = np.array(input_signal, dtype=complex)
         if input_signal.shape[0] != self.matrix.shape[0]:
             raise ValueError('Input signal size must match the number of input ports of the MMI.')

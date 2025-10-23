@@ -1,8 +1,8 @@
-"""Module d'agrégation des classes principales du package `phise.classes`.
+"""Aggregate and re-export main classes from `phise.classes`.
 
-Ce module ré-exporte les classes de plus haut niveau utilisées dans la
-simulation (Companion, Target, Telescope, KernelNuller, Interferometer,
-Context, Camera) afin de permettre des importations simplifiées :
+This module re-exports top-level classes used in the simulation
+(Companion, Target, Telescope, KernelNuller, Interferometer, Context, Camera)
+to allow simplified imports:
 
 >>> from phise.classes import Camera, Telescope
 """

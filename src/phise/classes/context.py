@@ -31,6 +31,18 @@ from ..modules import signals
 from ..modules import phase
 
 class Context:
+    """
+    Observation context holding instrument, target and acquisition settings.
+
+    Args:
+        interferometer (Interferometer): Instrument and geometry.
+        target (Target): Target definition (coordinates, flux, companions).
+        h (u.Quantity): Local hour angle (central time) of the observation.
+        Δh (u.Quantity): Time/Hour-angle span of the observation.
+        Γ (u.Quantity): RMS cophasing error (length quantity).
+        monochromatic (bool): If ``True``, use monochromatic approximation.
+        name (str): Human-readable context name.
+    """
 
     __slots__ = ('_initialized', '_interferometer', '_target', '_h', '_Δh', '_Γ', '_name', '_p', '_ph', '_monochromatic')
 
@@ -44,25 +56,6 @@ class Context:
             monochromatic = False,
             name:str = "Unnamed Context",
         ):
-        """Créer un contexte d'observation.
-
-        Paramètres
-        ----------
-        interferometer : Interferometer
-            Objet décrivant l'instrument et sa géométrie.
-        target : Target
-            Objet décrivant la cible (coordonnées, flux, compagnons).
-        h : astropy.units.Quantity
-            Heure locale/angle horaire central de l'observation.
-        Δh : astropy.units.Quantity
-            Durée / intervalle en angle horaire observé.
-        Γ : astropy.units.Quantity
-            Erreur de cophasage RMS (quantité en longueur).
-        monochromatic : bool, optionnel
-            Si True, utiliser l'approximation monochromatique.
-        name : str, optionnel
-            Nom du contexte.
-        """
 
         self._initialized = False
 
@@ -99,6 +92,9 @@ class Context:
 
     @property
     def interferometer(self) -> Interferometer:
+        """
+        Interferometer used in this context.
+        """
         return self._interferometer
     
     @interferometer.setter
@@ -114,6 +110,9 @@ class Context:
     
     @property
     def target(self) -> Target:
+        """
+        Target observed in this context.
+        """
         return self._target
     
     @target.setter
@@ -129,6 +128,9 @@ class Context:
 
     @property
     def h(self) -> u.Quantity:
+        """
+        Local hour angle (central time) of the observation.
+        """
         return self._h
     
     @h.setter
@@ -147,6 +149,9 @@ class Context:
 
     @property
     def Δh(self) -> u.Quantity:
+        """
+        Time/Hour-angle span of the observation.
+        """
         return self._Δh
     
     @Δh.setter
@@ -165,6 +170,9 @@ class Context:
 
     @property
     def Γ(self) -> u.Quantity:
+        """
+        RMS cophasing error (in length units) of the observation.
+        """
         return self._Γ
     
     @Γ.setter
@@ -181,16 +189,37 @@ class Context:
     
     @property
     def p(self) -> u.Quantity:
+        """
+        (Read-only) Projected telescope positions in a plane perpendicular to the line of sight.
+        """
         return self._p
         
     @p.setter
     def p(self, p: u.Quantity):
         raise ValueError("p is a read-only property. Use project_telescopes_position() to set it accordingly to the other parameters in this context.")
     
+    def project_telescopes_position(self):
+        """
+        Project telescope positions into the plane perpendicular to the LOS.
+
+        Sets the ``p`` property (projected positions in meters) from local
+        telescope positions and the hour angle ``h``.
+        """
+        h = self.h.to(u.rad).value
+        l = self.interferometer.l.to(u.rad).value
+        δ = self.target.δ.to(u.rad).value
+        r = np.array([i.r.to(u.m).value for i in self.interferometer.telescopes])
+        
+        self._p = project_position_njit(r, h, l, δ) * u.m
+        return self._p
+    
     # monochromatic property --------------------------------------------------
 
     @property
     def monochromatic(self) -> bool:
+        """
+        Whether to use the monochromatic approximation.
+        """
         return self._monochromatic
     
     @monochromatic.setter
@@ -203,6 +232,9 @@ class Context:
 
     @property
     def name(self) -> str:
+        """
+        Human-readable context name.
+        """
         return self._name
     
     @name.setter
@@ -216,7 +248,7 @@ class Context:
     @property
     def pf(self) -> u.Quantity:
         """
-        Photon flux in the context
+        (Read-only) Photon flux per telescope. Shape: (n_telescopes,)
         """
         if not hasattr(self, "_ph"):
             raise AttributeError("pf is not defined. Call update_photon_flux() first.")
@@ -224,18 +256,19 @@ class Context:
     
     @pf.setter
     def pf(self, pf: u.Quantity):
-        """
-        Set the photon flux in the context
+        """Set photon flux in the context (read-only property).
+
+        Raises:
+            ValueError: Always raised; use ``update_photon_flux()``.
         """
         raise ValueError("pf is a read-only property. Use update_photon_flux() to set it accordingly to the other parameters in this context.")
 
     def update_photon_flux(self):
-        """Calculer et stocker le flux photonique reçu par chaque télescope.
+        """Compute and store the photon flux received by each telescope.
 
-        Hypothèses
-        ----------
-        - Le flux spectral de la cible est supposé constant sur la bande Δλ.
-        - Si Δλ == 0 (cas monochromatique), la valeur est normalisée par 1 nm.
+        Notes:
+            - The target spectral flux is assumed constant over the band Δλ.
+            - If Δλ == 0 (monochromatic case), the value is normalized by 1 nm.
         """
 
         f = self.target.f.to(u.W / u.m**2 / u.nm)
@@ -253,37 +286,6 @@ class Context:
         p = η * f * a * Δλ # Optical power [W]
 
         self._ph = p * λ / (h*c) # Photon flux [photons/s] (array of (n_telescopes,))
-
-    # Projected position ------------------------------------------------------
-
-    @property
-    def p(self) -> u.Quantity:
-        """
-        Projected position of the telescopes in a plane perpendicular to the line of sight.
-        """
-        if not hasattr(self, "_p"):
-            raise AttributeError("p is not defined. Call project_telescopes_position() first.")
-        return self._p
-    
-    @p.setter
-    def p(self, p: u.Quantity):
-        """
-        Set the projected position of the telescopes in a plane perpendicular to the line of sight.
-        """
-        raise ValueError("p is a read-only property. Use project_telescopes_position() to set it accordingly to the other parameters in this context.")
-
-    def project_telescopes_position(self):
-        """Projeter les positions des télescopes dans un plan perpendiculaire.
-
-        Met en place la propriété `p` (positions projetées en mètres) à partir
-        des positions locales des télescopes et de l'angle horaire `h`.
-        """
-        h = self.h.to(u.rad).value
-        l = self.interferometer.l.to(u.rad).value
-        δ = self.target.δ.to(u.rad).value
-        r = np.array([i.r.to(u.m).value for i in self.interferometer.telescopes])
-        
-        self._p = project_position_njit(r, h, l, δ) * u.m
     
     # Plot projected positions over the time ----------------------------------
 
@@ -292,17 +294,15 @@ class Context:
             N:int = 11,
             return_image = False,
         ):
-        """
-        Plot the telescope positions over the time.
+        """Plot telescope positions over time.
 
-        Parameters
-        ----------
-        - N: Number of positions to plot
-        - return_image: Return the image buffer instead of displaying it
+        Args:
+            N (int): Number of positions to plot.
+            return_image (bool): If ``True``, return an image buffer instead of
+                displaying it.
 
-        Returns
-        -------
-        - None | Image buffer if return_image is True
+        Returns:
+            Optional[bytes]: PNG image buffer when ``return_image=True``; otherwise ``None``.
         """
         _, ax = plt.subplots()
 
@@ -335,18 +335,16 @@ class Context:
     # Transmission maps -------------------------------------------------------
 
     def get_transmission_maps(self, N:int) -> np.ndarray[float]:
-        """
-        Generate all the kernel-nuller transmission maps for a given resolution
+        """Generate all kernel nuller transmission maps at a given resolution.
 
-        Parameters
-        ----------
-        - N: Resolution of the map
+        Args:
+            N (int): Map resolution.
 
-        Returns
-        -------
-        - Null outputs map (3 x resolution x resolution)
-        - Dark outputs map (6 x resolution x resolution)
-        - Kernel outputs map (3 x resolution x resolution)
+        Returns:
+            tuple[np.ndarray, np.ndarray, np.ndarray]:
+                - Null outputs map (3 x N x N)
+                - Dark outputs map (6 x N x N)
+                - Kernel outputs map (3 x N x N)
         """
 
         N=N
@@ -441,18 +439,16 @@ class Context:
     # Get transmission map gradiant norm --------------------------------------
 
     def get_transmission_map_gradient_norm(self, N:int) -> np.ndarray[float]:
-        """
-        Get the norm of the gradient of the transmission maps.
+        """Get the gradient norm of the transmission maps.
 
-        Parameters
-        ----------
-        - N: Resolution of the map
+        Args:
+            N (int): Map resolution.
 
-        Returns
-        -------
-        - Gradient norm of the null outputs map (3 x resolution x resolution)
-        - Gradient norm of the dark outputs map (6 x resolution x resolution)
-        - Gradient norm of the kernel outputs map (3 x resolution x resolution)
+        Returns:
+            tuple[np.ndarray, np.ndarray, np.ndarray]:
+                - Gradient norm of null outputs (3 x N x N)
+                - Gradient norm of dark outputs (6 x N x N)
+                - Gradient norm of kernels (3 x N x N)
         """
 
         n_maps, d_maps, k_maps = self.get_transmission_maps(N=N)
@@ -477,17 +473,14 @@ class Context:
     # Plot transmission map gradient norm -------------------------------------
 
     def plot_transmission_map_gradient_norm(self, N:int, return_plot:bool = False) -> None:
-        """
-        Plot the norm of the gradient of the transmission maps.
+        """Plot the gradient norm of the transmission maps.
 
-        Parameters
-        ----------
-        - N: Resolution of the map
-        - return_plot: Return the image buffer instead of displaying it
+        Args:
+            N (int): Map resolution.
+            return_plot (bool): If ``True``, return the image buffer instead of displaying it.
 
-        Returns
-        -------
-        - None | Image buffer if return_plot is True
+        Returns:
+            Optional[bytes]: PNG image buffer when ``return_plot=True``; otherwise ``None``.
         """
 
         n_grad, d_grad, k_grad = self.get_transmission_map_gradient_norm(N=N)
@@ -535,12 +528,10 @@ class Context:
     # Input fields ------------------------------------------------------------
 
     def get_input_fields(self) -> np.ndarray[complex]:
-        """
-        Get the complexe amplitude of the signals acquired by the telescopes.
+        """Get complex amplitudes of the signals acquired by the telescopes.
 
-        Returns
-        -------
-        - (nb_companions + 1, nb_telescope) array of acquired signals (complex amplitudes)
+        Returns:
+            np.ndarray[complex]: Array of shape (n_companions + 1, n_telescopes).
         """
     
         input_fields = []
@@ -571,12 +562,10 @@ class Context:
     # H range -----------------------------------------------------------------
 
     def get_h_range(self) -> np.ndarray[float]:
-        """
-        Get the hour angle range of the observation.
+        """Get the hour-angle range of the observation.
 
-        Returns
-        -------
-        - Hour angle range (in radian)
+        Returns:
+            np.ndarray[float]: Hour angle values (radians).
         """
         
         nb_obs_per_night = int(self.Δh.to(u.hourangle).value // self.interferometer.camera.e.to(u.hour).value)
@@ -590,14 +579,13 @@ class Context:
     # Observation -------------------------------------------------------------
 
     def observe_monochromatic(self):
-        """
-        Observe the target in this context with monochromatic approximations.
+        """Observe the target with monochromatic approximation.
 
-        Returns
-        -------
-        - Dark data (6,) - # of photons events
-        - Kernel data (3,) - # of photons events
-        - Bright data (1,) - # of photons events
+        Returns:
+            tuple[np.ndarray, np.ndarray, float]:
+                - Dark data (6,) — photon events
+                - Kernel data (3,) — photon events
+                - Bright data (1,) — photon events
         """
 
         ctx = copy(self)
@@ -632,18 +620,16 @@ class Context:
         return darks, kernels, bright
     
     def observe(self, spectral_samples=5):
-        """
-        Observe the target in this context.
+        """Observe the target in this context.
 
-        Parameters
-        ----------
-        - spectral_samples: Number of spectral samples to acquire (default: 10)
+        Args:
+            spectral_samples (int): Number of spectral samples to acquire (default: 5).
 
-        Returns
-        -------
-        - Dark data (6,) - # of photons events
-        - Kernel data (3,) - # of photons events
-        - Bright data (1,) - # of photons events
+        Returns:
+            tuple[np.ndarray, np.ndarray, float]:
+                - Dark data (6,) — photon events
+                - Kernel data (3,) — photon events
+                - Bright data (1,) — photon events
         """
 
         if self.monochromatic:
@@ -680,18 +666,16 @@ class Context:
             self,
             n:int = 1,
         ) -> np.ndarray[int]:
-        """
-        Generate a series of observations in this context.
+        """Generate a series of observations in this context.
 
-        Parameters
-        ----------
-        - n: Number of nights (= number of observations for a given hour angle)
+        Args:
+            n (int): Number of nights (observations per given hour angle).
 
-        Returns
-        -------
-        - Dark data (n, n_h, 6) - # of photons events
-        - Kernel data (n, n_h, 3) - # of photons events
-        - Bright data (n, n_h) - # of photons events
+        Returns:
+            tuple[np.ndarray, np.ndarray, np.ndarray]:
+                - Dark data (n, n_h, 6) — photon events
+                - Kernel data (n, n_h, 3) — photon events
+                - Bright data (n, n_h) — photon events
         """
 
         h_range = self.get_h_range()
@@ -723,19 +707,16 @@ class Context:
             plot:bool = False,
             figsize:tuple = (10, 10),
         ) -> dict:
-        """
-        Optimize the phase shifters offsets to maximize the nulling performance.
+        """Optimize phase shifter offsets to maximize nulling performance.
 
-        Parameters
-        ----------
-        - β: Decay factor for the step size (0.5 <= β < 1)
-        - verbose: Boolean, if True, print the optimization process
-        - plot: Boolean, if True, plot the optimization process
-        - figsize: Figure size for the plot
+        Args:
+            β (float): Decay factor for the step size (0.5 <= β < 1).
+            verbose (bool): If ``True``, print optimization progress.
+            plot (bool): If ``True``, plot the optimization process.
+            figsize (tuple): Figure size for plots.
 
-        Returns
-        -------
-        - Dict: Dictionary with the optimization history (optional)
+        Returns:
+            dict: Dictionary with optimization history (depth, shifters).
         """
 
         self.Δh = self.interferometer.camera.e.to(u.hour).value * u.hourangle
@@ -854,18 +835,15 @@ class Context:
             plot: bool = False,
             figsize:tuple[int] = (30,20),
         ):
-        """
-        Optimize the phase shifters offsets to maximize the nulling performance.
+        """Optimize calibration via least squares sampling.
 
-        Parameters
-        ----------
-        - n: Number of points for the least squares optimization
-        - plot: Boolean, if True, plot the optimization process
-        - figsize: Figure size for the plot
+        Args:
+            n (int): Number of sampling points for least squares.
+            plot (bool): If ``True``, plot the optimization process.
+            figsize (tuple[int]): Figure size for plots.
 
-        Returns
-        -------
-        - Context: New context with the optimized kernel nuller
+        Returns:
+            None | Context: New context with optimized kernel nuller (if implemented to return).
         """
 
 
@@ -1015,12 +993,12 @@ class Context:
     #==============================================================================
 
     def get_VLTI() -> 'Context':
-        """
-        Get the default context for the analysis.
-        This context uses:
-            - The VLTI with 4 UTs.
-            - The first generation of active kernel nuller.
-            - Vega as target star and an hypothetical companion at 2 mas with a contrast of 1e-6.
+        """Get a default VLTI context for analysis.
+
+        Uses:
+            - VLTI with 4 UTs
+            - First generation active kernel nuller
+            - Vega as target star and a hypothetical 2 mas, 1e-6 contrast companion
         """
 
         λ = 1.55 * u.um # Central wavelength
@@ -1072,12 +1050,12 @@ class Context:
     #==============================================================================
 
     def get_LIFE() -> 'Context':
-        """
-        Get the default context for the analysis.
-        This context uses:
-            - The 4 telescopes of LIFE
-            - The first generation of active kernel nuller.
-            - Vega as target star and an hypothetical companion at 2 mas with a contrast of 1e-6.
+        """Get a default LIFE context for analysis.
+
+        Uses:
+            - 4 telescopes of LIFE
+            - First generation active kernel nuller
+            - Vega as target star and a hypothetical 2 mas, 1e-6 contrast companion
         """
 
         λ = 4 * u.um # Central wavelength

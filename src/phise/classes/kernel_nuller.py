@@ -1,10 +1,9 @@
 """Kernel nuller utilities and model.
 
-Ce module contient la classe KernelNuller qui représente la partie
-"nulling" d'un interféromètre à 4 télescopes. La classe fournit
-les paramètres de configuration (phases appliquées, erreurs, ordre
-des sorties, atténuations d'entrée) et des méthodes pour propager
-les champs optiques et visualiser des grandeurs liées.
+This module contains the `KernelNuller` class which represents the "nulling"
+part of a 4-telescope interferometer. It provides configuration parameters
+(applied phases/OPDs, internal errors, output ordering, input attenuations)
+and methods to propagate optical fields and visualize related quantities.
 """
 import numpy as np
 import numba as nb
@@ -22,43 +21,35 @@ from ..modules import mmi
 from ..modules import phase
 
 class KernelNuller:
-    """Représentation d'un kernel-nuller pour 4 télescopes.
+    """Kernel nuller representation for 4 telescopes.
 
-    Attributs principaux
-    ---------------------
-    - φ: tableau des 14 phases/OPD injectées (Quantity)
-    - σ: tableau des 14 erreurs internes d'OPD (Quantity)
-    - λ0: longueur d'onde de référence (Quantity)
-    - output_order: permutation décrivant l'ordre des sorties
-    - input_attenuation: atténuations appliquées aux entrées (taille 4)
-    - input_opd: OPD différentiel sur chaque entrée (taille 4, Quantity)
-    
-    Exemple
-    -------
-    >>> kn = KernelNuller(φ=..., σ=..., λ0=1*u.um)
-    >>> nulls, darks, bright, total = kn.propagate_fields(ψ, 1*u.um)
+        Main attributes:
+        - φ: 14-element array of applied OPDs (Quantity)
+        - σ: 14-element array of internal OPD errors (Quantity)
+        - λ0: reference wavelength (Quantity)
+        - output_order: permutation describing the output order
+        - input_attenuation: attenuations applied to the 4 inputs
+        - input_opd: input-relative OPDs (length 4, Quantity)
+
+        Example:
+            >>> kn = KernelNuller(φ=..., σ=..., λ0=1*u.um)
+            >>> nulls, darks, bright, total = kn.propagate_fields(ψ, 1*u.um)
     """
     __slots__ = ('_parent_interferometer', '_φ', '_σ', '_λ0', '_output_order', '_input_attenuation', '_input_opd', '_name')
 
     def __init__(self, φ: np.ndarray[u.Quantity], σ: np.ndarray[u.Quantity], λ0: u.Quantity, output_order: np.ndarray[int]=None, input_attenuation: np.ndarray[float]=None, input_opd: np.ndarray[u.Quantity]=None, name: str='Unnamed Kernel-Nuller'):
-        """Initialise un KernelNuller.
+        """Initialize a KernelNuller.
 
-        Paramètres
-        ----------
-        φ : astropy.units.Quantity
-            Tableau (14,) des OPD appliqués (unités de longueur).
-        σ : astropy.units.Quantity
-            Tableau (14,) des erreurs intrinsèques d'OPD.
-        λ0 : astropy.units.Quantity
-            Longueur d'onde de référence à laquelle les matrices sont définies.
-        output_order : array-like, optionnel
-            Ordre des sorties (6 éléments) définissant les paires de sorties.
-        input_attenuation : array-like de float, optionnel
-            Atténuations appliquées aux 4 entrées optiques.
-        input_opd : astropy.units.Quantity, optionnel
-            OPD relatifs appliqués aux 4 entrées (taille 4).
-        name : str, optionnel
-            Nom descriptif de l'objet.
+        Args:
+            φ (u.Quantity): (14,) array of applied OPDs (length units).
+            σ (u.Quantity): (14,) array of intrinsic OPD errors.
+            λ0 (u.Quantity): Reference wavelength at which matrices are defined.
+            output_order (np.ndarray[int] | None): Output ordering (6 elements)
+                defining output pairs.
+            input_attenuation (np.ndarray[float] | None): Attenuations on the
+                4 optical inputs.
+            input_opd (u.Quantity | None): Relative OPDs applied to the 4 inputs.
+            name (str): Descriptive name.
         """
         self._parent_interferometer = None
         self.φ = φ
@@ -83,25 +74,24 @@ class KernelNuller:
 
     @property
     def φ(self):
-        """OPD/phase appliquée par élément du nuller.
+        """Applied OPD/phase per nuller element.
 
-        Retourne un astropy Quantity de forme (14,) exprimé en unités de
-        longueur (m par exemple).
+        Returns:
+            u.Quantity: Shape (14,) in length units (e.g., meters).
         """
         return self._φ
 
     @φ.setter
     def φ(self, φ: np.ndarray[u.Quantity]):
-        """"φ.
+        """Set applied OPDs.
 
-Parameters
-----------
-(Automatically added placeholder.)
+        Args:
+            φ (u.Quantity): Shape (14,) in a length unit.
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Raises:
+            ValueError: If not a Quantity, not in length units, wrong shape,
+                or contains negative values.
+        """
         if type(φ) != u.Quantity:
             raise ValueError('φ must be a Quantity')
         try:
@@ -116,24 +106,23 @@ Returns
 
     @property
     def σ(self):
-        """Erreurs intrinsèques d'OPD du nuller.
+        """Intrinsic OPD errors of the nuller.
 
-        Quantity shape (14,), même unité que `φ`.
+        Returns:
+            u.Quantity: Shape (14,) in same unit as ``φ``.
         """
         return self._σ
 
     @σ.setter
     def σ(self, σ: np.ndarray[u.Quantity]):
-        """"σ.
+        """Set intrinsic OPD errors.
 
-Parameters
-----------
-(Automatically added placeholder.)
+        Args:
+            σ (u.Quantity): Shape (14,) in a length unit.
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Raises:
+            ValueError: If not a Quantity, not in length units, or wrong shape.
+        """
         if type(σ) != u.Quantity:
             raise ValueError('σ must be a Quantity')
         try:
@@ -146,24 +135,24 @@ Returns
 
     @property
     def λ0(self):
-        """Longueur d'onde de référence du modèle.
+        """Reference wavelength of the model.
 
-        Retourne un astropy Quantity (par ex. en m).
+        Returns:
+            u.Quantity: Reference wavelength (e.g., meters).
         """
         return self._λ0
 
     @λ0.setter
     def λ0(self, λ0: u.Quantity):
-        """"λ0.
+        """Set reference wavelength.
 
-Parameters
-----------
-(Automatically added placeholder.)
+        Args:
+            λ0 (u.Quantity): Wavelength in a convertible length unit.
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Raises:
+            TypeError: If not an ``astropy.units.Quantity``.
+            ValueError: If not convertible to a length unit.
+        """
         if not isinstance(λ0, u.Quantity):
             raise TypeError('λ0 must be an astropy Quantity')
         try:
@@ -174,25 +163,26 @@ Returns
 
     @property
     def output_order(self):
-        """Ordre des sorties du nuller.
+        """Output order of the nuller.
 
-        Retourne un tableau d'entiers de taille 6 décrivant l'ordre des
-        sorties et la structure des paires.
+        Returns:
+            np.ndarray[int]: Length-6 array describing the output order and
+                pair structure.
         """
         return self._output_order
 
     @output_order.setter
     def output_order(self, output_order: np.ndarray[int]):
-        """"output_order.
+        """Set output order.
 
-Parameters
-----------
-(Automatically added placeholder.)
+        Args:
+            output_order (np.ndarray[int]): Permutation of [0..5] with valid
+                pair structure.
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Raises:
+            ValueError: If not an integer array, wrong shape, not a permutation
+                of 0..5, or invalid pair configuration.
+        """
         try:
             output_order = np.array(output_order, dtype=int)
         except:
@@ -207,24 +197,23 @@ Returns
 
     @property
     def input_attenuation(self):
-        """Atténuations appliquées aux entrées.
+        """Input attenuations.
 
-        Tableau flottant de taille 4 (facteurs multiplicatifs).
+        Returns:
+            np.ndarray[float]: Length-4 multiplicative attenuation factors.
         """
         return self._input_attenuation
 
     @input_attenuation.setter
     def input_attenuation(self, input_attenuation: np.ndarray[float]):
-        """"input_attenuation.
+        """Set input attenuations.
 
-Parameters
-----------
-(Automatically added placeholder.)
+        Args:
+            input_attenuation (np.ndarray[float]): Length-4 attenuation factors.
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Raises:
+            ValueError: If not convertible to float array or wrong shape.
+        """
         try:
             input_attenuation = np.array(input_attenuation, dtype=float)
         except:
@@ -235,24 +224,23 @@ Returns
 
     @property
     def input_opd(self):
-        """OPD relatif appliqué sur chaque entrée.
+        """Relative OPD applied on each input.
 
-        Quantity shape (4,) en unité de longueur.
+        Returns:
+            u.Quantity: Shape (4,) in length units.
         """
         return self._input_opd
 
     @input_opd.setter
     def input_opd(self, input_opd: np.ndarray[u.Quantity]):
-        """"input_opd.
+        """Set input OPDs.
 
-Parameters
-----------
-(Automatically added placeholder.)
+        Args:
+            input_opd (u.Quantity): Shape (4,) in a length unit.
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Raises:
+            ValueError: If not a Quantity, not in length units, or wrong shape.
+        """
         if type(input_opd) != u.Quantity:
             raise ValueError('input_opd must be a Quantity')
         try:
@@ -265,71 +253,61 @@ Returns
 
     @property
     def name(self):
-        """Nom descriptif de l'instance."""
+        """Descriptive instance name.
+
+        Returns:
+            str: Kernel nuller name.
+        """
         return self._name
 
     @name.setter
     def name(self, name: str):
-        """"name.
+        """Set instance name.
 
-Parameters
-----------
-(Automatically added placeholder.)
+        Args:
+            name (str): Readable name.
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Raises:
+            ValueError: If not a string.
+        """
         if not isinstance(name, str):
             raise ValueError('name must be a string')
         self._name = name
 
     @property
     def parent_interferometer(self):
-        """Interféromètre parent associé à ce kernel-nuller.
+        """Parent interferometer associated with this kernel nuller.
 
-        Propriété en lecture seule définie lors de l'association avec
-        un objet Interferometer.
+        Read-only property set during association with an Interferometer object.
         """
         return self._parent_interferometer
 
     @parent_interferometer.setter
     def parent_interferometer(self, parent_interferometer):
-        """"parent_interferometer.
+        """Setter is disabled; ``parent_interferometer`` is read-only.
 
-Parameters
-----------
-(Automatically added placeholder.)
-
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Raises:
+            ValueError: Always raised; property is read-only.
+        """
         raise ValueError('parent_interferometer is read-only')
 
     def propagate_fields(self, ψ: np.ndarray[complex], λ: u.Quantity) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
-        """Propager numériquement les champs à travers le kernel-nuller.
+        """Propagate fields through the kernel nuller.
 
-        Cette méthode simule la propagation optique pour 4 entrées à une
-        longueur d'onde donnée, en tenant compte des atténuations et des
-        OPD d'entrée. Elle renvoie les champs électriques complexes des
-        sorties null, dark et bright.
+        Simulates optical propagation for 4 inputs at a given wavelength,
+        accounting for input attenuations and OPDs. Returns complex electric
+        fields of the null, dark, and bright outputs.
 
-        Paramètres
-        ----------
-        ψ : ndarray de complex
-            Champs électriques entrants pour les 4 voies (shape (4,)).
-        λ : astropy.units.Quantity
-            Longueur d'onde utilisée pour la propagation.
+        Args:
+            ψ (np.ndarray[complex]): Input complex fields for the 4 channels (shape (4,)).
+            λ (u.Quantity): Wavelength for propagation.
 
-        Returns
-        -------
-        tuple
-            (null_fields, dark_fields, bright_fields, total_bright)
-            - null_fields : ndarray complex, shape (3,)
-            - dark_fields : ndarray complex, shape (6,)
-            - bright_fields : ndarray complex, shape (1,) ou scalar
-            - total_bright : float
+        Returns:
+            tuple: (null_fields, dark_fields, bright_field, total_bright)
+                - null_fields: np.ndarray complex, shape (3,)
+                - dark_fields: np.ndarray complex, shape (6,)
+                - bright_field: np.ndarray complex, shape (1,) or scalar
+                - total_bright: float
         """
         φ = self.φ.to(λ.unit).value
         σ = self.σ.to(λ.unit).value
@@ -339,20 +317,15 @@ Returns
         return propagate_fields_njit(ψ=ψ, φ=φ, σ=σ, λ=λ.value, λ0=λ0, output_order=self.output_order)
 
     def plot_phase(self, λ: u.Quantity, ψ: Optional[np.ndarray]=None, plot: bool = True) -> Optional[Any]:
-        """Tracer les phases et amplitudes complexes en sortie du nuller.
+        """Plot output phases and amplitudes of the nuller.
 
-        Cette méthode calcule la réponse des sorties pour chacun des 4
-        signaux d'entrée isolés et trace la phase/amplitude des sorties
-        null, dark et bright sur des diagrammes polaires.
+        Computes output responses for each isolated input and plots the phase
+        and amplitude of null, dark, and bright outputs on polar diagrams.
 
-        Paramètres
-        ----------
-        λ : astropy.units.Quantity ou convertible
-            Longueur d'onde pour la simulation.
-        ψ : array-like, optionnel
-            Vecteur des amplitudes complexes d'entrée (par défaut [0.5,...]).
-        plot : bool
-            Si True, affiche la figure; si False, retourne les données.
+        Args:
+            λ (u.Quantity): Wavelength for the simulation.
+            ψ (Optional[np.ndarray]): Input complex amplitudes (default [0.5,...]).
+            plot (bool): If ``True``, display the figure; if ``False``, return the image bytes.
         """
         if ψ is None:
             ψ = np.array([0.5 + 0j, 0.5 + 0j, 0.5 + 0j, 0.5 + 0j])
@@ -420,17 +393,16 @@ Returns
         plt.show()
 
     def rebind_outputs(self, λ):
-        """
-        Correct the output order of the KernelNuller object. To do so, we successively obstruct two inputs and add a π/4 phase over one of the two remaining inputs. Doing so, 
+        """Correct output ordering of the KernelNuller object.
 
-        Parameters
-        ----------
-        - self: KernelNuller object
-        - λ: Wavelength of the observation
+        Successively obstruct two inputs and add a π/4 phase over one of the two
+        remaining inputs to determine output pairing and ordering.
 
-        Returns
-        -------
-        - KernelNuller object
+        Args:
+            λ (u.Quantity): Observation wavelength.
+
+        Returns:
+            None: Updates ``self.output_order`` in place.
         """
         ψ = np.zeros(4, dtype=complex)
         ψ[0] = ψ[3] = (1 + 0j) * np.sqrt(1 / 2)
@@ -468,24 +440,23 @@ Returns
 
 @nb.njit()
 def propagate_fields_njit(ψ: np.ndarray[complex], φ: np.ndarray[float], σ: np.ndarray[float], λ: float, λ0: float, output_order: np.ndarray[int]) -> tuple[np.ndarray[float], np.ndarray[float], np.ndarray[float], float]:
-    """
-    Simulate a 4 telescope Kernel-Nuller propagation using a numeric approach.
-    ⚠️ Does not take in account the input attenuation and OPD.
-    
-    Parameters
-    ----------
-    - ψ: Array of 4 input signals complex amplitudes
-    - φ: Array of 14 injected OPD (in wavelenght unit)
-    - σ: Array of 14 intrasic OPD error (in wavelenght unit)
-    - λ: Wavelength of the light
-    - λ0: Reference wavelenght (in wavelenght unit)
-    - output_order: Order of the outputs
+    """Simulate a 4-telescope Kernel Nuller propagation (numeric approach).
 
-    Returns
-    -------
-    - Array of 3 null outputs electric fields
-    - Array of 6 dark outputs electric fields
-    - Bright output electric fields
+    Note: Does not account for input attenuation and OPD.
+
+    Args:
+        ψ (np.ndarray[complex]): Array of 4 input complex amplitudes.
+        φ (np.ndarray[float]): Array of 14 injected OPDs (wavelength units).
+        σ (np.ndarray[float]): Array of 14 intrinsic OPD errors (wavelength units).
+        λ (float): Wavelength of the light.
+        λ0 (float): Reference wavelength (wavelength units).
+        output_order (np.ndarray[int]): Order of the outputs.
+
+    Returns:
+        tuple: (nulls, darks, bright)
+            - nulls: Array of 3 null outputs (complex fields)
+            - darks: Array of 6 dark outputs (complex fields)
+            - bright: Bright output (complex field)
     """
     λ_ratio = λ0 / λ
     N = 1 / np.sqrt(2) * np.array([[1 + 0j, 1 + 0j], [1 + 0j, np.exp(-1j * np.pi * λ_ratio)]], dtype=np.complex128)

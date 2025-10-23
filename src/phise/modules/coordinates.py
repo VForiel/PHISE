@@ -1,4 +1,11 @@
-"""Module generated docstring."""
+"""Coordinate utilities for (u, v) maps, polar angle and separation.
+
+This module provides utilities to generate normalized spatial coordinate
+maps (u, v), the polar angle α and angular separation θ over a given field
+of view, plus conversion helpers between (α, θ) and (u, v).
+
+Docstrings follow the Google style (compatible with Sphinx Napoleon).
+"""
 import numpy as np
 import numba as nb
 import astropy.units as u
@@ -10,21 +17,19 @@ except Exception:
     pass
 
 @nb.njit()
-def get_maps_njit(N: int, fov: float) -> tuple[np.ndarray[float], np.ndarray[float], np.ndarray[float], np.ndarray[float]]:
-    """
-    Generate a map of theta and alpha values for a given resolution.
+def get_maps_njit(N: int, fov: float) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Generate (u, v), α and θ maps in polar representation (njit version).
 
-    Parameters
-    ----------
-    - N: Resolution of the map
-    - fov: Field of view in mas
+    Args:
+        N: Grid resolution (samples per axis).
+        fov: Total field of view (same unit as θ; scalar value, e.g. in mas or rad).
 
-    Returns
-    -------
-    - Normalized U map (resolution x resolution)
-    - Normalized V map (resolution x resolution)
-    - Alpha map (resolution x resolution, in radians)
-    - Theta map (resolution x resolution, in fov unit)
+    Returns:
+        Tuple with:
+        - x_map (np.ndarray): Normalized u map of shape (N, N) in [-1, 1].
+        - y_map (np.ndarray): Normalized v map of shape (N, N) in [-1, 1].
+        - alpha (np.ndarray): Polar angle α map in radians, shape (N, N).
+        - theta (np.ndarray): Separation θ map, shape (N, N), expressed in ``fov`` units.
     """
     x_map = np.zeros((N, N))
     y_map = np.zeros((N, N))
@@ -33,40 +38,43 @@ def get_maps_njit(N: int, fov: float) -> tuple[np.ndarray[float], np.ndarray[flo
         y_map[i, :] = v
     θ_map = np.sqrt(x_map ** 2 + y_map ** 2) * fov / 2
     α_map = np.arctan2(y_map, x_map) % (2 * np.pi)
-    return (x_map, y_map, α_map, θ_map)
+    return x_map, y_map, α_map, θ_map
 
-def get_maps(N: int, fov: u.Quantity) -> tuple[np.ndarray[float], np.ndarray[float], u.Quantity, u.Quantity]:
-    """
-    Generate a map of theta and alpha values for a given resolution.
+def get_maps(N: int, fov: u.Quantity) -> tuple[np.ndarray, np.ndarray, u.Quantity, u.Quantity]:
+    """Generate (u, v), α and θ maps with units handling.
 
-    Parameters
-    ----------
-    - N: Resolution of the map
-    - fov: Range of field of view values
+    This interface converts and annotates outputs with ``astropy`` units.
 
-    Returns
-    -------
-    - Normalized U map (resolution x resolution)
-    - Normalized V map (resolution x resolution)
-    - Alpha map (resolution x resolution, in radian)
-    - Theta map (resolution x resolution, in fov unit)
+    Args:
+        N: Grid resolution (samples per axis).
+        fov: Total field of view as an ``astropy.units.Quantity`` (e.g. mas, rad).
+
+    Returns:
+        Tuple with:
+        - x_map (np.ndarray): Normalized u map of shape (N, N) in [-1, 1].
+        - y_map (np.ndarray): Normalized v map of shape (N, N) in [-1, 1].
+        - alpha (Quantity): α map in radians (``u.rad``), shape (N, N).
+        - theta (Quantity): θ map, shape (N, N), in ``fov`` units.
     """
     (x_map, y_map, α_map, θ_map) = get_maps_njit(N=N, fov=fov.value)
     α_map *= u.rad
     θ_map *= fov.unit
-    return (x_map, y_map, α_map, θ_map)
+    return x_map, y_map, α_map, θ_map
 
 def plot_uv_map(extent: tuple[float, float, float, float]):
-    """"plot_uv_map.
+    """Display u, v, θ and α maps for a quick visual inspection.
 
-Parameters
-----------
-(Automatically added placeholder.)
+    Note:
+        This function internally generates the maps via ``get_maps`` and
+        displays them in a 2x2 figure. The ``extent`` argument controls the
+        (u, v) axis frame passed to ``matplotlib.pyplot.imshow``.
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+    Args:
+        extent: Axis bounds (u_min, u_max, v_min, v_max) passed to imshow.
+
+    Returns:
+        None. Shows a matplotlib figure.
+    """
     (x, y, α, θ) = get_maps()
     (_, axs) = plt.subplots(2, 2, figsize=(13, 10))
     im = axs[0, 0].imshow(x, extent=extent, cmap='viridis')
@@ -93,38 +101,31 @@ Returns
 
 @nb.njit()
 def αθ_to_xy_njit(α: float, θ: float, fov: float) -> tuple[float, float]:
-    """
-    Convert alpha and theta values to the x and y angle from the center of the field of view.
+    """Convert (α, θ) to normalized Cartesian coordinates (u, v) (njit version).
 
-    Parameters
-    ----------
-    - α: Parallactic angle (rad)
-    - θ: Angular separation (rad)
-    - fov: Field of view (rad)
+    Args:
+        α: Parallactic angle in radians.
+        θ: Angular separation in radians.
+        fov: Total field of view in radians (used for normalization).
 
-    Returns
-    -------
-    - U value
-    - V value
+    Returns:
+        Tuple ``(u, v)`` representing normalized positions in [-1, 1].
     """
     x = 2 * θ / fov * np.cos(α)
     y = 2 * θ / fov * np.sin(α)
-    return (x, y)
+    return x, y
 
 def αθ_to_xy(α: u.Quantity, θ: u.Quantity, fov: u.Quantity) -> tuple[u.Quantity, u.Quantity]:
-    """
-    Convert alpha and theta values to the x and y angle from the center of the field of view.
+    """Convert (α, θ) to Cartesian coordinates (u, v) with units.
 
-    Parameters
-    ----------
-    - α: Parallactic angle
-    - θ: Angular separation
-    - fov: Field of view
+    Args:
+        α: Parallactic angle in angle units (converted to ``u.rad``).
+        θ: Angular separation (converted to radians for computation).
+        fov: Total field of view (converted to radians for normalization).
 
-    Returns
-    -------
-    - U value
-    - V value
+    Returns:
+        Tuple ``(u, v)`` as unitless Quantities (normalized values),
+        corresponding to normalized coordinates in [-1, 1].
     """
     α = α.to(u.rad).value
     θ = θ.to(u.rad).value

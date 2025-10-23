@@ -1,27 +1,28 @@
-"""Utilities et représentation d'un télescope simulé.
+"""Utilities and representation of a simulated telescope.
 
-La classe `Telescope` encapsule la surface collectrice (``a``), la position
-relative sur le plan (``r``) et un nom. Les setters effectuent des
-validations d'unités via ``astropy.units``.
+The `Telescope` class encapsulates collecting area (``a``), relative position
+on the plane (``r``), and a readable name. Setters validate units through
+``astropy.units``.
 """
 import astropy.units as u
 import numpy as np
 
 
 class Telescope:
-    """Représentation d'un télescope utilisé par l'interféromètre.
+    """Telescope representation used by the interferometer.
 
-    Attributs principaux
-    - a : surface collectrice (astropy.Quantity en m**2)
-    - r : position relative sur le plan (astropy.Quantity, shape (2,), unité m)
-    - name : nom lisible
+    Main attributes:
+    - a: collecting area (``astropy.units.Quantity`` in m**2)
+    - r: relative position on the plane (``astropy.units.Quantity``, shape (2,), in m)
+    - name: readable name
     """
     __slots__ = ('_parent_interferometer', '_a', '_r', '_name')
 
     def __init__(self, a: u.Quantity, r: u.Quantity, name: str = 'Unnamed Telescope'):
-        """Initialise un télescope.
+        """Initialize a telescope.
 
-        Exceptions levées par les setters si les unités sont incorrectes.
+        Notes:
+            Exceptions are raised by the setters if units are incorrect.
         """
         self._parent_interferometer = None
         self.a = a
@@ -39,7 +40,11 @@ class Telescope:
 
     @property
     def a(self) -> u.Quantity:
-        """Surface collectrice du télescope (astropy.Quantity en m**2)."""
+        """Collecting area (u.Quantity in m**2).
+
+        Returns:
+            u.Quantity: Mirror collecting area in square meters.
+        """
         return self._a
 
     @a.setter
@@ -56,7 +61,11 @@ class Telescope:
 
     @property
     def r(self) -> u.Quantity:
-        """Position relative du télescope sur le plan (astropy.Quantity en m, shape (2,))."""
+        """Relative telescope position on the plane (u.Quantity in m, shape (2,)).
+
+        Returns:
+            u.Quantity: 2-vector [x, y] position in meters.
+        """
         return self._r
 
     @r.setter
@@ -75,7 +84,11 @@ class Telescope:
 
     @property
     def name(self) -> str:
-        """Nom du télescope."""
+        """Telescope name.
+
+        Returns:
+            str: Readable name.
+        """
         return self._name
 
     @name.setter
@@ -86,7 +99,11 @@ class Telescope:
 
     @property
     def parent_interferometer(self):
-        """Référence vers l'interféromètre parent (lecture seule)."""
+        """Reference to the parent interferometer (read-only).
+
+        Returns:
+            Any: Parent interferometer reference.
+        """
         return self._parent_interferometer
 
     @parent_interferometer.setter
@@ -95,10 +112,11 @@ class Telescope:
 
 
 def get_VLTI_UTs() -> list[Telescope]:
-    """Retourne la géométrie relative des UTs du VLTI.
+    """Return the relative geometry of VLTI UTs.
 
-    Retourne une liste de 4 objets `Telescope` positionnés selon la
-    configuration standard des UTs.
+    Returns:
+        list[Telescope]: Four `Telescope` objects positioned according to the
+            standard UT configuration.
     """
     r = np.array([[-70.4048732988764, -24.627602893919807], [-70.40465753243652, -24.627118902835786], [-70.40439460074228, -24.62681028261176], [-70.40384287956437, -24.627033500373024]])
     r -= r[0]
@@ -110,9 +128,10 @@ def get_VLTI_UTs() -> list[Telescope]:
 
 
 def get_LIFE_telescopes() -> list[Telescope]:
-    """Génère une configuration de télescopes pour le concept LIFE.
+    """Generate a telescope configuration for the LIFE concept.
 
-    Renvoie une liste de 4 objets `Telescope`.
+    Returns:
+        list[Telescope]: Four `Telescope` objects.
     """
     r = np.array([[0, 0], [1, 0], [0, 6], [1, 6]]) * 100 * u.m
     a = np.pi * (2 * u.m) ** 2

@@ -1,280 +1,255 @@
-"""Module generated docstring."""
+"""Test statistics to compare two samples (H0 vs H1).
+
+This module provides simple statistics (mean, median, AUC of distances,
+etc.) as well as non-parametric tests (SciPy) to measure the separability
+between two data distributions.
+"""
+from __future__ import annotations
+
 import numpy as np
 import matplotlib.pyplot as plt
 try:
     plt.rcParams['image.origin'] = 'lower'
 except Exception:
+    # Certains backends simplifiés peuvent ne pas accepter les assignations
     pass
 from copy import deepcopy as copy
 import astropy.units as u
 from scipy import stats
 
-def get_vectors(ctx=None, nmc: int=1000, size: int=1000):
-    """"get_vectors.
 
-Parameters
-----------
-(Automatically added placeholder.)
+def get_vectors(ctx=None, nmc: int = 1000, size: int = 1000):
+    """Generate two sets of statistic vectors under H0 and H1.
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+    This simulates observations with and without companion(s) to build
+    statistic arrays of shape ``(3, nmc, size)`` under H0 (no companion)
+    and H1 (with companions), then concatenates each set along the first
+    axis.
+
+    Notes:
+        - Assumes a compatible ``Context`` object exists (see
+          ``phise.classes.context.Context``) and relies on its ``observe()``
+          method.
+        - To avoid circular imports, the ``Context`` import is local and only
+          used if ``ctx`` is ``None``.
+
+    Args:
+        ctx: Observation context (if ``None``, a default VLTI context is
+            instantiated). The context must contain at least one companion to
+            generate H1.
+        nmc: Number of Monte-Carlo realizations.
+        size: Number of samples per realization.
+
+    Returns:
+        Tuple ``(T0, T1)`` where:
+        - T0: Concatenated vectors under H0, shape ``(3 * nmc * size,)``.
+        - T1: Concatenated vectors under H1, shape ``(3 * nmc * size,)``.
+
+    Raises:
+        ValueError: If ``ctx`` contains no companions.
+    """
     if ctx is None:
-        # import localement pour éviter une circular import lors de l'import
-        # du package phise (les modules et classes s'importent mutuellement)
+        # import local pour éviter un import circulaire lors du chargement
         from phise.classes.context import Context
+
         ctx = Context.get_VLTI()
         ctx.interferometer.kn.σ = np.zeros(14) * u.m
+
     if ctx.target.companions == []:
-        raise ValueError('No companions in the context. Please add companions to the context before generating vectors.')
+        raise ValueError(
+            'No companions in the context. Please add companions to the context before generating vectors.'
+        )
+
     ctx_h1 = copy(ctx)
     ctx_h0 = copy(ctx)
     ctx_h0.target.companions = []
+
     T0 = np.zeros((3, nmc, size))
     T1 = np.zeros((3, nmc, size))
+
     fov = ctx.interferometer.fov.to(u.mas).value
+
     for i in range(nmc):
         print(f'⌛ Generating vectors... {round(i / nmc * 100, 2)}%', end='\r')
         for j in range(size):
             for c in ctx_h1.target.companions:
                 c.α = np.random.uniform(0, 2 * np.pi) * u.rad
                 c.θ = np.random.uniform(fov / 10, fov) * u.mas
+
             (_, k_h0, b_h0) = ctx_h0.observe()
             (_, k_h1, b_h1) = ctx_h1.observe()
+
             k_h0 /= b_h0
             k_h1 /= b_h1
+
             T0[:, i, j] = k_h0
             T1[:, i, j] = k_h1
-    print(f'✅ Vectors generation complete')
+
+    print('✅ Vectors generation complete')
     return (np.concatenate(T0), np.concatenate(T1))
 
+
 def mean(u, v):
-    """"mean.
+    """Absolute value of the mean of ``u``.
 
-Parameters
-----------
-(Automatically added placeholder.)
+    Args:
+        u: Samples under H1 (or any real/complex vector).
+        v: Samples under H0 (unused).
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+    Returns:
+        float: |mean(u)|
+    """
     return np.abs(np.mean(u))
 
+
 def median(u, v):
-    """"median.
+    """Absolute value of the median of ``u``.
 
-Parameters
-----------
-(Automatically added placeholder.)
+    Args:
+        u: Samples under H1.
+        v: Samples under H0 (unused).
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+    Returns:
+        float: |median(u)|
+    """
     return np.abs(np.median(u))
 
-def argmax(u, v, bins=100):
-    """"argmax.
 
-Parameters
-----------
-(Automatically added placeholder.)
+def argmax(u, v, bins: int = 100):
+    """Approximate mode of ``u`` using a histogram (most frequent bin).
 
-Returns
--------
-(Automatically added placeholder.)
-"""
-    maxs = np.zeros(u.shape[0])
+    Args:
+        u: Samples under H1.
+        v: Samples under H0 (unused).
+        bins: Number of histogram bins.
+
+    Returns:
+        float: Absolute center value of the bin maximizing the histogram.
+    """
     (hist, bin_edges) = np.histogram(u, bins=bins)
     bin_edges = (bin_edges[1:] + bin_edges[:-1]) / 2
     return np.abs(bin_edges[np.argmax(hist)])
 
+
 def argmax50(u, v):
-    """"argmax50.
-
-Parameters
-----------
-(Automatically added placeholder.)
-
-Returns
--------
-(Automatically added placeholder.)
-"""
+    """Shortcut for ``argmax(u, v, bins=50)``."""
     return argmax(u, v, 50)
 
+
 def argmax100(u, v):
-    """"argmax100.
-
-Parameters
-----------
-(Automatically added placeholder.)
-
-Returns
--------
-(Automatically added placeholder.)
-"""
+    """Shortcut for ``argmax(u, v, bins=100)``."""
     return argmax(u, v, 100)
 
+
 def argmax500(u, v):
-    """"argmax500.
-
-Parameters
-----------
-(Automatically added placeholder.)
-
-Returns
--------
-(Automatically added placeholder.)
-"""
+    """Shortcut for ``argmax(u, v, bins=500)``."""
     return argmax(u, v, 500)
 
+
 def kolmogorov_smirnov(u, v):
-    """"kolmogorov_smirnov.
+    """Two-sample Kolmogorov–Smirnov statistic.
 
-Parameters
-----------
-(Automatically added placeholder.)
-
-Returns
--------
-(Automatically added placeholder.)
-"""
+    Returns:
+        float: |D|, the maximal distance between empirical CDFs.
+    """
     return np.abs(stats.ks_2samp(u, v).statistic)
 
+
 def cramer_von_mises(u, v):
-    """"cramer_von_mises.
+    """Two-sample Cramér–von Mises statistic.
 
-Parameters
-----------
-(Automatically added placeholder.)
-
-Returns
--------
-(Automatically added placeholder.)
-"""
+    Returns:
+        float: Absolute value of the statistic.
+    """
     return np.abs(stats.cramervonmises_2samp(u, v).statistic)
 
+
 def mannwhitneyu(u, v):
-    """"mannwhitneyu.
+    """Mann–Whitney U statistic (Wilcoxon rank-sum).
 
-Parameters
-----------
-(Automatically added placeholder.)
-
-Returns
--------
-(Automatically added placeholder.)
-"""
+    Returns:
+        float: Absolute value of the statistic.
+    """
     return np.abs(stats.mannwhitneyu(u, v).statistic)
 
+
 def wilcoxon_mann_whitney(u, v):
-    """"wilcoxon_mann_whitney.
+    """Wilcoxon signed-rank test statistic (paired samples).
 
-Parameters
-----------
-(Automatically added placeholder.)
-
-Returns
--------
-(Automatically added placeholder.)
-"""
+    Returns:
+        float: Absolute value of the statistic.
+    """
     return np.abs(stats.wilcoxon(u, v).statistic)
 
+
 def anderson_darling(u, v):
-    """"anderson_darling.
+    """Anderson–Darling k-sample statistic.
 
-Parameters
-----------
-(Automatically added placeholder.)
-
-Returns
--------
-(Automatically added placeholder.)
-"""
+    Returns:
+        float: Absolute value of the statistic.
+    """
     return np.abs(stats.anderson_ksamp([u, v]).statistic)
 
+
 def brunner_munzel(u, v):
-    """"brunner_munzel.
+    """Brunner–Munzel test statistic.
 
-Parameters
-----------
-(Automatically added placeholder.)
-
-Returns
--------
-(Automatically added placeholder.)
-"""
+    Returns:
+        float: Absolute value of the statistic.
+    """
     return np.abs(stats.brunnermunzel(u, v).statistic)
 
+
 def wasserstein_distance(u, v):
-    """"wasserstein_distance.
+    """Wasserstein distance (earth mover's distance, order 1).
 
-Parameters
-----------
-(Automatically added placeholder.)
-
-Returns
--------
-(Automatically added placeholder.)
-"""
+    Returns:
+        float: Distance |W_1(u, v)|.
+    """
     return np.abs(stats.wasserstein_distance(u, v))
 
+
 def flattening(u, v):
-    """"flattening.
+    """Sum of deviations from the median: Σ |u - median(u)|.
 
-Parameters
-----------
-(Automatically added placeholder.)
-
-Returns
--------
-(Automatically added placeholder.)
-"""
+    Returns:
+        float: Measure of "flattening" around the median.
+    """
     med = np.median(u)
     return np.sum(np.abs(u - med))
 
+
 def shift_and_flattening(u, v):
-    """"shift_and_flattening.
+    """Area under the curve of sorted distances to the median (AUC).
 
-Parameters
-----------
-(Automatically added placeholder.)
+    Definition: if d_i = |u_i - median(u)| sorted, returns the area
+    ∫ (d(x) + |median|) dx, x ∈ [0, 1].
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+    Returns:
+        float: Area under the curve approximated via numerical integration.
+    """
     med = np.median(u)
     distances = np.sort(np.abs(u - med))
     x = np.linspace(0, 1, len(u))
     auc = np.trapz(distances + np.abs(med), x)
     return auc
 
+
 def median_of_abs(u, v):
-    """"median_of_abs.
-
-Parameters
-----------
-(Automatically added placeholder.)
-
-Returns
--------
-(Automatically added placeholder.)
-"""
+    """Median of absolute values: median(|u|)."""
     return np.median(np.abs(u))
 
+
 def full_sum(u, v):
-    """"full_sum.
-
-Parameters
-----------
-(Automatically added placeholder.)
-
-Returns
--------
-(Automatically added placeholder.)
-"""
+    """Sum of absolute values: Σ |u|."""
     return np.sum(np.abs(u))
-ALL_TESTS = {'Mean': mean, 'Median': median, 'Kolmogorov-Smirnov': kolmogorov_smirnov, 'Cramer von Mises': cramer_von_mises, 'Flattening': flattening, 'Median of Abs': median_of_abs}
+
+
+ALL_TESTS = {
+    'Mean': mean,
+    'Median': median,
+    'Kolmogorov-Smirnov': kolmogorov_smirnov,
+    'Cramer von Mises': cramer_von_mises,
+    'Flattening': flattening,
+    'Median of Abs': median_of_abs,
+}

@@ -16,18 +16,25 @@ As building such hierarchy of objects can be complex, please refer to the « Get
 ```{toctree}
 :hidden:
 :maxdepth: 2
-
 :caption: Classes
+
 classes/context.md
 classes/kernel_nuller.md
-classes/mmi.md
 classes/target.md
 classes/telescope.md
 classes/interferometer.md
 classes/camera.md
 classes/companion.md
+```
 
-
+```{toctree}
+:hidden:
+:maxdepth: 2
 :caption: Modules
+
+modules/coordinates.md
+modules/phase.md
+modules/signals.md
+modules/ml.md
 modules/test_statistics.md
 ```

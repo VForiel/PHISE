@@ -1,9 +1,9 @@
-"""Définitions et utilitaires pour l'interféromètre.
+"""Interferometer definitions and utilities.
 
-Ce module définit la classe `Interferometer` qui encapsule les
-paramètres globaux de l'instrument : latitude du réseau, longueur
-d'onde centrale, bande passante, champ de vue, rendement optique,
-liste des télescopes, kernel-nuller et caméra associée.
+This module defines the `Interferometer` class which encapsulates global
+instrument parameters: array latitude, central wavelength, bandwidth, field
+of view, optical efficiency, list of telescopes, associated kernel nuller,
+and camera.
 """
 from astropy import units as u
 from copy import deepcopy as copy
@@ -12,38 +12,27 @@ from .telescope import Telescope
 from .camera import Camera
 
 class Interferometer:
-    """Représentation d'un interféromètre instrument.
+    """Interferometer representation.
 
-    Fournit l'état global de l'instrument et des propriétés utilitaires
-    pour synchroniser le contexte (par ex. recalcul des positions projetées
-    des télescopes ou mise à jour du flux photonique lorsque certaines
-    propriétés changent).
+    Provides global instrument state and utility properties to keep the
+    observing context in sync (e.g., recompute projected telescope positions
+    or update photon flux when certain parameters change).
     """
     __slots__ = ('_parent_ctx', '_l', '_λ', '_Δλ', '_fov', '_η', '_telescopes', '_kn', '_camera', '_name')
 
     def __init__(self, l: u.Quantity, λ: u.Quantity, Δλ: u.Quantity, fov: u.Quantity, η: float, telescopes: list[Telescope], kn: KernelNuller, camera: Camera, name: str='Unnamed Interferometer'):
-        """Initialisation de l'interféromètre.
+        """Initialize the interferometer.
 
-        Paramètres
-        ----------
-        l : astropy.units.Quantity
-            Latitude du centre du réseau (degrés).
-        λ : astropy.units.Quantity
-            Longueur d'onde centrale (nm).
-        Δλ : astropy.units.Quantity
-            Bande passante (nm).
-        fov : astropy.units.Quantity
-            Champ de vue (mas).
-        η : float
-            Rendement optique global (0..1).
-        telescopes : list[Telescope]
-            Liste d'objets `Telescope` définissant la géométrie.
-        kn : KernelNuller
-            Objet `KernelNuller` configurant le nuller.
-        camera : Camera
-            Objet `Camera` associé.
-        name : str, optionnel
-            Nom de l'instrument.
+        Args:
+            l (u.Quantity): Array latitude (deg).
+            λ (u.Quantity): Central wavelength (nm).
+            Δλ (u.Quantity): Bandwidth (nm).
+            fov (u.Quantity): Field of view (mas).
+            η (float): Global optical efficiency (0..1).
+            telescopes (list[Telescope]): Telescopes defining the geometry.
+            kn (KernelNuller): Kernel nuller configuration.
+            camera (Camera): Associated camera.
+            name (str, optional): Instrument name.
         """
         self._parent_ctx = None
         self.l = l
@@ -80,25 +69,25 @@ class Interferometer:
 
     @property
     def l(self) -> u.Quantity:
-        """Latitude du réseau (Quantity en degrés).
+        """Array latitude (degrees).
 
-        Lors de la modification, les positions projetées des télescopes
-        sont recalculées si le contexte parent est défini.
+        Returns:
+            u.Quantity: Latitude in degrees. Updating this triggers projected
+                telescope positions recomputation when a parent context exists.
         """
         return self._l
 
     @l.setter
     def l(self, l: u.Quantity):
-        """"l.
+        """Set array latitude.
 
-Parameters
-----------
-(Automatically added placeholder.)
+        Args:
+            l (u.Quantity): Latitude in a convertible angular unit.
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Raises:
+            TypeError: If not an ``astropy.units.Quantity``.
+            ValueError: If not convertible to degrees.
+        """
         if not isinstance(l, u.Quantity):
             raise TypeError('l must be an astropy Quantity')
         try:
@@ -111,24 +100,25 @@ Returns
 
     @property
     def λ(self) -> u.Quantity:
-        """Longueur d'onde centrale (Quantity en nm).
+        """Central wavelength (nm).
 
-        La mise à jour déclenche le recalcul du flux photonique du contexte.
+        Returns:
+            u.Quantity: Central wavelength in nm. Updating triggers the
+                context photon flux recomputation when a parent context exists.
         """
         return self._λ
 
     @λ.setter
     def λ(self, λ: u.Quantity):
-        """"λ.
+        """Set central wavelength.
 
-Parameters
-----------
-(Automatically added placeholder.)
+        Args:
+            λ (u.Quantity): Wavelength in a convertible unit.
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Raises:
+            TypeError: If not an ``astropy.units.Quantity``.
+            ValueError: If not convertible to nanometers.
+        """
         if not isinstance(λ, u.Quantity):
             raise TypeError('λ must be an astropy Quantity')
         try:
@@ -141,24 +131,24 @@ Returns
 
     @property
     def Δλ(self) -> u.Quantity:
-        """Bande passante (Quantity en nm).
+        """Bandwidth (nm).
 
-        Doit être strictement positive.
+        Returns:
+            u.Quantity: Positive bandwidth expressed in nanometers.
         """
         return self._Δλ
 
     @Δλ.setter
     def Δλ(self, Δλ: u.Quantity):
-        """"Δλ.
+        """Set bandwidth.
 
-Parameters
-----------
-(Automatically added placeholder.)
+        Args:
+            Δλ (u.Quantity): Bandwidth in a convertible unit.
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Raises:
+            TypeError: If not an ``astropy.units.Quantity``.
+            ValueError: If not convertible to nanometers or non-positive.
+        """
         if not isinstance(Δλ, u.Quantity):
             raise TypeError('Δλ must be an astropy Quantity')
         try:
@@ -173,21 +163,24 @@ Returns
 
     @property
     def fov(self) -> u.Quantity:
-        """Champ de vue (Quantity, généralement en mas)."""
+        """Field of view (typically in mas).
+
+        Returns:
+            u.Quantity: Field of view in milliarcseconds.
+        """
         return self._fov
 
     @fov.setter
     def fov(self, fov: u.Quantity):
-        """"fov.
+        """Set field of view.
 
-Parameters
-----------
-(Automatically added placeholder.)
+        Args:
+            fov (u.Quantity): FOV in a convertible angular unit.
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Raises:
+            TypeError: If not an ``astropy.units.Quantity``.
+            ValueError: If not convertible to milliarcseconds.
+        """
         if not isinstance(fov, u.Quantity):
             raise TypeError('fov must be an astropy Quantity')
         try:
@@ -198,21 +191,23 @@ Returns
 
     @property
     def telescopes(self) -> list[Telescope]:
-        """Liste des objets `Telescope` constituant le réseau."""
+        """List of `Telescope` objects constituting the array.
+
+        Returns:
+            list[Telescope]: Managed list of telescopes.
+        """
         return self._telescopes
 
     @telescopes.setter
     def telescopes(self, telescopes: list[Telescope]):
-        """"telescopes.
+        """Set telescopes.
 
-Parameters
-----------
-(Automatically added placeholder.)
+        Args:
+            telescopes (list[Telescope]): List of telescope objects.
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Raises:
+            TypeError: If not a list of ``Telescope`` instances.
+        """
         if not isinstance(telescopes, list):
             raise TypeError('telescopes must be a list')
         if not all((isinstance(telescope, Telescope) for telescope in telescopes)):
@@ -223,21 +218,23 @@ Returns
 
     @property
     def kn(self) -> KernelNuller:
-        """Instance `KernelNuller` associée à l'interféromètre."""
+        """Associated `KernelNuller` instance.
+
+        Returns:
+            KernelNuller: Kernel nuller configuration.
+        """
         return self._kn
 
     @kn.setter
     def kn(self, kn: KernelNuller):
-        """"kn.
+        """Set kernel nuller.
 
-Parameters
-----------
-(Automatically added placeholder.)
+        Args:
+            kn (KernelNuller): Kernel nuller object.
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Raises:
+            TypeError: If not a ``KernelNuller`` instance.
+        """
         if not isinstance(kn, KernelNuller):
             raise TypeError('kn must be a KernelNuller object')
         self._kn = copy(kn)
@@ -245,21 +242,23 @@ Returns
 
     @property
     def camera(self) -> Camera:
-        """Objet `Camera` associé à l'interféromètre."""
+        """Associated `Camera` object.
+
+        Returns:
+            Camera: Camera instance.
+        """
         return self._camera
 
     @camera.setter
     def camera(self, camera: Camera):
-        """"camera.
+        """Set camera.
 
-Parameters
-----------
-(Automatically added placeholder.)
+        Args:
+            camera (Camera): Camera object.
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Raises:
+            TypeError: If not a ``Camera`` instance.
+        """
         if not isinstance(camera, Camera):
             raise TypeError('camera must be a Camera object')
         self._camera = copy(camera)
@@ -267,60 +266,43 @@ Returns
 
     @property
     def name(self) -> str:
-        """"name.
+        """Interferometer name.
 
-Parameters
-----------
-(Automatically added placeholder.)
-
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Returns:
+            str: Name of the instrument.
+        """
         return self._name
 
     @name.setter
     def name(self, name: str):
-        """"name.
+        """Set instrument name.
 
-Parameters
-----------
-(Automatically added placeholder.)
+        Args:
+            name (str): Readable name.
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Raises:
+            TypeError: If not a string.
+        """
         if not isinstance(name, str):
             raise TypeError('name must be a string')
         self._name = name
 
     @property
     def parent_ctx(self) -> list:
-        """"parent_ctx.
+        """Parent observing context (read-only).
 
-Parameters
-----------
-(Automatically added placeholder.)
-
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Returns:
+            Any: Parent context reference or ``None``.
+        """
         return self._parent_ctx
 
     @parent_ctx.setter
     def parent_ctx(self, parent_ctx):
-        """"parent_ctx.
+        """Setter is disabled; ``parent_ctx`` is read-only.
 
-Parameters
-----------
-(Automatically added placeholder.)
-
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Raises:
+            AttributeError: If attempting to overwrite an existing parent.
+        """
         if self._parent_ctx is not None:
             raise AttributeError('parent_ctx is read-only')
         else:
@@ -328,21 +310,23 @@ Returns
 
     @property
     def η(self) -> u.Quantity:
-        """Rendement optique global (float)."""
+        """Global optical efficiency.
+
+        Returns:
+            float: Efficiency factor in [0, +inf).
+        """
         return self._η
 
     @η.setter
     def η(self, η: float):
-        """"η.
+        """Set optical efficiency.
 
-Parameters
-----------
-(Automatically added placeholder.)
+        Args:
+            η (float): Efficiency factor.
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+        Raises:
+            ValueError: If not convertible to float or negative.
+        """
         try:
             η = float(η)
         except (ValueError, TypeError):

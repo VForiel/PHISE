@@ -1,34 +1,58 @@
-"""Module generated docstring."""
+"""ML helpers: synthetic dataset generation and simple Keras models.
+
+This module provides small utilities to generate simulated datasets and a
+compact dense Keras model for parameter estimation. Note that some functions
+rely on external variables/functions (``L``, ``STAR_SIGNALS``,
+``kn_fields_njit``, etc.). They are not executed during documentation builds.
+"""
+
+from typing import Any
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+try:  # TensorFlow est optionnel pour la génération de docs
+    import tensorflow as tf  # type: ignore
+except Exception:  # pragma: no cover - non essentiel pour la doc
+    tf = None  # type: ignore
+
+# Placeholders pour dépendances externes non strictement requises à l'import
+try:
+    kn_fields_njit  # type: ignore[name-defined]
+except NameError:  # pragma: no cover
+    kn_fields_njit = None  # type: ignore
+try:
+    STAR_SIGNALS  # type: ignore[name-defined]
+except NameError:  # pragma: no cover
+    STAR_SIGNALS = None  # type: ignore
+try:
+    L  # type: ignore[name-defined]
+except NameError:  # pragma: no cover
+    L = None  # type: ignore
 
 def parameter_grid(N, D, a, b):
-    """
-    Generate a list of points forming a grid in a parameter space.
+    """Generate a regular grid [a, b]^D with N steps per axis.
 
-    Parameters
-    ----------
-    - N: Resolution of the grid (point per axes)
-    - D: Dimension of the space parameter
-    - a: Minimum value of the space parameter
-    - b: Maximum value of the space parameter
+    Args:
+        N: Resolution per axis (points per dimension).
+        D: Parameter space dimensionality.
+        a: Lower bound.
+        b: Upper bound.
 
-    Returns
-    -------
-    - An array of vectors describing a point in the parameter space
+    Returns:
+        np.ndarray of shape (N**D, D) listing all grid points.
     """
     return np.array([a + (b - a) * (x // N ** np.arange(D, dtype=float) % N / N) for x in range(N ** D)])
 
 def parameter_basis(D, b=1):
-    """
-    Return the basis vectors of the parameter space (+ the null vector)
+    """Canonical basis augmented with the zero vector in R^D.
 
-    Parameters
-    ----------
-    - D: Dimension of the space parameter
-    - b: Norm of the basis vector (default=1)
+    Args:
+        D: Dimension.
+        b: Norm of each basis vector (default 1).
 
-    Returns
-    -------
-    - An array of vectors describing a point in the parameter space
+    Returns:
+        np.ndarray of shape (D+1, D).
     """
     vectors = np.zeros((D + 1, D))
     for i in range(D):
@@ -36,17 +60,14 @@ def parameter_basis(D, b=1):
     return vectors
 
 def parameter_basis_2p(D, b=1):
-    """
-    Return the basis vectors of the parameter space (+ the null vector)
+    """Two-point basis: {0, b·e_i, 2b·e_i} for i=1..D.
 
-    Parameters
-    ----------
-    - D: Dimension of the space parameter
-    - b: Norm of the basis vector (default=1)
+    Args:
+        D: Dimension.
+        b: Basis step.
 
-    Returns
-    -------
-    - An array of vectors describing a point in the parameter space
+    Returns:
+        np.ndarray of shape (2D+1, D).
     """
     vectors = np.zeros((2 * D + 1, D))
     for i in range(D):
@@ -55,16 +76,17 @@ def parameter_basis_2p(D, b=1):
     return vectors
 
 def get_dataset(size=1000):
-    """"get_dataset.
+    """Build a structured synthetic dataset.
 
-Parameters
-----------
-(Automatically added placeholder.)
+    Note:
+        Depends on external objects (e.g. ``L``, ``STAR_SIGNALS``, ``kn_fields_njit``).
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+    Args:
+        size: Number of samples to generate.
+
+    Returns:
+        np.ndarray of shape (size, vector_len).
+    """
     grid_points = parameter_basis_2p(14, 1.65 / 3)
     vector_len = len(grid_points) * 7 + 14
     dataset = np.empty((size, vector_len))
@@ -80,16 +102,14 @@ Returns
     return dataset
 
 def get_random_dataset(size=1000):
-    """"get_random_dataset.
+    """Build a random-point synthetic dataset.
 
-Parameters
-----------
-(Automatically added placeholder.)
+    Args:
+        size: Number of samples to generate.
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+    Returns:
+        np.ndarray of shape (size, vector_len).
+    """
     nb_points = 100
     i_len = 7 + 14
     o_len = 14
@@ -111,16 +131,14 @@ Returns
     return dataset
 
 def get_model(input_shape):
-    """"get_model.
+    """Create a small dense Keras network for 14 output parameters.
 
-Parameters
-----------
-(Automatically added placeholder.)
+    Args:
+        input_shape: Input vector length.
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+    Returns:
+        Compiled tf.keras.Model (Adam optimizer, MSE loss).
+    """
     i = tf.keras.Input(shape=(input_shape,), name='Input')
     x = tf.keras.layers.Dense(128, activation='relu', name='Dense_1')(i)
     x = tf.keras.layers.Dense(64, activation='relu', name='Dense_2')(x)
@@ -132,16 +150,16 @@ Returns
     return model
 
 def train_model(model, dataset, plot=True):
-    """"train_model.
+    """Train the model and optionally plot the loss curves.
 
-Parameters
-----------
-(Automatically added placeholder.)
+    Args:
+        model: Compiled Keras model.
+        dataset: Data with targets in the last 14 columns.
+        plot: If True, plots loss and val_loss (log scale).
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+    Returns:
+        tf.keras.callbacks.History
+    """
     X = dataset[:, :-14]
     Y = dataset[:, -14:]
     print(dataset.shape, X.shape, Y.shape)
@@ -154,20 +172,19 @@ Returns
     return history
 
 def test_model(model, dataset):
-    """"test_model.
+    """Plot ground-truth targets vs predictions for a quick visual check.
 
-Parameters
-----------
-(Automatically added placeholder.)
+    Args:
+        model: Trained Keras model.
+        dataset: Test data; uses 10 samples.
 
-Returns
--------
-(Automatically added placeholder.)
-"""
+    Returns:
+        None
+    """
     TEST_SET = get_dataset(size=10)
     X = TEST_SET[:, :-14]
     Y = TEST_SET[:, -14:]
-    PREDICTIONS = MODEL.predict(X)
+    PREDICTIONS = model.predict(X)
     print(X)
     print(PREDICTIONS)
     cpt = 0
