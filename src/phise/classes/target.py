@@ -2,11 +2,85 @@ import astropy.units as u
 from copy import deepcopy as copy
 from .companion import Companion
 
+class CompanionList(list):
+    """Custom list to manage companions with type checking."""
+
+    def __init__(self, companions=None):
+        """Initialize the CompanionList.
+
+        Args:
+            companions (iterable, optional): Iterable of Companion objects to initialize the list.
+
+        Raises:
+            TypeError: If any item in the iterable is not a Companion.
+        """
+        if companions is None:
+            companions = []
+        else:
+            for companion in companions:
+                if not isinstance(companion, Companion):
+                    raise TypeError('Only Companion objects can be added to CompanionList')
+        super().__init__(companions)
+
+    def append(self, companion: Companion):
+        """Append a companion after type checking.
+
+        Args:
+            companion (Companion): Companion to append.
+
+        Raises:
+            TypeError: If the item is not a Companion.
+        """
+        if not isinstance(companion, Companion):
+            raise TypeError('Only Companion objects can be added to CompanionList')
+        super().append(companion)
+
+    def extend(self, companions):
+        """Extend the list with multiple companions after type checking.
+
+        Args:
+            companions (iterable): Iterable of companions to add.
+
+        Raises:
+            TypeError: If any item is not a Companion.
+        """
+        for companion in companions:
+            if not isinstance(companion, Companion):
+                raise TypeError('Only Companion objects can be added to CompanionList')
+        super().extend(companions)
+
+    def __setitem__(self, index, companion: Companion):
+        """Set an item after type checking.
+        
+        Args:
+            index (int): Index to set.
+            companion (Companion): Companion to set.
+
+        Raises:
+            TypeError: If the item is not a Companion."""
+        if not isinstance(companion, Companion):
+            raise TypeError('Only Companion objects can be assigned in CompanionList')
+        super().__setitem__(index, companion)
+
+    def insert(self, index: int, companion: Companion):
+        """Insert a companion after type checking.
+
+        Args:
+            index (int): Index to insert at.
+            companion (Companion): Companion to insert. 
+
+        Raises:
+            TypeError: If the item is not a Companion.
+        """
+        if not isinstance(companion, Companion):
+            raise TypeError('Only Companion objects can be inserted in CompanionList')
+        super().insert(index, companion)
+
 class Target:
     """Target star with declination, spectral flux, and companions."""
-    __slots__ = ('_parent_ctx', '_f', '_δ', '_companions', '_name')
+    __slots__ = ('_parent_ctx', '_f', '_f_unit', '_δ', '_δ_unit', '_companions', '_name')
 
-    def __init__(self, f: u.Quantity, δ: u.Quantity, companions: list[Companion], name: str='Unnamed Target'):
+    def __init__(self, f: u.Quantity, δ: u.Quantity, companions: list[Companion] | CompanionList, name: str='Unnamed Target'):
         """Create a target star.
 
         Args:
@@ -18,9 +92,7 @@ class Target:
         self._parent_ctx = None
         self.f = f
         self.δ = δ
-        self.companions = copy(companions)
-        for companion in self.companions:
-            companion._parent_target = self
+        self.companions = companions
         self.name = name
 
     def __str__(self) -> str:
@@ -44,7 +116,7 @@ class Target:
         Returns:
             u.Quantity: Spectral flux density converted to W/m^2/nm when set.
         """
-        return self._f
+        return (self._f * u.W / u.m**2 / u.nm).to(self._f_unit)
 
     @f.setter
     def f(self, f: u.Quantity):
@@ -60,10 +132,11 @@ class Target:
         if not isinstance(f, u.Quantity):
             raise TypeError('f must be an astropy Quantity')
         try:
-            f = f.to(u.W * u.m ** (-2) * u.nm ** (-1))
+            new_f = f.to(u.W / u.m **2 / u.nm).value
         except u.UnitConversionError:
             raise ValueError('f must be in spectral flux units (equivalent to W/m^2/nm)')
-        self._f = f
+        self._f_unit = f.unit
+        self._f = new_f
         if self.parent_ctx is not None:
             self.parent_ctx.update_photon_flux()
 
@@ -74,7 +147,7 @@ class Target:
         Returns:
             u.Quantity: Declination in degrees.
         """
-        return self._δ
+        return (self._δ * u.deg).to(self._δ_unit)
 
     @δ.setter
     def δ(self, δ: u.Quantity):
@@ -90,10 +163,11 @@ class Target:
         if not isinstance(δ, u.Quantity):
             raise TypeError('δ must be an astropy Quantity')
         try:
-            δ = δ.to(u.deg)
+            new_δ = δ.to(u.deg).value
         except u.UnitConversionError:
             raise ValueError('δ must be in degrees')
-        self._δ = δ
+        self._δ_unit = δ.unit
+        self._δ = new_δ
         if self.parent_ctx is not None:
             self.parent_ctx.project_telescopes_position()
 
@@ -119,9 +193,9 @@ class Target:
         if not all((isinstance(companion, Companion) for companion in companions)):
             raise TypeError('`companions` must be a list of Companion objects.')
         try:
-            companions = list(companions)
+            companions = CompanionList(companions)
         except TypeError:
-            raise TypeError('companions must be a list of Companion objects')
+            raise TypeError('companions must be a list of Companion or a CompanionList objects')
         self._companions = copy(companions)
         for companion in self._companions:
             companion._parent_target = self
