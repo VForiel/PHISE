@@ -10,7 +10,7 @@ class Telescope:
     - r: relative position on the plane (``astropy.units.Quantity``, shape (2,), in m)
     - name: readable name
     """
-    __slots__ = ('_parent_interferometer', '_a', '_r', '_name')
+    __slots__ = ('_parent_interferometer', '_a', '_a_unit', '_r', '_r_unit', '_name')
 
     def __init__(self, a: u.Quantity, r: u.Quantity, name: str = 'Unnamed Telescope'):
         """Initialize a telescope.
@@ -39,17 +39,18 @@ class Telescope:
         Returns:
             u.Quantity: Mirror collecting area in square meters.
         """
-        return self._a
+        return (self._a * u.m**2).to(self._a_unit)
 
     @a.setter
     def a(self, a: u.Quantity):
         if not isinstance(a, u.Quantity):
             raise TypeError('a must be an astropy Quantity')
         try:
-            a = a.to(u.m ** 2)
+            new_a = a.to(u.m ** 2).value
         except u.UnitConversionError:
             raise ValueError('a must be in a surface area unit')
-        self._a = a
+        self._a_unit = a.unit
+        self._a = new_a
         if self.parent_interferometer is not None:
             self.parent_interferometer.parent_ctx.update_photon_flux()
 
@@ -60,19 +61,20 @@ class Telescope:
         Returns:
             u.Quantity: 2-vector [x, y] position in meters.
         """
-        return self._r
+        return (self._r * u.m).to(self._r_unit)
 
     @r.setter
     def r(self, r: u.Quantity):
         if not isinstance(r, u.Quantity):
             raise TypeError('r must be an astropy Quantity')
         try:
-            r = r.to(u.m)
+            new_r = r.to(u.m).value
         except u.UnitConversionError:
             raise ValueError('r must be in a length unit')
         if r.shape != (2,):
             raise ValueError('r must have a shape of (2,)')
-        self._r = r
+        self._r_unit = r.unit
+        self._r = new_r
         if self.parent_interferometer is not None:
             self.parent_interferometer.parent_ctx.project_telescopes_position()
 
