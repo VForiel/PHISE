@@ -9,7 +9,7 @@ import numba as nb
 from typing import Union
 
 @nb.njit()
-def shift_njit(
+def shift_jit(
     ψ: Union[complex, np.ndarray],
     δφ: Union[float, np.ndarray],
     λ: float,
@@ -34,7 +34,7 @@ def shift(
     """Apply a phase shift with unit handling.
 
     Converts ``Quantity`` inputs to numeric values then calls
-    :func:`shift_njit`.
+    :func:`shift_jit`.
 
     Args:
         ψ: Complex electric field (scalar or array).
@@ -46,7 +46,7 @@ def shift(
     """
     δφ = δφ.to(λ.unit).value
     λ = λ.value
-    return shift_njit(ψ, δφ, λ)
+    return shift_jit(ψ, δφ, λ)
 
 def bound(φ: u.Quantity, λ: u.Quantity) -> u.Quantity:
     """Wrap a phase into [0, λ[ while preserving units.
@@ -58,10 +58,10 @@ def bound(φ: u.Quantity, λ: u.Quantity) -> u.Quantity:
     Returns:
         Wrapped phase in [0, λ[ with the unit of ``φ``.
     """
-    return bound_njit(φ.value, λ.to(φ.unit).value) * φ.unit
+    return bound_jit(φ.value, λ.to(φ.unit).value) * φ.unit
 
 @nb.njit()
-def bound_njit(φ: float, λ: float) -> float:
+def bound_jit(φ: float, λ: float) -> float:
     """Wrap a scalar phase into [0, λ[ (njit version).
 
     Args:

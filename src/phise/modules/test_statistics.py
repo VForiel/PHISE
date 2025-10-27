@@ -73,8 +73,8 @@ def get_vectors(ctx=None, nmc: int = 1000, size: int = 1000):
         print(f'⌛ Generating vectors... {round(i / nmc * 100, 2)}%', end='\r')
         for j in range(size):
             for c in ctx_h1.target.companions:
-                c.α = np.random.uniform(0, 2 * np.pi) * u.rad
-                c.θ = np.random.uniform(fov / 10, fov) * u.mas
+                c.θ = np.random.uniform(0, 2 * np.pi) * u.rad
+                c.ρ = np.random.uniform(fov / 10, fov) * u.mas
 
             (_, k_h0, b_h0) = ctx_h0.observe()
             (_, k_h1, b_h1) = ctx_h1.observe()

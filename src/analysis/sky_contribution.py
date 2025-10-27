@@ -33,8 +33,8 @@ def plot(ctx: Context=None, resolution: int=100, n=100, map=np.median):
     else:
         ref_ctx = copy(ctx)
     images = np.zeros((3, resolution, resolution))
-    (_, _, θ_map, _) = coordinates.get_maps(N=resolution, fov=ref_ctx.interferometer.fov)
-    θ_map = θ_map.value / np.max(θ_map.value)
+    (_, _, ρ_map, _) = coordinates.get_maps(N=resolution, fov=ref_ctx.interferometer.fov)
+    ρ_map = ρ_map.value / np.max(ρ_map.value)
     h_range = ref_ctx.get_h_range()
     for (i, h) in enumerate(h_range):
         ctx = copy(ref_ctx)
@@ -60,13 +60,13 @@ def plot(ctx: Context=None, resolution: int=100, n=100, map=np.median):
         axs[k].set_title(f'Kernel {k + 1}')
         plt.colorbar(im, ax=axs[k])
         for companion in ref_ctx.target.companions:
-            (planet_x, planet_y) = coordinates.αθ_to_xy(α=companion.α, θ=companion.θ, fov=fov)
+            (planet_x, planet_y) = coordinates.ρθ_to_xy(ρ=companion.ρ, θ=companion.θ, fov=fov)
             axs[k].scatter(planet_x * fov / 2, planet_y * fov / 2, color='tab:blue', edgecolors='black')
     stack = np.prod(images, axis=0) ** (1 / 3)
     im = axs[3].imshow(stack, cmap='hot', extent=extent)
     axs[3].set_title('Contribution zones')
     plt.colorbar(im, ax=axs[3])
     for companion in ref_ctx.target.companions:
-        (planet_x, planet_y) = coordinates.αθ_to_xy(α=companion.α, θ=companion.θ, fov=fov)
+        (planet_x, planet_y) = coordinates.ρθ_to_xy(ρ=companion.ρ, θ=companion.θ, fov=fov)
         axs[3].scatter(planet_x * fov / 2, planet_y * fov / 2, color='tab:blue', edgecolors='black')
     plt.show()

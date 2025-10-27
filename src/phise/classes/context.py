@@ -210,7 +210,7 @@ class Context:
         δ = self.target.δ.to(u.rad).value
         r = np.array([i.r.to(u.m).value for i in self.interferometer.telescopes])
         
-        self._p = project_position_njit(r, h, l, δ) * u.m
+        self._p = project_position_jit(r, h, l, δ) * u.m
         return self._p
     
     # monochromatic property --------------------------------------------------
@@ -356,7 +356,7 @@ class Context:
         fov=self.interferometer.fov
         output_order=self.interferometer.kn.output_order
 
-        return get_transmission_map_njit(N=N, φ=φ, σ=σ, p=p, λ=λ, λ0=λ0, fov=fov, output_order=output_order)
+        return get_transmission_map_jit(N=N, φ=φ, σ=σ, p=p, λ=λ, λ0=λ0, fov=fov, output_order=output_order)
 
     def plot_transmission_maps(self, N:int, return_plot:bool = False) -> None:
         
@@ -366,7 +366,7 @@ class Context:
         # Get companions position to plot them
         companions_pos = []
         for c in self.target.companions:
-            x, y = coordinates.αθ_to_xy(α=c.α, θ=c.θ, fov=self.interferometer.fov)
+            x, y = coordinates.ρθ_to_xy(ρ=c.ρ, θ=c.θ, fov=self.interferometer.fov)
             companions_pos.append((x*self.interferometer.fov/2, y*self.interferometer.fov/2))
 
         _, axs = plt.subplots(2, 6, figsize=(35, 10))
@@ -407,13 +407,13 @@ class Context:
                 ax.scatter(x, y, color="blue", edgecolors="black")
 
         transmissions = ""
-        companions = [Companion(name=self.target.name + " Star", c=1, α=0*u.deg, θ=0*u.mas)] + self.target.companions
+        companions = [Companion(name=self.target.name + " Star", c=1, θ=0*u.deg, ρ=0*u.mas)] + self.target.companions
         for i, c in enumerate(companions):
-            α = c.α.to(u.rad)
             θ = c.θ.to(u.rad)
+            ρ = c.ρ.to(u.rad)
             p = self.p.to(u.m)
             λ = self.interferometer.λ.to(u.m)
-            ψ = get_unique_source_input_fields_njit(a=1, θ=θ.value, α=α.value, λ=λ.value, p=p.value)
+            ψ = get_unique_source_input_fields_jit(a=1, ρ=ρ.value, θ=θ.value, λ=λ.value, p=p.value)
 
             n, d, b = self.interferometer.kn.propagate_fields(ψ=ψ, λ=self.interferometer.λ)
 
@@ -492,7 +492,7 @@ class Context:
 
         companions_pos = []
         for c in self.target.companions:
-            x, y = coordinates.αθ_to_xy(α=c.α, θ=c.θ, fov=self.interferometer.fov)
+            x, y = coordinates.ρθ_to_xy(ρ=c.ρ, θ=c.θ, fov=self.interferometer.fov)
             companions_pos.append((x*self.interferometer.fov/2, y*self.interferometer.fov/2))
 
         for i in range(3):
@@ -540,12 +540,12 @@ class Context:
         pf = self.pf.to(1/u.s).value # Photon flux from the star for each telescope
         
         # Star input fields
-        input_fields.append(get_unique_source_input_fields_njit(a=pf, θ=0, α=0, λ=λ, p=p))
+        input_fields.append(get_unique_source_input_fields_jit(a=pf, ρ=0, θ=0, λ=λ, p=p))
 
         # Companion input fields
         for c in self.target.companions:
             pf_c = pf * c.c # Photon flux from the companion for each telescope
-            input_fields.append(get_unique_source_input_fields_njit(a=pf_c, θ=c.θ.to(u.rad).value, α=c.α.to(u.rad).value, λ=λ, p=p))
+            input_fields.append(get_unique_source_input_fields_jit(a=pf_c, ρ=c.ρ.to(u.rad).value, θ=c.θ.to(u.rad).value, λ=λ, p=p))
         
         # Error OPD
         γ = np.random.normal(0, self.Γ.to(u.m).value, size=len(self.interferometer.telescopes))
@@ -1035,8 +1035,8 @@ class Context:
                 companions = [
                     Companion(
                         c = 1e-6, # Companion contrast
-                        θ = 4 * u.mas, # Companion angular separation
-                        α = 0 * u.deg, # Companion position angle
+                        ρ = 4 * u.mas, # Companion angular separation
+                        θ = 0 * u.deg, # Companion position angle
                         name = "Hypothetical Companion", # Companion name
                     ),
                 ],
@@ -1087,8 +1087,8 @@ class Context:
                 companions = [
                     Companion(
                         c = 1e-6, # Companion contrast
-                        θ = 4 * u.mas, # Companion angular separation
-                        α = 0 * u.deg, # Companion position angle
+                        ρ = 4 * u.mas, # Companion angular separation
+                        θ = 0 * u.deg, # Companion position angle
                         name = "Hypothetical Companion", # Companion name
                     ),
                 ],
@@ -1108,7 +1108,7 @@ class Context:
 # Projected position ----------------------------------------------------------
 
 @nb.njit()
-def project_position_njit(
+def project_position_jit(
         r: np.ndarray[float],
         h: float,
         l: float,
@@ -1143,7 +1143,7 @@ def project_position_njit(
 # Transmission maps -----------------------------------------------------------
 
 @nb.njit()
-def get_transmission_map_njit(
+def get_transmission_map_jit(
         N: int,
         φ: np.ndarray[float],
         σ: np.ndarray[float],
@@ -1175,10 +1175,10 @@ def get_transmission_map_njit(
     """
 
     # Get the coordinates of the map
-    _, _, α_map, θ_map = coordinates.get_maps_njit(N=N, fov=fov)
+    _, _, θ_map, ρ_map = coordinates.get_maps_jit(N=N, fov=fov)
 
     # mas to radian
-    θ_map = θ_map / 1000 / 3600 / 180 * np.pi
+    ρ_map = ρ_map / 1000 / 3600 / 180 * np.pi
 
     n_maps = np.zeros((3, N, N), dtype=np.complex128)
     d_maps = np.zeros((6, N, N), dtype=np.complex128)
@@ -1187,12 +1187,12 @@ def get_transmission_map_njit(
     for x in range(N):
         for y in range(N):
             
-            α = α_map[x, y]
             θ = θ_map[x, y]
+            ρ = ρ_map[x, y]
 
-            ψ = get_unique_source_input_fields_njit(a=1, θ=θ, α=α, λ=λ, p=p)
+            ψ = get_unique_source_input_fields_jit(a=1, ρ=ρ, θ=θ, λ=λ, p=p)
 
-            n, d, _ = kernel_nuller.propagate_fields_njit(ψ, φ, σ, λ, λ0, output_order)
+            n, d, _ = kernel_nuller.propagate_fields_jit(ψ, φ, σ, λ, λ0, output_order)
 
             k = np.array([np.abs(d[2*i])**2 - np.abs(d[2*i+1])**2 for i in range(3)])
 
@@ -1210,10 +1210,10 @@ def get_transmission_map_njit(
 # Input fields ----------------------------------------------------------------
 
 @nb.njit()
-def get_unique_source_input_fields_njit(
+def get_unique_source_input_fields_jit(
     a: float,
+    ρ: float,
     θ: float,
-    α: float,
     λ: float,
     p: np.ndarray[float],
 ) -> np.ndarray[complex]:
@@ -1223,8 +1223,8 @@ def get_unique_source_input_fields_njit(
     Parameters
     ----------
     - a: Intensity of the signal (prop. to #photons/s)
-    - θ: Angular separation (in radian)
-    - α: Parallactic angle (in radian)
+    - ρ: Angular separation (in radian)
+    - θ: Parallactic angle (in radian)
     - λ: Wavelength (in meter)
     - p: Projected telescope positions (in meter)
 
@@ -1239,10 +1239,10 @@ def get_unique_source_input_fields_njit(
     for i, t in enumerate(p):
 
         # Rotate the projected telescope positions by the parallactic angle
-        p_rot = t[0] * np.cos(-α) - t[1] * np.sin(-α)
+        p_rot = t[0] * np.cos(-θ) - t[1] * np.sin(-θ)
 
         # Compute the phase delay according to the object position
-        Φ = 2 * np.pi * p_rot * np.sin(θ) / λ
+        Φ = 2 * np.pi * p_rot * np.sin(ρ) / λ
 
         # Build the complex amplitude of the signal
         s[i] = np.exp(1j * Φ)

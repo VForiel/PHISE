@@ -307,7 +307,7 @@ class KernelNuller:
         λ0 = self.λ0.to(λ.unit).value
         ψ *= self.input_attenuation
         ψ *= np.exp(-1j * 2 * np.pi * self.input_opd.to(λ.unit).value / λ.value)
-        return propagate_fields_njit(ψ=ψ, φ=φ, σ=σ, λ=λ.value, λ0=λ0, output_order=self.output_order)
+        return propagate_fields_jit(ψ=ψ, φ=φ, σ=σ, λ=λ.value, λ0=λ0, output_order=self.output_order)
 
     def plot_phase(self, λ: u.Quantity, ψ: Optional[np.ndarray]=None, plot: bool = True) -> Optional[Any]:
         """Plot output phases and amplitudes of the nuller.
@@ -432,7 +432,7 @@ class KernelNuller:
         self.output_order = np.concatenate([k1, k2, k3])
 
 @nb.njit()
-def propagate_fields_njit(ψ: np.ndarray[complex], φ: np.ndarray[float], σ: np.ndarray[float], λ: float, λ0: float, output_order: np.ndarray[int]) -> tuple[np.ndarray[float], np.ndarray[float], np.ndarray[float], float]:
+def propagate_fields_jit(ψ: np.ndarray[complex], φ: np.ndarray[float], σ: np.ndarray[float], λ: float, λ0: float, output_order: np.ndarray[int]) -> tuple[np.ndarray[float], np.ndarray[float], np.ndarray[float], float]:
     """Simulate a 4-telescope Kernel Nuller propagation (numeric approach).
 
     Note: Does not account for input attenuation and OPD.
@@ -461,18 +461,18 @@ def propagate_fields_njit(ψ: np.ndarray[complex], φ: np.ndarray[float], σ: np
     Ra = np.abs(R)
     Rφ = np.angle(R)
     R = Ra * np.exp(1j * Rφ * λ_ratio)
-    φ = phase.bound_njit(φ + σ, λ)
-    nuller_inputs = phase.shift_njit(ψ, φ[:4], λ)
+    φ = phase.bound_jit(φ + σ, λ)
+    nuller_inputs = phase.shift_jit(ψ, φ[:4], λ)
     N1 = np.dot(N, nuller_inputs[:2])
     N2 = N @ nuller_inputs[2:]
-    N1_shifted = phase.shift_njit(N1, φ[4:6], λ)
-    N2_shifted = phase.shift_njit(N2, φ[6:8], λ)
+    N1_shifted = phase.shift_jit(N1, φ[4:6], λ)
+    N2_shifted = phase.shift_jit(N2, φ[6:8], λ)
     N3 = N @ np.array([N1_shifted[0], N2_shifted[0]])
     N4 = N @ np.array([N1_shifted[1], N2_shifted[1]])
     nulls = np.array([N3[1], N4[0], N4[1]], dtype=np.complex128)
     bright = N3[0]
     R_inputs = np.array([N3[1], N3[1], N4[0], N4[0], N4[1], N4[1]]) * 1 / np.sqrt(2)
-    R_inputs = phase.shift_njit(R_inputs, φ[8:], λ)
+    R_inputs = phase.shift_jit(R_inputs, φ[8:], λ)
     R1_output = R @ np.array([R_inputs[0], R_inputs[2]])
     R2_output = R @ np.array([R_inputs[1], R_inputs[4]])
     R3_output = R @ np.array([R_inputs[3], R_inputs[5]])

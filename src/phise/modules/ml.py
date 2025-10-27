@@ -3,7 +3,7 @@
 This module provides small utilities to generate simulated datasets and a
 compact dense Keras model for parameter estimation. Note that some functions
 rely on external variables/functions (``L``, ``STAR_SIGNALS``,
-``kn_fields_njit``, etc.). They are not executed during documentation builds.
+``kn_fields_jit``, etc.). They are not executed during documentation builds.
 """
 
 from typing import Any
@@ -18,9 +18,9 @@ except Exception:  # pragma: no cover - non essentiel pour la doc
 
 # Placeholders pour dépendances externes non strictement requises à l'import
 try:
-    kn_fields_njit  # type: ignore[name-defined]
+    kn_fields_jit  # type: ignore[name-defined]
 except NameError:  # pragma: no cover
-    kn_fields_njit = None  # type: ignore
+    kn_fields_jit = None  # type: ignore
 try:
     STAR_SIGNALS  # type: ignore[name-defined]
 except NameError:  # pragma: no cover
@@ -79,7 +79,7 @@ def get_dataset(size=1000):
     """Build a structured synthetic dataset.
 
     Note:
-        Depends on external objects (e.g. ``L``, ``STAR_SIGNALS``, ``kn_fields_njit``).
+        Depends on external objects (e.g. ``L``, ``STAR_SIGNALS``, ``kn_fields_jit``).
 
     Args:
         size: Number of samples to generate.
@@ -94,7 +94,7 @@ def get_dataset(size=1000):
         shifts_total_opd = np.random.uniform(0, 1, 14) * L / 10
         vector = np.empty(vector_len)
         for (p, point) in enumerate(grid_points):
-            (_, darks, bright) = kn_fields_njit(beams=STAR_SIGNALS, shifts=point, shifts_total_opd=shifts_total_opd)
+            (_, darks, bright) = kn_fields_jit(beams=STAR_SIGNALS, shifts=point, shifts_total_opd=shifts_total_opd)
             vector[p * 7:p * 7 + 6] = np.abs(darks) ** 2
             vector[p * 7 + 6] = np.abs(bright) ** 2
         vector[-14:] = shifts_total_opd
@@ -124,7 +124,7 @@ def get_random_dataset(size=1000):
         vector = np.empty(vector_len)
         for p in range(nb_points):
             shifts = np.random.uniform(0, L.value, size=14)
-            (_, darks, bright) = kn_fields_njit(beams=STAR_SIGNALS, shifts=shifts, shifts_total_opd=shifts_total_opd)
+            (_, darks, bright) = kn_fields_jit(beams=STAR_SIGNALS, shifts=shifts, shifts_total_opd=shifts_total_opd)
             vector[p * i_len:(p + 1) * i_len] = np.concatenate([shifts, np.abs(darks) ** 2, [np.abs(bright) ** 2]])
         vector[-14:] = shifts_total_opd
         dataset[v] = vector
