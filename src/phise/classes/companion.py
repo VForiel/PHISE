@@ -17,7 +17,7 @@ class Companion:
     milliarcseconds and radians, respectively, for consistency.
     """
 
-    __slots__ = ('_parent_target', '_c', '_ρ', '_θ', '_name')
+    __slots__ = ('_parent_target', '_c', '_ρ', '_ρ_unit', '_θ', '_θ_unit', '_name')
 
     def __init__(self, c: float, ρ: u.Quantity, θ: u.Quantity, name: str = 'Unnamed Companion'):
         """Initialize a point-like companion.
@@ -77,7 +77,7 @@ class Companion:
         Returns:
             u.Quantity: Separation in milliarcseconds (mas).
         """
-        return self._ρ
+        return (self._ρ * u.mas).to(self._ρ_unit)
 
     @ρ.setter
     def ρ(self, ρ: u.Quantity):
@@ -89,10 +89,11 @@ class Companion:
         if not isinstance(ρ, u.Quantity):
             raise TypeError('ρ must be an astropy Quantity')
         try:
-            ρ = ρ.to(u.mas)
+            new_ρ = ρ.to(u.mas).value
         except u.UnitConversionError:
             raise ValueError('ρ must be an angle')
-        self._ρ = ρ
+        self._ρ_unit = ρ.unit
+        self._ρ = new_ρ
 
     @property
     def θ(self) -> u.Quantity:
@@ -101,7 +102,7 @@ class Companion:
         Returns:
             u.Quantity: Angle in radians.
         """
-        return self._θ
+        return (self._θ * u.rad).to(self._θ_unit)
 
     @θ.setter
     def θ(self, θ: u.Quantity):
@@ -113,10 +114,11 @@ class Companion:
         if not isinstance(θ, u.Quantity):
             raise TypeError('θ must be an astropy Quantity')
         try:
-            θ = θ.to(u.rad)
+            new_θ = θ.to(u.rad).value
         except u.UnitConversionError:
             raise ValueError('θ must be an angle')
-        self._θ = θ
+        self._θ_unit = θ.unit
+        self._θ = new_θ
 
     @property
     def parent_target(self) -> Target:
