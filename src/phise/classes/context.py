@@ -23,8 +23,8 @@ from scipy.optimize import curve_fit
 from .interferometer import Interferometer
 from .target import Target
 from .companion import Companion
-from . import kernel_nuller
-from .kernel_nuller import KernelNuller
+from .chip import superkn
+from .chip import SuperKN
 
 from ..modules import coordinates
 from ..modules import signals
@@ -415,7 +415,7 @@ class Context:
             λ = self.interferometer.λ.to(u.m)
             ψ = get_unique_source_input_fields_jit(a=1, ρ=ρ.value, θ=θ.value, λ=λ.value, p=p.value)
 
-            n, d, b = self.interferometer.kn.propagate_fields(ψ=ψ, λ=self.interferometer.λ)
+            n, d, b = self.interferometer.kn.get_output_fields(ψ=ψ, λ=self.interferometer.λ)
 
             k = np.array([np.abs(d[2*i])**2 - np.abs(d[2*i+1])**2 for i in range(3)])
 
@@ -598,7 +598,7 @@ class Context:
 
         for ψ_i, ψ in enumerate(ctx.get_input_fields()):
 
-            _, d, b = ctx.interferometer.kn.propagate_fields(ψ=ψ, λ=ctx.interferometer.λ)
+            _, d, b = ctx.interferometer.kn.get_output_fields(ψ=ψ, λ=ctx.interferometer.λ)
             ds[ψ_i] = d
             bs[ψ_i] = b
 
@@ -1017,7 +1017,7 @@ class Context:
                 η = 0.02, # Optical efficiency
                 telescopes = telescope.get_VLTI_UTs(),
                 name = "VLTI", # Interferometer name
-                kn = KernelNuller(
+                kn = SuperKN(
                     φ = np.zeros(14) * u.um, # Injected phase shifts
                     σ = np.abs(np.random.normal(0, 1, 14)) * u.um, # Manufacturing OPD errors
                     λ0 = λ,
@@ -1069,7 +1069,7 @@ class Context:
                 η = 0.02, # Optical efficiency
                 telescopes = telescope.get_VLTI_UTs(),
                 name = "LIFE", # Interferometer name
-                kn = KernelNuller(
+                kn = SuperKN(
                     φ = np.zeros(14) * u.um, # Injected phase shifts
                     σ = np.abs(np.random.normal(0, 1, 14)) * u.um, # Manufacturing OPD errors
                     λ0 = λ,
@@ -1192,7 +1192,7 @@ def get_transmission_map_jit(
 
             ψ = get_unique_source_input_fields_jit(a=1, ρ=ρ, θ=θ, λ=λ, p=p)
 
-            n, d, _ = kernel_nuller.propagate_fields_jit(ψ, φ, σ, λ, λ0, output_order)
+            n, d, _ = superkn.get_output_fields_jit(ψ, φ, σ, λ, λ0, output_order)
 
             k = np.array([np.abs(d[2*i])**2 - np.abs(d[2*i+1])**2 for i in range(3)])
 

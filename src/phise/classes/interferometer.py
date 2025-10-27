@@ -1,6 +1,6 @@
 from astropy import units as u
 from copy import deepcopy as copy
-from .kernel_nuller import KernelNuller
+from .chip import SuperKN
 from .telescope import Telescope
 from .camera import Camera
 
@@ -10,23 +10,21 @@ class Interferometer:
     Provides global instrument state and utility properties to keep the
     observing context in sync (e.g., recompute projected telescope positions
     or update photon flux when certain parameters change).
+
+    Args:
+        l (u.Quantity): Array latitude (deg).
+        λ (u.Quantity): Central wavelength (nm).
+        Δλ (u.Quantity): Bandwidth (nm).
+        fov (u.Quantity): Field of view (mas).
+        η (float): Global optical efficiency (0..1).
+        telescopes (list[Telescope]): Telescopes defining the geometry.
+        kn (SuperKN): Kernel nuller configuration.
+        camera (Camera): Associated camera.
+        name (str, optional): Instrument name.
     """
     __slots__ = ('_parent_ctx', '_l', '_λ', '_Δλ', '_fov', '_η', '_telescopes', '_kn', '_camera', '_name')
 
-    def __init__(self, l: u.Quantity, λ: u.Quantity, Δλ: u.Quantity, fov: u.Quantity, η: float, telescopes: list[Telescope], kn: KernelNuller, camera: Camera, name: str='Unnamed Interferometer'):
-        """Initialize the interferometer.
-
-        Args:
-            l (u.Quantity): Array latitude (deg).
-            λ (u.Quantity): Central wavelength (nm).
-            Δλ (u.Quantity): Bandwidth (nm).
-            fov (u.Quantity): Field of view (mas).
-            η (float): Global optical efficiency (0..1).
-            telescopes (list[Telescope]): Telescopes defining the geometry.
-            kn (KernelNuller): Kernel nuller configuration.
-            camera (Camera): Associated camera.
-            name (str, optional): Instrument name.
-        """
+    def __init__(self, l: u.Quantity, λ: u.Quantity, Δλ: u.Quantity, fov: u.Quantity, η: float, telescopes: list[Telescope], kn: SuperKN, camera: Camera, name: str='Unnamed Interferometer'):
         self._parent_ctx = None
         self.l = l
         self.λ = λ
@@ -210,26 +208,26 @@ class Interferometer:
             telescope._parent_interferometer = self
 
     @property
-    def kn(self) -> KernelNuller:
-        """Associated `KernelNuller` instance.
+    def kn(self) -> SuperKN:
+        """Associated `SuperKN` instance.
 
         Returns:
-            KernelNuller: Kernel nuller configuration.
+            SuperKN: Kernel nuller configuration.
         """
         return self._kn
 
     @kn.setter
-    def kn(self, kn: KernelNuller):
+    def kn(self, kn: SuperKN):
         """Set kernel nuller.
 
         Args:
-            kn (KernelNuller): Kernel nuller object.
+            kn (SuperKN): Kernel nuller object.
 
         Raises:
-            TypeError: If not a ``KernelNuller`` instance.
+            TypeError: If not a ``SuperKN`` instance.
         """
-        if not isinstance(kn, KernelNuller):
-            raise TypeError('kn must be a KernelNuller object')
+        if not isinstance(kn, SuperKN):
+            raise TypeError('kn must be a SuperKN object')
         self._kn = copy(kn)
         self._kn._parent_interferometer = self
 

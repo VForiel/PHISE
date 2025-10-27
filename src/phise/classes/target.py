@@ -3,17 +3,16 @@ from copy import deepcopy as copy
 from .companion import Companion
 
 class CompanionList(list):
-    """Custom list to manage companions with type checking."""
+    """Custom list to manage companions with type checking.
+
+    Args:
+        companions (iterable, optional): Iterable of Companion objects to initialize the list.
+
+    Raises:
+        TypeError: If any item in the iterable is not a Companion.
+    """
 
     def __init__(self, companions=None):
-        """Initialize the CompanionList.
-
-        Args:
-            companions (iterable, optional): Iterable of Companion objects to initialize the list.
-
-        Raises:
-            TypeError: If any item in the iterable is not a Companion.
-        """
         if companions is None:
             companions = []
         else:
@@ -77,18 +76,17 @@ class CompanionList(list):
         super().insert(index, companion)
 
 class Target:
-    """Target star with declination, spectral flux, and companions."""
+    """Target star with declination, spectral flux, and companions.
+
+    Args:
+        f (u.Quantity): Spectral flux of the star.
+        δ (u.Quantity): Declination of the star.
+        companions (list[Companion]): List of companions.
+        name (str, optional): Target name (default: "Unnamed Target").
+    """
     __slots__ = ('_parent_ctx', '_f', '_f_unit', '_δ', '_δ_unit', '_companions', '_name')
 
     def __init__(self, f: u.Quantity, δ: u.Quantity, companions: list[Companion] | CompanionList, name: str='Unnamed Target'):
-        """Create a target star.
-
-        Args:
-            f (u.Quantity): Spectral flux of the star.
-            δ (u.Quantity): Declination of the star.
-            companions (list[Companion]): List of companions.
-            name (str, optional): Target name (default: "Unnamed Target").
-        """
         self._parent_ctx = None
         self.f = f
         self.δ = δ

@@ -7,31 +7,20 @@ from astropy import units as u
 class Companion:
     """Point-like astronomical companion.
 
-    Main parameters:
-    - c: Contrast (positive float) relative to the host star.
-    - ρ: Angular separation (``astropy.units.Quantity``, e.g., milliarcseconds).
-    - θ: Parallactic angle (``astropy.units.Quantity``, e.g., radians).
-    - name: Readable name (str).
+    Args:
+        c (float): Contrast relative to the host star (must be >= 0).
+        ρ (u.Quantity): Angular separation (e.g., ``100 * u.mas``).
+        θ (u.Quantity): Parallactic angle (e.g., ``0.1 * u.rad``).
+        name (str, optional): Readable companion name.
 
-    The class validates units for ``ρ`` and ``θ`` and stores them internally as
-    milliarcseconds and radians, respectively, for consistency.
+    Raises:
+        TypeError: If provided types are not as expected.
+        ValueError: If invalid physical values are supplied (e.g., negative contrast).
     """
 
     __slots__ = ('_parent_target', '_c', '_ρ', '_ρ_unit', '_θ', '_θ_unit', '_name')
 
     def __init__(self, c: float, ρ: u.Quantity, θ: u.Quantity, name: str = 'Unnamed Companion'):
-        """Initialize a point-like companion.
-
-        Args:
-            c (float): Contrast relative to the host star (must be >= 0).
-            ρ (u.Quantity): Angular separation (e.g., ``100 * u.mas``).
-            θ (u.Quantity): Parallactic angle (e.g., ``0.1 * u.rad``).
-            name (str, optional): Readable companion name.
-
-        Raises:
-            TypeError: If provided types are not as expected.
-            ValueError: If invalid physical values are supplied (e.g., negative contrast).
-        """
         self._parent_target = None
         self.ρ = ρ
         self.θ = θ

@@ -6,7 +6,7 @@ The classes are nested as follows:
 - Context
     - Interferometer
         - Telescope
-        - KernelNuller
+        - SuperKN
         - Camera
     - Target
         - Companion

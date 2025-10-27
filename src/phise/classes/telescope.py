@@ -5,19 +5,18 @@ import numpy as np
 class Telescope:
     """Telescope representation used by the interferometer.
 
-    Main attributes:
-    - a: collecting area (``astropy.units.Quantity`` in m**2)
-    - r: relative position on the plane (``astropy.units.Quantity``, shape (2,), in m)
-    - name: readable name
+    Args:
+        a (u.Quantity): Collecting area as an Astropy quantity in a surface
+            area unit (e.g., ``m**2``).
+        r (u.Quantity): Relative position on the plane as an Astropy quantity
+            in a length unit (e.g., ``m``). Must be a 2-vector (shape (2,)).
+        name (str): Human-readable name for the telescope.
+    Notes:
+        Exceptions are raised by the setters if units are incorrect.
     """
     __slots__ = ('_parent_interferometer', '_a', '_a_unit', '_r', '_r_unit', '_name')
 
     def __init__(self, a: u.Quantity, r: u.Quantity, name: str = 'Unnamed Telescope'):
-        """Initialize a telescope.
-
-        Notes:
-            Exceptions are raised by the setters if units are incorrect.
-        """
         self._parent_interferometer = None
         self.a = a
         self.r = r

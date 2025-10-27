@@ -146,7 +146,7 @@ Returns
             ctx.interferometer.kn.σ = np.abs(np.random.normal(0, 1, len(kn.σ))) * λ
             history = ctx.calibrate_gen(β=β, verbose=False)
             ψ = np.ones(4) * (1 + 0j) * np.sqrt(1 / 4)
-            (_, d, b) = ctx.interferometer.kn.propagate_fields(ψ=ψ, λ=λ)
+            (_, d, b) = ctx.interferometer.kn.get_output_fields(ψ=ψ, λ=λ)
             di = np.abs(d) ** 2
             k = np.array([di[0] - di[1], di[2] - di[3], di[4] - di[5]])
             depth = np.sum(np.abs(k)) / np.abs(b) ** 2
@@ -169,7 +169,7 @@ Returns
             ctx.interferometer.kn.σ = np.abs(np.random.normal(0, 1, len(kn.σ))) * λ
             ctx.calibrate_obs(n=n, plot=False)
             ψ = np.ones(4) * (1 + 0j) * np.sqrt(1 / 4)
-            (_, d, b) = ctx.interferometer.kn.propagate_fields(ψ=ψ, λ=λ)
+            (_, d, b) = ctx.interferometer.kn.get_output_fields(ψ=ψ, λ=λ)
             di = np.abs(d) ** 2
             k = np.array([di[0] - di[1], di[2] - di[3], di[4] - di[5]])
             depth = np.sum(np.abs(k)) / np.abs(b) ** 2

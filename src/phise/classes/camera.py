@@ -9,12 +9,6 @@ import math
 
 class Camera:
     """Virtual camera used to simulate photon detection.
-    """
-
-    __slots__ = ('_parent_interferometer', '_e', '_e_unit', '_name', '_ideal')
-
-    def __init__(self, e: u.Quantity = None, ideal: bool = False, name: str = 'Unnamed Camera'):
-        """Initialize the camera.
 
         Args:
             e (u.Quantity): Exposure time as an Astropy quantity in a
@@ -30,6 +24,10 @@ class Camera:
                 string.
             ValueError: If ``e`` cannot be converted to a time unit.
         """
+
+    __slots__ = ('_parent_interferometer', '_e', '_e_unit', '_name', '_ideal')
+
+    def __init__(self, e: u.Quantity = None, ideal: bool = False, name: str = 'Unnamed Camera'):
         self._parent_interferometer = None
         self.e = e if e is not None else 1 * u.s
         self.ideal = ideal

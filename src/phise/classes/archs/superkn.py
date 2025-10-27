@@ -10,40 +10,26 @@ except Exception:
 from io import BytesIO
 from LRFutils import color
 from copy import deepcopy as copy
-from ..modules import mmi
-from ..modules import phase
+from ...modules import mmi
+from ...modules import phase
 
-class KernelNuller:
+class SuperKN:
     """Kernel nuller representation for 4 telescopes.
 
-        Main attributes:
-        - φ: 14-element array of applied OPDs (Quantity)
-        - σ: 14-element array of internal OPD errors (Quantity)
-        - λ0: reference wavelength (Quantity)
-        - output_order: permutation describing the output order
-        - input_attenuation: attenuations applied to the 4 inputs
-        - input_opd: input-relative OPDs (length 4, Quantity)
-
-        Example:
-            >>> kn = KernelNuller(φ=..., σ=..., λ0=1*u.um)
-            >>> nulls, darks, bright, total = kn.propagate_fields(ψ, 1*u.um)
+    Args:
+        φ (u.Quantity): (14,) array of applied OPDs (length units).
+        σ (u.Quantity): (14,) array of intrinsic OPD errors.
+        λ0 (u.Quantity): Reference wavelength at which matrices are defined.
+        output_order (np.ndarray[int] | None): Output ordering (6 elements)
+            defining output pairs.
+        input_attenuation (np.ndarray[float] | None): Attenuations on the
+            4 optical inputs.
+        input_opd (u.Quantity | None): Relative OPDs applied to the 4 inputs.
+        name (str): Descriptive name.
     """
     __slots__ = ('_parent_interferometer', '_φ', '_σ', '_λ0', '_output_order', '_input_attenuation', '_input_opd', '_name')
 
     def __init__(self, φ: np.ndarray[u.Quantity], σ: np.ndarray[u.Quantity], λ0: u.Quantity, output_order: np.ndarray[int]=None, input_attenuation: np.ndarray[float]=None, input_opd: np.ndarray[u.Quantity]=None, name: str='Unnamed Kernel-Nuller'):
-        """Initialize a KernelNuller.
-
-        Args:
-            φ (u.Quantity): (14,) array of applied OPDs (length units).
-            σ (u.Quantity): (14,) array of intrinsic OPD errors.
-            λ0 (u.Quantity): Reference wavelength at which matrices are defined.
-            output_order (np.ndarray[int] | None): Output ordering (6 elements)
-                defining output pairs.
-            input_attenuation (np.ndarray[float] | None): Attenuations on the
-                4 optical inputs.
-            input_opd (u.Quantity | None): Relative OPDs applied to the 4 inputs.
-            name (str): Descriptive name.
-        """
         self._parent_interferometer = None
         self.φ = φ
         self.σ = σ
@@ -53,17 +39,11 @@ class KernelNuller:
         self.input_opd = input_opd if input_opd is not None else np.zeros(4) * u.m
         self.name = name
 
-    def __str__(self) -> str:
-        res = f'Kernel-Nuller "{self.name}"\n'
-        res += f"  φ: [{', '.join([f'{i:.2e}' for i in self.φ.value])}] {self.φ.unit}\n"
-        res += f"  σ: [{', '.join([f'{i:.2e}' for i in self.σ.value])}] {self.σ.unit}\n"
-        res += f"  Output order: [{', '.join([f'{i}' for i in self.output_order])}]\n"
-        res += f"  Input attenuation: [{', '.join([f'{i:.2e}' for i in self.input_attenuation])}]\n"
-        res += f"  Input OPD: [{', '.join([f'{i:.2e}' for i in self.input_opd.value])}] {self.input_opd.unit}"
-        return res.replace('e+00', '')
+    #==========================================================================
+    # Attributes
+    #==========================================================================
 
-    def __repr__(self) -> str:
-        return self.__str__()
+    # Phase shifters ----------------------------------------------------------
 
     @property
     def φ(self):
@@ -97,6 +77,8 @@ class KernelNuller:
             raise ValueError('φ must be positive')
         self._φ = φ
 
+    # Perturbations -----------------------------------------------------------
+
     @property
     def σ(self):
         """Intrinsic OPD errors of the nuller.
@@ -126,6 +108,8 @@ class KernelNuller:
             raise ValueError('σ must have a shape of (14,)')
         self._σ = σ
 
+    # Design wavelength -------------------------------------------------------
+
     @property
     def λ0(self):
         """Reference wavelength of the model.
@@ -153,6 +137,8 @@ class KernelNuller:
         except u.UnitConversionError:
             raise ValueError('λ0 must be in a distance unit')
         self._λ0 = λ0
+
+    # Output ordering ---------------------------------------------------------
 
     @property
     def output_order(self):
@@ -187,6 +173,54 @@ class KernelNuller:
         if output_order[0] - output_order[1] not in [-1, 1] or output_order[2] - output_order[3] not in [-1, 1] or output_order[4] - output_order[5] not in [-1, 1]:
             raise ValueError(f'output_order contain an invalid configuration of output pairs. Found {output_order}')
         self._output_order = output_order
+
+    def rebind_outputs(self, λ):
+        """Correct output ordering of the SuperKN object.
+
+        Successively obstruct two inputs and add a π/4 phase over one of the two
+        remaining inputs to determine output pairing and ordering.
+
+        Args:
+            λ (u.Quantity): Observation wavelength.
+
+        Returns:
+            None: Updates ``self.output_order`` in place.
+        """
+        ψ = np.zeros(4, dtype=complex)
+        ψ[0] = ψ[3] = (1 + 0j) * np.sqrt(1 / 2)
+        (_, d, _) = self.get_output_fields(ψ=ψ, λ=λ)
+        k1 = np.argsort((d * np.conj(d)).real)[:2]
+        ψ = np.zeros(4, dtype=complex)
+        ψ[0] = ψ[2] = (1 + 0j) * np.sqrt(1 / 2)
+        (_, d, _) = self.get_output_fields(ψ=ψ, λ=λ)
+        k2 = np.argsort((d * np.conj(d)).real)[:2]
+        ψ = np.zeros(4, dtype=complex)
+        ψ[0] = ψ[1] = (1 + 0j) * np.sqrt(1 / 2)
+        (_, d, _) = self.get_output_fields(ψ=ψ, λ=λ)
+        k3 = np.argsort((d * np.conj(d)).real)[:2]
+        ψ = np.zeros(4, dtype=complex)
+        ψ[0] = ψ[1] = (1 + 0j) * np.sqrt(1 / 2)
+        ψ[1] *= np.exp(-1j * np.pi / 2)
+        (_, d, _) = self.get_output_fields(ψ=ψ, λ=λ)
+        dk1 = d[k1]
+        diff = np.abs(dk1[0] - dk1[1])
+        if diff < 0:
+            k1 = np.flip(k1)
+        dk2 = d[k2]
+        diff = np.abs(dk2[0] - dk2[1])
+        if diff < 0:
+            k2 = np.flip(k2)
+        ψ = np.zeros(4, dtype=complex)
+        ψ[0] = ψ[1] = (1 + 0j) * np.sqrt(1 / 2)
+        ψ[2] *= np.exp(-1j * np.pi / 2)
+        (_, d, _) = self.get_output_fields(ψ=ψ, λ=λ)
+        dk3 = d[k3]
+        diff = np.abs(dk3[0] - dk3[1])
+        if diff < 0:
+            k3 = np.flip(k3)
+        self.output_order = np.concatenate([k1, k2, k3])
+
+    # Input properties --------------------------------------------------------
 
     @property
     def input_attenuation(self):
@@ -244,6 +278,8 @@ class KernelNuller:
             raise ValueError('input_opd must have a shape of (4,)')
         self._input_opd = input_opd
 
+    # Name --------------------------------------------------------------------
+
     @property
     def name(self):
         """Descriptive instance name.
@@ -267,6 +303,20 @@ class KernelNuller:
             raise ValueError('name must be a string')
         self._name = name
 
+    def __str__(self) -> str:
+        res = f'Kernel-Nuller "{self.name}"\n'
+        res += f"  φ: [{', '.join([f'{i:.2e}' for i in self.φ.value])}] {self.φ.unit}\n"
+        res += f"  σ: [{', '.join([f'{i:.2e}' for i in self.σ.value])}] {self.σ.unit}\n"
+        res += f"  Output order: [{', '.join([f'{i}' for i in self.output_order])}]\n"
+        res += f"  Input attenuation: [{', '.join([f'{i:.2e}' for i in self.input_attenuation])}]\n"
+        res += f"  Input OPD: [{', '.join([f'{i:.2e}' for i in self.input_opd.value])}] {self.input_opd.unit}"
+        return res.replace('e+00', '')
+
+    def __repr__(self) -> str:
+        return self.__str__()
+    
+    # Parent interferometer ---------------------------------------------------
+
     @property
     def parent_interferometer(self):
         """Parent interferometer associated with this kernel nuller.
@@ -283,8 +333,14 @@ class KernelNuller:
             ValueError: Always raised; property is read-only.
         """
         raise ValueError('parent_interferometer is read-only')
+    
+    #==========================================================================
+    # Methods
+    #==========================================================================
 
-    def propagate_fields(self, ψ: np.ndarray[complex], λ: u.Quantity) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
+    # Wave propagation --------------------------------------------------------
+
+    def get_output_fields(self, ψ: np.ndarray[complex], λ: u.Quantity) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
         """Propagate fields through the kernel nuller.
 
         Simulates optical propagation for 4 inputs at a given wavelength,
@@ -307,9 +363,11 @@ class KernelNuller:
         λ0 = self.λ0.to(λ.unit).value
         ψ *= self.input_attenuation
         ψ *= np.exp(-1j * 2 * np.pi * self.input_opd.to(λ.unit).value / λ.value)
-        return propagate_fields_jit(ψ=ψ, φ=φ, σ=σ, λ=λ.value, λ0=λ0, output_order=self.output_order)
+        return get_output_fields_jit(ψ=ψ, φ=φ, σ=σ, λ=λ.value, λ0=λ0, output_order=self.output_order)
+    
+    # Plotting ----------------------------------------------------------------
 
-    def plot_phase(self, λ: u.Quantity, ψ: Optional[np.ndarray]=None, plot: bool = True) -> Optional[Any]:
+    def plot_output_phase(self, λ: u.Quantity, ψ: Optional[np.ndarray]=None, plot: bool = True) -> Optional[Any]:
         """Plot output phases and amplitudes of the nuller.
 
         Computes output responses for each isolated input and plots the phase
@@ -326,10 +384,10 @@ class KernelNuller:
         ψ2 = np.array([0, ψ[1], 0, 0])
         ψ3 = np.array([0, 0, ψ[2], 0])
         ψ4 = np.array([0, 0, 0, ψ[3]])
-        (n1, d1, b1) = self.propagate_fields(ψ1, λ)
-        (n2, d2, b2) = self.propagate_fields(ψ2, λ)
-        (n3, d3, b3) = self.propagate_fields(ψ3, λ)
-        (n4, d4, b4) = self.propagate_fields(ψ4, λ)
+        (n1, d1, b1) = self.get_output_fields(ψ1, λ)
+        (n2, d2, b2) = self.get_output_fields(ψ2, λ)
+        (n3, d3, b3) = self.get_output_fields(ψ3, λ)
+        (n4, d4, b4) = self.get_output_fields(ψ4, λ)
         n2 = np.abs(n2) * np.exp(1j * (np.angle(n2) - np.angle(n1)))
         n3 = np.abs(n3) * np.exp(1j * (np.angle(n3) - np.angle(n1)))
         n4 = np.abs(n4) * np.exp(1j * (np.angle(n4) - np.angle(n1)))
@@ -385,54 +443,12 @@ class KernelNuller:
             return plot.getvalue()
         plt.show()
 
-    def rebind_outputs(self, λ):
-        """Correct output ordering of the KernelNuller object.
-
-        Successively obstruct two inputs and add a π/4 phase over one of the two
-        remaining inputs to determine output pairing and ordering.
-
-        Args:
-            λ (u.Quantity): Observation wavelength.
-
-        Returns:
-            None: Updates ``self.output_order`` in place.
-        """
-        ψ = np.zeros(4, dtype=complex)
-        ψ[0] = ψ[3] = (1 + 0j) * np.sqrt(1 / 2)
-        (_, d, _) = self.propagate_fields(ψ=ψ, λ=λ)
-        k1 = np.argsort((d * np.conj(d)).real)[:2]
-        ψ = np.zeros(4, dtype=complex)
-        ψ[0] = ψ[2] = (1 + 0j) * np.sqrt(1 / 2)
-        (_, d, _) = self.propagate_fields(ψ=ψ, λ=λ)
-        k2 = np.argsort((d * np.conj(d)).real)[:2]
-        ψ = np.zeros(4, dtype=complex)
-        ψ[0] = ψ[1] = (1 + 0j) * np.sqrt(1 / 2)
-        (_, d, _) = self.propagate_fields(ψ=ψ, λ=λ)
-        k3 = np.argsort((d * np.conj(d)).real)[:2]
-        ψ = np.zeros(4, dtype=complex)
-        ψ[0] = ψ[1] = (1 + 0j) * np.sqrt(1 / 2)
-        ψ[1] *= np.exp(-1j * np.pi / 2)
-        (_, d, _) = self.propagate_fields(ψ=ψ, λ=λ)
-        dk1 = d[k1]
-        diff = np.abs(dk1[0] - dk1[1])
-        if diff < 0:
-            k1 = np.flip(k1)
-        dk2 = d[k2]
-        diff = np.abs(dk2[0] - dk2[1])
-        if diff < 0:
-            k2 = np.flip(k2)
-        ψ = np.zeros(4, dtype=complex)
-        ψ[0] = ψ[1] = (1 + 0j) * np.sqrt(1 / 2)
-        ψ[2] *= np.exp(-1j * np.pi / 2)
-        (_, d, _) = self.propagate_fields(ψ=ψ, λ=λ)
-        dk3 = d[k3]
-        diff = np.abs(dk3[0] - dk3[1])
-        if diff < 0:
-            k3 = np.flip(k3)
-        self.output_order = np.concatenate([k1, k2, k3])
+#==============================================================================
+# Numba-accelerated functions
+#==============================================================================
 
 @nb.njit()
-def propagate_fields_jit(ψ: np.ndarray[complex], φ: np.ndarray[float], σ: np.ndarray[float], λ: float, λ0: float, output_order: np.ndarray[int]) -> tuple[np.ndarray[float], np.ndarray[float], np.ndarray[float], float]:
+def get_output_fields_jit(ψ: np.ndarray[complex], φ: np.ndarray[float], σ: np.ndarray[float], λ: float, λ0: float, output_order: np.ndarray[int]) -> tuple[np.ndarray[float], np.ndarray[float], np.ndarray[float], float]:
     """Simulate a 4-telescope Kernel Nuller propagation (numeric approach).
 
     Note: Does not account for input attenuation and OPD.
