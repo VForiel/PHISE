@@ -1,10 +1,3 @@
-"""Kernel nuller utilities and model.
-
-This module contains the `KernelNuller` class which represents the "nulling"
-part of a 4-telescope interferometer. It provides configuration parameters
-(applied phases/OPDs, internal errors, output ordering, input attenuations)
-and methods to propagate optical fields and visualize related quantities.
-"""
 import numpy as np
 import numba as nb
 import astropy.units as u

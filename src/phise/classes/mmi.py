@@ -1,4 +1,3 @@
-"""Multi-Mode Interferometer (MMI) class utilities."""
 import numpy as np
 
 class MMI:

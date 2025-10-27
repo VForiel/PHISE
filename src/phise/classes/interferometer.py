@@ -1,10 +1,3 @@
-"""Interferometer definitions and utilities.
-
-This module defines the `Interferometer` class which encapsulates global
-instrument parameters: array latitude, central wavelength, bandwidth, field
-of view, optical efficiency, list of telescopes, associated kernel nuller,
-and camera.
-"""
 from astropy import units as u
 from copy import deepcopy as copy
 from .kernel_nuller import KernelNuller

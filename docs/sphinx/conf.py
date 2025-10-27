@@ -77,4 +77,9 @@ html_context = {
     "github_version": "main",
     "doc_path": "docs",
     "version_switcher": "https://raw.githubusercontent.com/aksiome/breeze/refs/heads/main/docs/_static/switcher.json",
+    
+}
+
+html_theme_options = {
+    "emojis_header_nav": True,
 }

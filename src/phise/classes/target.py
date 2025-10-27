@@ -1,4 +1,3 @@
-"""Target star and companions model."""
 import astropy.units as u
 from copy import deepcopy as copy
 from .companion import Companion

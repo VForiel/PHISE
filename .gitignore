@@ -20,7 +20,7 @@ docs/sphinx/_build/
 
 # Package distribution files
 dist/
-*.eggs-info/
+src/phise.egg-info/
 
 # Doc
 _build/

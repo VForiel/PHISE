@@ -1,9 +1,3 @@
-"""Utilities and representation of a simulated telescope.
-
-The `Telescope` class encapsulates collecting area (``a``), relative position
-on the plane (``r``), and a readable name. Setters validate units through
-``astropy.units``.
-"""
 import astropy.units as u
 import numpy as np
 

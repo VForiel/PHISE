@@ -1,18 +1,3 @@
-"""Representation of a point-like companion on the sky.
-
-This module defines the `Companion` class that models an unresolved source
-orbiting a host star. A companion is characterized by its contrast relative
-to the star, its angular separation, and its parallactic angle.
-
-Unit validations use ``astropy.units``. Properties are read/write for the
-physical parameters, while the relation to the parent `Target` is read-only.
-
-Example
-    >>> from phise.classes.companion import Companion
-    >>> import astropy.units as u
-    >>> comp = Companion(c=1e-3, θ=100*u.mas, α=0.1*u.rad, name='b')
-    >>> print(comp)
-"""
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
