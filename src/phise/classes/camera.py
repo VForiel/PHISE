@@ -1,36 +1,3 @@
-"""Virtual camera for interferometric simulations.
-
-This module provides the `Camera` class, a minimal sensor that converts
-complex electric fields (visibilities) into a detected photon count over an
-exposure time. It is designed to be used within an `Interferometer` object
-that acts as its parent.
-
-Responsibilities
-- Store the exposure time (`e`) as an Astropy quantity in seconds.
-- Simulate photon detection with `acquire_pixel` from an array of complex
-    electric fields.
-- Support an `ideal` mode (no noise, truncated integer value) or a realistic
-    mode (Poisson noise / Gaussian approximation for very large counts).
-
-Example
-    >>> from phise.classes.camera import Camera
-    >>> import numpy as np
-    >>> import astropy.units as u
-    >>> cam = Camera(e=0.5 * u.s, ideal=False, name="CamSim")
-    >>> psi = np.array([1+0j, 0.5+0.5j])  # complex electric fields
-    >>> n = cam.acquire_pixel(psi)
-
-Raises
-- TypeError: If `e` is not an `astropy.units.Quantity` or if `ideal`/`name`
-    are not of the expected types.
-- ValueError: If `e` cannot be converted to a time unit.
-
-Notes
-- Inputs and outputs are intentionally minimal:
-    - `ψ` (psi) is a numpy.ndarray of complex numbers where |ψ|^2 yields a flux in s^-1 per element.
-    - `acquire_pixel` returns an integer equal to the number of detected photons
-        during exposure `e`.
-"""
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
@@ -42,19 +9,15 @@ import math
 
 class Camera:
     """Virtual camera used to simulate photon detection.
-
-    Encapsulates simple sensor parameters (exposure time, name, ideal mode)
-    and provides a method to convert complex electric fields into detected
-    photon counts over the exposure.
     """
 
-    __slots__ = ('_parent_interferometer', '_e', '_name', '_ideal')
+    __slots__ = ('_parent_interferometer', '_e', '_e_unit', '_name', '_ideal')
 
-    def __init__(self, e: Optional[u.Quantity] = None, ideal: bool = False, name: str = 'Unnamed Camera'):
+    def __init__(self, e: u.Quantity = None, ideal: bool = False, name: str = 'Unnamed Camera'):
         """Initialize the camera.
 
         Args:
-            e (Optional[u.Quantity]): Exposure time as an Astropy quantity in a
+            e (u.Quantity): Exposure time as an Astropy quantity in a
                 time unit (e.g. ``1 * u.s``). If ``None``, a default of ``1 s``
                 is used when possible.
             ideal (bool): If ``True``, the camera is considered ideal and
@@ -68,13 +31,7 @@ class Camera:
             ValueError: If ``e`` cannot be converted to a time unit.
         """
         self._parent_interferometer = None
-        # avoid evaluating `1 * u.s` at import time which may fail when astropy is mocked
-        if e is None:
-            try:
-                e = 1 * u.s
-            except Exception:
-                e = None
-        self.e = e
+        self.e = e if e is not None else 1 * u.s
         self.ideal = ideal
         self.name = name
 
@@ -91,10 +48,10 @@ class Camera:
         """Camera exposure time in seconds.
 
         Returns:
-            u.Quantity: Exposure time expressed in seconds. Conversion is
+            u.Quantity: Exposu re time expressed in seconds. Conversion is
                 handled in the setter.
         """
-        return self._e
+        return (self._e * u.s).to(self._e_unit)
 
     @e.setter
     def e(self, e: u.Quantity):
@@ -110,10 +67,13 @@ class Camera:
         if not isinstance(e, u.Quantity):
             raise TypeError('e must be an astropy Quantity')
         try:
-            e = e.to(u.s)
+            e_val = e.to(u.s).value
         except u.UnitConversionError:
             raise ValueError('e must be in a time unit')
-        self._e = e
+        if e_val <= 0:
+            raise ValueError('e must be positive')
+        self._e_unit = e.unit
+        self._e = e_val
 
     @property
     def parent_interferometer(self) -> Interferometer:
@@ -207,8 +167,26 @@ class Camera:
             - For reproducibility, seed the RNG before calling (e.g.
               ``np.random.seed(...)``).
         """
-        expected_photons = np.sum(np.abs(ψ) ** 2) * self.e.to(u.s).value
-        if self.ideal:
+        return self.acquire_pixel_jit(ψ, self._e, ideal=self._ideal)
+
+    @staticmethod
+    @nb.njit()
+    def acquire_pixel_jit(ψ: np.ndarray[complex], e: float, ideal=False) -> int:
+        """JIT-compiled version of ``acquire_pixel`` for use in Numba-jitted code.
+
+        This method wraps ``acquire_pixel`` to allow its use within Numba-jitted
+        functions. Note that the performance gain is limited by the fact that
+        NumPy random functions are not JIT-compiled.
+
+        Args:
+            ψ (np.ndarray[complex]): 1D array (or broadcastable) of complex
+                electric field amplitudes (units: s**(-1/2)).
+            e (float): Exposure time in seconds.
+        Returns:
+            int: Number of detected photons during the exposure.
+        """
+        expected_photons = np.sum(np.abs(ψ) ** 2) * e
+        if ideal:
             detected_photons = int(expected_photons)
         elif expected_photons <= 2000000000.0:
             detected_photons = np.random.poisson(expected_photons)
