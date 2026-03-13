@@ -1,0 +1,19 @@
+__pycache__/
+.venv/
+.vscode/
+.idea/
+.pdm-python
+pdm.lock
+
+# Sphinx build artifacts
+docs/sphinx/_build/
+
+# Package distribution files
+dist/
+src/phise.egg-info/
+
+# Doc
+_build/
+
+# Generated files
+generated/

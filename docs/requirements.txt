@@ -1,0 +1,14 @@
+sphinx
+myst-parser
+sphinx-copybutton
+pyyaml
+numpy
+matplotlib
+astropy
+scipy
+numba
+gitpython
+sphinx-breeze-theme
+linkify-it-py
+toml
+sphinxcontrib-mermaid

@@ -1,0 +1,28 @@
+[project]
+name = "phise"
+version = "0.1.1"
+description = "Package for tunable nulling interferometry utilities"
+authors = [
+    {name = "Vincent Foriel", email = "vincent.foriel@gmail.com"},
+]
+requires-python = "~=3.12"
+readme = "README.md"
+license = {text = "MIT"}
+dynamic = ["dependencies"]
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+
+[tool.pdm]
+distribution = false
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["phise*"]
