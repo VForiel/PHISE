@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def laugiergram(phasors, ax=None, marker='*', labels=None, colors=None):
+def laugiergram(phasors, ax=None, marker='*', labels=None, colors=None, alpha=1, relative: bool = True):
     """
     Plots a Laugiergram on a given matplotlib polar axis.
     Displays lines from the center (origin) to points representing
@@ -21,6 +21,12 @@ def laugiergram(phasors, ax=None, marker='*', labels=None, colors=None):
     colors : list of colors, optional
         A list of colors of the same length as phasors. If None,
         matplotlib's default color cycle is used to assign a unique color per phasor.
+    alpha : float, optional
+        Transparency of the lines and markers. Default is 1.
+    relative : bool, optional
+        If True, removes the global phase using the first phasor as reference.
+        The first phasor phase is then set to zero and all other phasors are
+        expressed relative to it. Default is True.
 
     Returns
     -------
@@ -34,6 +40,9 @@ def laugiergram(phasors, ax=None, marker='*', labels=None, colors=None):
         return_fig = True
 
     z = np.asarray(phasors, dtype=complex)
+
+    if relative and z.size > 0:
+        z = z * np.exp(-1j * np.angle(z[0]))
     
     theta = np.angle(z)
     r = np.abs(z)
@@ -61,10 +70,10 @@ def laugiergram(phasors, ax=None, marker='*', labels=None, colors=None):
     for i, (th, rad) in enumerate(zip(theta, r)):
         color = color_list[i]
         # Line from origin
-        ax.plot([th, th], [0, rad], color=color, label=labels[i] if labels is not None else None)
+        ax.plot([th, th], [0, rad], color=color, label=labels[i] if labels is not None else None, alpha=alpha)
         # Point at the end with marker and black edge
         ax.plot([th], [rad], marker=marker, markersize=12, color=color,
-                markeredgecolor='black', markeredgewidth=0.5)
+                markeredgecolor='black', markeredgewidth=0.5, alpha=alpha)
     
     if labels is not None:
         ax.legend()
