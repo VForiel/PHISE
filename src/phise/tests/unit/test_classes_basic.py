@@ -32,12 +32,14 @@ def test_camera_properties_and_acquire():
     """Test Camera property setters and acquire behavior.
 
     Ensures exposure time and ideal flag behave as expected, that
-    invalid assignments raise TypeError, and that acquire returns a
-    non-negative integer when the camera is in ideal mode.
+    invalid assignments raise TypeError, and that acquire returns the
+    historical 1-pixel result when the detector resolution stays at 1.
     """
-    cam = Camera(e=2 * u.s, ideal=True, name='C1')
+    cam = Camera(e=2 * u.s, ideal=True, name='C1', resolution=1)
     assert cam.e == 2 * u.s
     assert cam.ideal is True
+    assert cam.resolution == 1
+    assert cam.uhdr is False
 
     # invalid types
     with pytest.raises(TypeError):
@@ -46,12 +48,78 @@ def test_camera_properties_and_acquire():
     with pytest.raises(TypeError):
         cam.name = 123
 
+    with pytest.raises(TypeError):
+        cam.resolution = 1.5
+
+    with pytest.raises(ValueError):
+        cam.resolution = 0
+
+    with pytest.raises(TypeError):
+        cam.uhdr = 'yes'
+
     # ideal acquisition deterministic
     np.random.seed(0)
     ψ = np.array([1.0 + 0j, 1.0 + 0j])
     det = cam.acquire(ψ)
     assert isinstance(det, int)
-    assert det >= 0
+    assert det == 4
+
+
+def test_camera_spatial_mode_clips_without_uhdr():
+    """Test that the spatial camera mode still returns a scalar count.
+
+    The result is intentionally clipped by the detector saturation level,
+    so it must stay below the true unsaturated flux.
+    """
+
+    cam = Camera(
+        e=1 * u.s,
+        ideal=True,
+        dc=150.0,
+        fwc=16383.0,
+        resolution=11,
+        sigma_x=1.0,
+        sigma_y=2.0,
+        x0=0.0,
+        y0=0.0,
+        theta=np.deg2rad(30.0),
+        uhdr=False,
+    )
+    psi = np.array([1200.0 + 0j])
+    detected = cam.acquire(psi)
+    expected_flux = float(np.sum(np.abs(psi) ** 2) * cam.e.to_value(u.s) * cam.qe)
+
+    assert isinstance(detected, int)
+    assert 0 <= detected < expected_flux
+
+
+def test_camera_uhdr_recovers_saturated_flux():
+    """Test that UHDR mode recovers the total flux after saturation.
+
+    The detector image is clipped, but the fitted Gaussian should estimate
+    the underlying flux instead of returning the saturated pixel sum.
+    """
+
+    cam = Camera(
+        e=1 * u.s,
+        ideal=True,
+        dc=150.0,
+        fwc=16383.0,
+        resolution=11,
+        sigma_x=1.0,
+        sigma_y=2.0,
+        x0=0.0,
+        y0=0.0,
+        theta=np.deg2rad(30.0),
+        uhdr=True,
+    )
+    psi = np.array([1200.0 + 0j])
+    detected = cam.acquire(psi)
+    expected_flux = float(np.sum(np.abs(psi) ** 2) * cam.e.to_value(u.s) * cam.qe)
+
+    assert isinstance(detected, int)
+    assert detected > cam.fwc
+    assert abs(detected - expected_flux) / expected_flux < 1e-2
 
 
 def test_telescope_area_and_position_validations():
