@@ -55,14 +55,21 @@ def calibrate_gen(
     ε = 1e-6 * ctx.interferometer.λ.unit  # Minimum shift step size
 
     # Shifters that contribute to redirecting light to the bright output
-    φb = [1, 2, 3, 4, 5, 7]
+    if not hasattr(ctx.interferometer.chip, 'bright_shifters_indices'):
+        raise NotImplementedError('The current Chip architecture lacks bright_shifters_indices needed for Trial and Error calibration.')
+    φb = ctx.interferometer.chip.bright_shifters_indices
 
     # Shifters that contribute to the symmetry of the dark outputs
-    φk = [6, 8, 9, 10, 11, 12, 13, 14]
+    if not hasattr(ctx.interferometer.chip, 'kernel_shifters_indices'):
+        raise NotImplementedError('The current Chip architecture lacks kernel_shifters_indices needed for Trial and Error calibration.')
+    φk = ctx.interferometer.chip.kernel_shifters_indices
 
     # History of the optimization
     depth_history = []
     shifters_history = []
+
+    nb_raw_outs = ctx.interferometer.chip.nb_raw_outputs
+    nb_processed_outs = ctx.interferometer.chip.nb_processed_outputs
 
     Δφ = ctx.interferometer.λ / 4
     while Δφ > ε:
@@ -74,26 +81,32 @@ def calibrate_gen(
             log = ""
 
             # Getting observation with different phase shifts
-            ctx.interferometer.chip.φ[i - 1] += Δφ
+            ctx.interferometer.chip.φ[i] += Δφ
             outs_pos = ctx.observe()
 
-            ctx.interferometer.chip.φ[i - 1] -= 2 * Δφ
+            ctx.interferometer.chip.φ[i] -= 2 * Δφ
             outs_neg = ctx.observe()
 
-            ctx.interferometer.chip.φ[i - 1] += Δφ
+            ctx.interferometer.chip.φ[i] += Δφ
             outs_old = ctx.observe()
 
             b_pos = outs_pos[0]
             b_neg = outs_neg[0]
             b_old = outs_old[0]
+
+            n_pos = np.sum(outs_pos[1:])
+            n_neg = np.sum(outs_neg[1:])
+            n_old = np.sum(outs_old[1:])
+            
+            # Using the actual number of processed outputs
             k_old = (
-                1 / 3 * np.sum(np.abs(ctx.interferometer.chip.process_outputs(outs_old)))
+                1 / ctx.interferometer.chip.nb_processed_outputs * np.sum(np.abs(ctx.interferometer.chip.process_outputs(outs_old)))
             )
             k_pos = (
-                1 / 3 * np.sum(np.abs(ctx.interferometer.chip.process_outputs(outs_pos)))
+                1 / ctx.interferometer.chip.nb_processed_outputs * np.sum(np.abs(ctx.interferometer.chip.process_outputs(outs_pos)))
             )
             k_neg = (
-                1 / 3 * np.sum(np.abs(ctx.interferometer.chip.process_outputs(outs_neg)))
+                1 / ctx.interferometer.chip.nb_processed_outputs * np.sum(np.abs(ctx.interferometer.chip.process_outputs(outs_neg)))
             )
 
             # Save the history
@@ -106,10 +119,10 @@ def calibrate_gen(
 
                 if b_pos > b_old and b_pos > b_neg:
                     log += " + "
-                    ctx.interferometer.chip.φ[i - 1] += Δφ
+                    ctx.interferometer.chip.φ[i] += Δφ
                 elif b_neg > b_old and b_neg > b_pos:
                     log += " - "
-                    ctx.interferometer.chip.φ[i - 1] -= Δφ
+                    ctx.interferometer.chip.φ[i] -= Δφ
                 else:
                     log += " = "
 
@@ -118,10 +131,10 @@ def calibrate_gen(
                 log += f"Shift {i} Kernel: {k_neg:.2e} | {k_old:.2e} | {k_pos:.2e} -> "
 
                 if k_pos < k_old and k_pos < k_neg:
-                    ctx.interferometer.chip.φ[i - 1] += Δφ
+                    ctx.interferometer.chip.φ[i] += Δφ
                     log += " + "
                 elif k_neg < k_old and k_neg < k_pos:
-                    ctx.interferometer.chip.φ[i - 1] -= Δφ
+                    ctx.interferometer.chip.φ[i] -= Δφ
                     log += " - "
                 else:
                     log += " = "

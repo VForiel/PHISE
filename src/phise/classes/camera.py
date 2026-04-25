@@ -11,7 +11,99 @@ import numpy as np
 if TYPE_CHECKING:
     from .interferometer import Interferometer
 
+#==============================================================================
+# Numba accelerated functions
+#==============================================================================
 
+@nb.njit(cache=True)
+def _get_flux_jit(
+    psi: np.ndarray,
+    e: float = 1.0,
+    ideal: bool = False,
+    qe: float = 1.0,
+    dc: float = 100.0,
+    ron: float = 10.0,
+    fwc: float = math.inf,
+    max_adu: int = 65535,
+    gain: float = 1.0,
+    resolution: int = 1,
+    spot_size: float = 1.0,
+    dark:np.ndarray = None,
+) -> int:
+
+    return np.sum(_get_image_jit(
+        psi=psi,
+        e=e,
+        ideal=ideal,
+        qe=qe,
+        dc=dc,
+        ron=ron,
+        fwc=fwc,
+        max_adu=max_adu,
+        gain=gain,
+        resolution=resolution,
+        spot_size=spot_size,
+        dark=dark,
+    ))
+
+@nb.njit(cache=True)
+def _get_image_jit(
+    psi: np.ndarray,
+    e: float = 1.0,
+    ideal: bool = False,
+    qe: float = 1.0,
+    dc: float = 100.0,
+    ron: float = 10.0,
+    fwc: float = math.inf,
+    max_adu:int = 65535,
+    gain: float = 1.0,
+    resolution: int = 1,
+    spot_size: float = 1.0,
+    dark:np.ndarray = None,
+) -> np.ndarray:
+    """Numba-accelerated scalar detector model used for the 1-pixel fast path."""
+
+    # Getting theoretical beam spot size
+    flux = np.sum(np.abs(psi) ** 2) * e
+    image = _get_spot_profile(resolution, spot_size, flux)
+
+    if not ideal:
+
+        # Apply quantum efficiency
+        image *= qe
+
+        for i in range(resolution):
+            for j in range(resolution):
+
+                # Photon noise
+                if image[i,j] <= 2000000000.0:
+                    image[i,j] = np.random.poisson(image[i,j])
+                else: # Avoid overflow with Poisson method at high flux
+                    image[i, j] = int(image[i,j] + np.random.normal(0.0, np.sqrt(image[i, j])))
+
+                # Dark current noise
+                dark_current = np.random.poisson(dc * e)
+
+                # Read out noise
+                readout_noise = np.random.normal(0.0, ron)
+
+                # Total photo-electrons
+                image[i,j] = image[i,j] + readout_noise + dark_current
+
+                if image[i, j] > fwc:
+                    image[i, j] = fwc
+
+                image[i,j] = np.rint(image[i,j] / gain)
+
+                if image[i, j] > max_adu:
+                    image[i, j] = max_adu
+
+                if dark is not None:
+                    image[i,j] = image[i,j] - dark[i, j]
+
+    return image
+
+@nb.njit(cache=True)
 def _flux_to_amplitude(flux: float, sigma_x: float, sigma_y: float) -> float:
     """Convert a total Gaussian flux into a peak amplitude.
 
@@ -26,104 +118,28 @@ def _flux_to_amplitude(flux: float, sigma_x: float, sigma_y: float) -> float:
 
     return flux / (2.0 * math.pi * sigma_x * sigma_y)
 
-
-def _gaussian_2d(
-    x: np.ndarray,
-    y: np.ndarray,
-    x0: float,
-    y0: float,
-    sigma_x: float,
-    sigma_y: float,
-    amplitude: float,
-    theta: float = 0.0,
+@nb.njit(cache=True)
+def _get_spot_profile(
+    resolution: int,
+    spot_size: float,
+    flux: float,
 ) -> np.ndarray:
-    """Evaluate a rotated 2D Gaussian on a pixel grid."""
+    """Draw a 2D Gaussian spot profile on a square grid."""
 
-    dx = x - x0
-    dy = y - y0
-    cos_theta = math.cos(theta)
-    sin_theta = math.sin(theta)
-    x_rot = dx * cos_theta + dy * sin_theta
-    y_rot = -dx * sin_theta + dy * cos_theta
-    exponent = -((x_rot**2) / (2.0 * sigma_x**2) + (y_rot**2) / (2.0 * sigma_y**2))
-    return amplitude * np.exp(exponent)
+    x = np.zeros((resolution, resolution))
+    y = np.zeros((resolution, resolution))
+    for i in range(resolution):
+        x[i, :] = np.arange(resolution) - (resolution - 1) / 2 
+        y[:, i] = np.arange(resolution) - (resolution - 1) / 2
 
+    σ = spot_size
+    a = _flux_to_amplitude(flux, σ, σ)
 
-def _estimate_flux_from_clipped_image(
-    image: np.ndarray,
-    dark_level: float,
-    saturation: float,
-    grid_x: np.ndarray,
-    grid_y: np.ndarray,
-    x0: float,
-    y0: float,
-    sigma_x: float,
-    sigma_y: float,
-    theta: float,
-) -> float:
-    """Estimate the total flux by fitting a clipped 2D Gaussian.
+    return a * np.exp(-0.5 * ((x / σ) ** 2 + (y / σ) ** 2))
 
-    The fit follows the workflow used in ``UHDR.ipynb``: a clipped detector
-    image is compared to a Gaussian model with fixed shape parameters, and only
-    the total flux is optimized.
-    """
-
-    try:
-        from scipy.optimize import curve_fit
-    except ImportError:
-        return float(np.sum(image))
-
-    clipped_data = image.ravel()
-    dummy_x = np.arange(clipped_data.size, dtype=float)
-
-    def model(_, flux):
-        amplitude = _flux_to_amplitude(flux, sigma_x, sigma_y)
-        modeled = dark_level + _gaussian_2d(grid_x, grid_y, x0, y0, sigma_x, sigma_y, amplitude, theta)
-        modeled = np.clip(modeled, 0.0, saturation)
-        return (modeled - dark_level).ravel()
-
-    initial_flux = max(float(np.sum(image)), 1.0)
-
-    try:
-        popt, _ = curve_fit(model, dummy_x, clipped_data, p0=(initial_flux,), bounds=(0.0, np.inf), maxfev=20000)
-        return float(popt[0])
-    except Exception:
-        return float(np.sum(image))
-
-
-def _acquire_single_pixel_jit(
-    psi: np.ndarray,
-    e: float,
-    ideal: bool = False,
-    qe: float = 1.0,
-    dc: float = 0.0,
-    ron: float = 0.0,
-    fwc: float = math.inf,
-) -> int:
-    """Numba-accelerated scalar detector model used for the 1-pixel fast path."""
-
-    expected_pe = np.sum(np.abs(psi) ** 2) * e * qe
-    expected_dc = dc * e
-    total_expected = expected_pe + expected_dc
-
-    if ideal:
-        detected_electrons = int(total_expected)
-    else:
-        if total_expected <= 2000000000.0:
-            detected_electrons = np.random.poisson(total_expected)
-        else:
-            detected_electrons = int(total_expected + np.random.normal(0.0, math.sqrt(total_expected)))
-
-        if ron > 0.0:
-            detected_electrons = int(detected_electrons + np.random.normal(0.0, ron))
-
-    if detected_electrons < 0:
-        detected_electrons = 0
-    if detected_electrons > fwc:
-        detected_electrons = int(fwc)
-
-    return detected_electrons
-
+#==============================================================================
+# Camera class
+#==============================================================================
 
 class Camera:
     """Virtual camera used to simulate photon detection.
@@ -137,18 +153,10 @@ class Camera:
         dc (float): Dark current in electrons/pixel/s. Default: 0.0.
         fwc (float): Full-well capacity in electrons. Default: infinity.
         qe (float): Quantum efficiency in the range [0, 1]. Default: 1.0.
+        gain (float): Gain in electrons/ADU. Default: 1.0.
         resolution (int): Detector side length in pixels. Default: 1.
-        sigma_x (float | None): Gaussian width along x in pixels. Defaults to
-            ``resolution / 10``.
-        sigma_y (float | None): Gaussian width along y in pixels. Defaults to
-            ``resolution / 10``.
-        x0 (float): Gaussian center along x in pixels, relative to the grid
-            center. Default: 0.0.
-        y0 (float): Gaussian center along y in pixels, relative to the grid
-            center. Default: 0.0.
-        theta (float): Gaussian rotation angle in radians. Default: 0.0.
-        uhdr (bool): If ``True`` and the detector saturates, fit a clipped 2D
-            Gaussian to recover the total flux.
+        spot_size (float): Standard deviation of the 2D Gaussian profile in pixels. Default: 1.0.
+        hdr (list[float]): List of exposure times for HDR acquisition, relative to the primary exposure time. Default: None (no HDR).
 
     Raises:
         TypeError: If a typed argument has an invalid type.
@@ -164,92 +172,70 @@ class Camera:
         '_ron',
         '_dc',
         '_fwc',
+        '_max_adu',
         '_qe',
+        '_gain',
         '_resolution',
-        '_sigma_x',
-        '_sigma_y',
-        '_x0',
-        '_y0',
-        '_theta',
-        '_uhdr',
-        '_grid_x',
-        '_grid_y',
+        '_spot_size',
+        '_hdr',
+        '_dark',
+        '_hdr_darks',
+        '_update_dark_on_change',
     )
 
     def __init__(
         self,
-        e: u.Quantity = None,
+        e: u.Quantity = 1 * u.s,
         ideal: bool = False,
         name: str = 'Unnamed Camera',
-        ron: float = 0.0,
-        dc: float = 0.0,
+        ron: float = 10.0,
+        dc: float = 100.0,
         fwc: float = math.inf,
+        max_adu: int = 65535,
         qe: float = 1.0,
+        gain: float = 1.0,
         resolution: int = 1,
-        sigma_x: float | None = None,
-        sigma_y: float | None = None,
-        x0: float = 0.0,
-        y0: float = 0.0,
-        theta: float = 0.0,
-        uhdr: bool = False,
+        spot_size: float = 1.0,
+        hdr: list[float] = None,
     ):
+        self._update_dark_on_change = False
+
         self._parent_interferometer = None
-        self.resolution = resolution
-        self.sigma_x = self.resolution / 10 if sigma_x is None else sigma_x
-        self.sigma_y = self.resolution / 10 if sigma_y is None else sigma_y
-        self.x0 = x0
-        self.y0 = y0
-        self.theta = theta
-        self.uhdr = uhdr
-        self.e = e if e is not None else 1 * u.s
+        self.e = e
         self.ideal = ideal
         self.name = name
         self.ron = ron
         self.dc = dc
         self.fwc = fwc
+        self._max_adu = max_adu
         self.qe = qe
+        self.gain = gain
+        self.resolution = resolution
+        self.spot_size = spot_size
+        self.hdr = hdr if hdr is not None else []
+
+        self._dark = np.zeros((self._resolution, self._resolution))
+        self._hdr_darks = [np.zeros((self._resolution, self._resolution)) for _ in range(len(self._hdr))]
+        self.update_all_darks()
+        self._update_dark_on_change = True
+
+    # Special methods ---------------------------------------------------------
 
     def __str__(self) -> str:
         res = f'Camera "{self.name}"\n'
         res += f'  Exposure time: {self.e:.2f}\n'
-        res += f'  QE: {self.qe * 100:.1f}% | RON: {self.ron} e- | DC: {self.dc} e-/s\n'
-        res += f'  Resolution: {self.resolution} px | UHDR: {self.uhdr}\n'
-        if self.resolution > 1:
-            res += (
-                f'  Gaussian PSF: sigma_x={self.sigma_x:.2f} px | sigma_y={self.sigma_y:.2f} px | '
-                f'x0={self.x0:.2f} px | y0={self.y0:.2f} px | theta={self.theta:.2f} rad'
-            )
+        res += f'  QE: {self.qe * 100:.1f}% | RON: {self.ron} e- | DC: {self.dc} e-/s | Gain: {self.gain} e-/ADU\n'
+        res += f'  Resolution: {self.resolution} px | Spot size: {self.spot_size} px | HDR: {self.hdr} * exposure time\n'
         return res
 
     def __repr__(self) -> str:
         return self.__str__()
 
-    def _update_grid_cache(self):
-        """Cache the centered pixel coordinate grid used in UHDR mode."""
-
-        coordinates = np.arange(self._resolution, dtype=float) - self._resolution // 2
-        self._grid_x, self._grid_y = np.meshgrid(coordinates, coordinates)
-
-    def _simulate_spatial_frame(self, signal_flux: float) -> tuple[np.ndarray, bool]:
-        """Simulate a multi-pixel detector frame and report saturation."""
-
-        amplitude = _flux_to_amplitude(signal_flux, self.sigma_x, self.sigma_y)
-        signal = _gaussian_2d(self._grid_x, self._grid_y, self.x0, self.y0, self.sigma_x, self.sigma_y, amplitude, self.theta)
-        raw_frame = signal + self.dc * self._e
-
-        if not self.ideal:
-            raw_frame = np.random.poisson(np.clip(raw_frame, 0.0, None)).astype(float)
-            if self.ron > 0.0:
-                raw_frame = raw_frame + np.random.normal(0.0, self.ron, size=raw_frame.shape)
-
-        saturated = bool(np.any(raw_frame >= self.fwc))
-        clipped_frame = np.clip(raw_frame, 0.0, self.fwc)
-        return clipped_frame - self.dc * self._e, saturated
+    # Properties --------------------------------------------------------------
 
     @property
     def e(self) -> u.Quantity:
         """Camera exposure time."""
-
         return (self._e * u.s).to(self._e_unit)
 
     @e.setter
@@ -266,6 +252,8 @@ class Camera:
             raise ValueError('e must be positive')
         self._e_unit = e.unit
         self._e = e_val
+        if self._update_dark_on_change:
+            self.update_all_darks()
 
     @property
     def parent_interferometer(self) -> Interferometer:
@@ -310,41 +298,72 @@ class Camera:
     @ron.setter
     def ron(self, val: float):
         self._ron = float(val)
+        if self._update_dark_on_change:
+            self.update_all_darks()
 
     @property
     def dc(self) -> float:
         """Dark current in electrons/pixel/second."""
-
         return self._dc
 
     @dc.setter
     def dc(self, val: float):
         self._dc = float(val)
+        if self._update_dark_on_change:
+            self.update_all_darks()
 
     @property
     def fwc(self) -> float:
         """Full-well capacity in electrons."""
-
         return self._fwc
 
     @fwc.setter
     def fwc(self, val: float):
         self._fwc = float(val)
+        if self._update_dark_on_change:
+            self.update_all_darks()
+
+    @property
+    def max_adu(self) -> int:
+        """Maximum ADU value (saturation level) of the camera."""
+        return self._max_adu
+
+    @max_adu.setter
+    def max_adu(self, val: int):
+        if not isinstance(val, Integral) or isinstance(val, bool):
+            raise TypeError('max_adu must be an integer')
+        val = int(val)
+        if val < 1:
+            raise ValueError('max_adu must be positive')
+        self._max_adu = val
+        if self._update_dark_on_change:
+            self.update_all_darks()
 
     @property
     def qe(self) -> float:
         """Quantum efficiency in the range [0, 1]."""
-
         return self._qe
 
     @qe.setter
     def qe(self, val: float):
         self._qe = float(val)
+        if self._update_dark_on_change:
+            self.update_all_darks()
+
+    @property
+    def gain(self) -> float:
+        """Gain in electrons/ADU."""
+        return self._gain
+
+    @gain.setter
+    def gain(self, val: float):
+        self._gain = float(val)
+        if self._update_dark_on_change:
+            self.update_all_darks()
 
     @property
     def resolution(self) -> int:
         """Detector side length in pixels."""
-
         return self._resolution
 
     @resolution.setter
@@ -355,125 +374,104 @@ class Camera:
         if resolution < 1:
             raise ValueError('resolution must be positive')
         self._resolution = resolution
-        self._update_grid_cache()
+        if self._update_dark_on_change:
+            self.update_all_darks()
 
     @property
-    def sigma_x(self) -> float:
-        """Gaussian width along x in pixels."""
+    def spot_size(self) -> float:
+        """Standard deviation of the 2D Gaussian spot profile in pixels."""
+        return self._spot_size
 
-        return self._sigma_x
-
-    @sigma_x.setter
-    def sigma_x(self, value: float):
-        try:
-            value = float(value)
-        except (TypeError, ValueError) as exc:
-            raise TypeError('sigma_x must be a float') from exc
-        if value <= 0:
-            raise ValueError('sigma_x must be positive')
-        self._sigma_x = value
-
-    @property
-    def sigma_y(self) -> float:
-        """Gaussian width along y in pixels."""
-
-        return self._sigma_y
-
-    @sigma_y.setter
-    def sigma_y(self, value: float):
-        try:
-            value = float(value)
-        except (TypeError, ValueError) as exc:
-            raise TypeError('sigma_y must be a float') from exc
-        if value <= 0:
-            raise ValueError('sigma_y must be positive')
-        self._sigma_y = value
+    @spot_size.setter
+    def spot_size(self, spot_size: float):
+        if not isinstance(spot_size, (int, float)):
+            raise TypeError('spot_size must be a number')
+        if spot_size <= 0:
+            raise ValueError('spot_size must be positive')
+        self._spot_size = float(spot_size)
+        if self._update_dark_on_change:
+            self.update_all_darks() 
 
     @property
-    def x0(self) -> float:
-        """Gaussian center along x in pixels."""
+    def hdr(self) -> bool:
+        """List of exposure times for HDR acquisition, relative to the primary exposure time."""
+        return self._hdr
 
-        return self._x0
+    @hdr.setter
+    def hdr(self, hdr: list[float]):
+        if not isinstance(hdr, list):
+            raise TypeError('hdr must be a list of floats')
+        for val in hdr:
+            if not isinstance(val, (int, float)):
+                raise TypeError('hdr must be a list of floats')
+            if val <= 0:
+                raise ValueError('hdr values must be positive')
+        self._hdr = [float(val) for val in hdr]
+        if self._update_dark_on_change:
+            self.update_all_darks()
 
-    @x0.setter
-    def x0(self, value: float):
-        try:
-            self._x0 = float(value)
-        except (TypeError, ValueError) as exc:
-            raise TypeError('x0 must be a float') from exc
+    # Public methods ----------------------------------------------------------
 
-    @property
-    def y0(self) -> float:
-        """Gaussian center along y in pixels."""
+    def take_dark(self, N:int = 1000, e: u.Quantity = None) -> np.ndarray:
+        if e is None:
+            e = self.e
+        
+        darks = np.empty((N, self.resolution, self.resolution))
+        for i in range(N):
+            darks[i] = self.get_image([0j])
+        
+        return np.mean(darks, axis=0)
 
-        return self._y0
+    def update_all_darks(self):
+        self._dark = self.take_dark(N=1000, e=self.e)
+        self._hdr_darks = [self.take_dark(N=1000, e=self.e * hdr_factor) for hdr_factor in self.hdr]
 
-    @y0.setter
-    def y0(self, value: float):
-        try:
-            self._y0 = float(value)
-        except (TypeError, ValueError) as exc:
-            raise TypeError('y0 must be a float') from exc
-
-    @property
-    def theta(self) -> float:
-        """Gaussian rotation angle in radians."""
-
-        return self._theta
-
-    @theta.setter
-    def theta(self, value: float):
-        try:
-            self._theta = float(value)
-        except (TypeError, ValueError) as exc:
-            raise TypeError('theta must be a float') from exc
-
-    @property
-    def uhdr(self) -> bool:
-        """Whether the camera should reconstruct saturated multi-pixel frames."""
-
-        return self._uhdr
-
-    @uhdr.setter
-    def uhdr(self, value: bool):
-        if not isinstance(value, bool):
-            raise TypeError('uhdr must be a boolean')
-        self._uhdr = value
-
-    def acquire(self, psi: np.ndarray[complex]) -> int:
-        """Simulate an observation on the detector.
-
-        The fast path keeps the historical 1-pixel detector model. When
-        ``resolution > 1``, the signal is spread over a centered Gaussian PSF
-        on a ``resolution x resolution`` grid, then clipped by saturation and
-        optionally reconstructed through a UHDR-style Gaussian fit.
+    def get_flux(self, psi: np.ndarray[complex]) -> float:
+        """Calculate the total flux at the camera plane given an input complex field.
 
         Args:
-            psi (np.ndarray[complex]): Complex electric field amplitudes.
+            psi (np.ndarray[complex]): 2D array representing the complex field at the camera plane.
 
         Returns:
-            int: Detected electrons for the exposure.
+            float: Total flux at the camera plane.
         """
 
-        if self.resolution == 1:
-            return _acquire_single_pixel_jit(psi, self._e, ideal=self._ideal, qe=self._qe, dc=self._dc, ron=self._ron, fwc=self._fwc)
+        return _get_flux_jit(
+            psi=np.array(psi, dtype=np.complex128),
+            e=self._e,
+            ideal=self._ideal,
+            qe=self._qe,
+            dc=self._dc,
+            ron=self._ron,
+            fwc=self._fwc,
+            max_adu=self._max_adu,
+            gain=self._gain,
+            resolution=self._resolution,
+            spot_size=self._spot_size,
+            dark=self._dark,
+        )
 
-        total_signal = float(np.sum(np.abs(psi) ** 2) * self._e * self._qe)
-        frame, saturated = self._simulate_spatial_frame(total_signal)
+    def get_image(self, psi: np.ndarray[complex]) -> int:
+        """Simulate the acquisition of an image given an input complex field.
 
-        if self.uhdr and saturated:
-            estimated_flux = _estimate_flux_from_clipped_image(
-                frame,
-                dark_level=self.dc * self._e,
-                saturation=self.fwc,
-                grid_x=self._grid_x,
-                grid_y=self._grid_y,
-                x0=self.x0,
-                y0=self.y0,
-                sigma_x=self.sigma_x,
-                sigma_y=self.sigma_y,
-                theta=self.theta,
-            )
-            return int(max(0.0, np.rint(estimated_flux)))
+        Args:
+            psi (np.ndarray[complex]): 2D array representing the complex field at the camera plane.
 
-        return int(max(0.0, np.rint(np.sum(frame))))
+        Returns:
+            int | np.ndarray[int]: Output of the camera (either image if mode='raw' or aggregated values for other modes).
+        """
+
+        return _get_image_jit(
+            psi=np.array(psi, dtype=np.complex128),
+            e=self._e,
+            ideal=self._ideal,
+            qe=self._qe,
+            dc=self._dc,
+            ron=self._ron,
+            fwc=self._fwc,
+            max_adu=self._max_adu,
+            gain=self._gain,
+            resolution=self._resolution,
+            spot_size=self._spot_size,
+            dark=self._dark,
+        )

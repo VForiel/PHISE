@@ -306,7 +306,6 @@ class Context:
             for j, (x, y) in enumerate(ctx.p):
                 ax.scatter(x, y, label=f"Telescope {j+1}" if i==len(h_range)-1 else None, color=f"C{j}", s=1+14*i/len(h_range))
 
-        print(self.interferometer.l)
         for (x, y) in self.p:
             ax.scatter(x, y, color="black", marker="+")
 
@@ -648,13 +647,14 @@ class Context:
 
         # Get output fields for all companions & star
         out_fields = np.empty((nb_objects, nb_outs), dtype=np.complex128)
+       
         for companion, ψc in enumerate(ψi):
             out_fields[companion] = self.interferometer.chip.get_output_fields(ψ=ψc, λ=self.interferometer.λ)
 
         # Acquire intensity for each output
         outs = np.empty(nb_outs)
         for o in range(nb_outs):
-            outs[o] = self.interferometer.camera.acquire(out_fields[:, o])
+            outs[o] = self.interferometer.camera.get_flux(out_fields[:, o])
 
         return outs
     
@@ -783,121 +783,6 @@ class Context:
             None | Context: New context with optimized kernel nuller (if implemented to return).
         """
         return _calibrate_obs(self, n=n, plot=plot, figsize=figsize, save_as=save_as)
-
-    #==============================================================================
-    # VLTI Context
-    #==============================================================================
-
-    def get_VLTI() -> 'Context':
-        """Get a default VLTI context for analysis.
-
-        Uses:
-            - VLTI with 4 UTs
-            - First generation active kernel nuller
-            - Vega as target star and a hypothetical 2 mas, 1e-6 contrast companion
-        """
-
-        λ = 1.55 * u.um # Central wavelength
-
-        ctx = Context(
-            h = 0 * u.hourangle, # Central hour angle
-            Δh = 8 * u.hourangle, # Hour angle range
-            Γ = 100 * u.nm, # Input cophasing error (RMS)
-            monochromatic=True,
-            name="Default Context", # Context name
-            interferometer = Interferometer(
-                l = -24.6275 * u.deg, # Latitude
-                λ = λ, # Central wavelength
-                Δλ = 0.1 * u.um, # Bandwidth
-                fov = 10 * u.mas, # Field of view
-                η = 0.02, # Optical efficiency
-                telescopes = telescope.get_VLTI_UTs(),
-                name = "VLTI", # Interferometer name
-                chip = SuperKN(
-                    φ = np.zeros(14) * u.nm, # Injected phase shifts
-                    σ = np.abs(np.random.normal(0, 10, 14)) * u.nm, # Manufacturing OPD errors
-                    λ0 = λ,
-                    name = "First Generation Kernel-Nuller", # Kernel nuller name
-                ),
-                camera = Camera(
-                    e = 5 * u.min, # Exposure time
-                    name = "Default Camera", # Camera name
-                ),
-            ),
-            target=Target(
-                f = (1050 * u.Jy * 2 * np.pi * const.c / λ**2).to(u.W / u.m**2 / u.nm), # Target flux
-                δ = -64.71 * u.deg, # Target declination
-                name = "Vega", # Target name
-                companions = [
-                    Companion(
-                        c = 1e-2, # Companion contrast
-                        ρ = 4 * u.mas, # Companion angular separation
-                        θ = 0 * u.deg, # Companion position angle
-                        name = "Hypothetical Companion", # Companion name
-                    ),
-                ],
-            ),
-        )
-
-        return ctx
-
-    #==============================================================================
-    # LIFE Context
-    #==============================================================================
-
-    def get_LIFE() -> 'Context':
-        """Get a default LIFE context for analysis.
-
-        Uses:
-            - 4 telescopes of LIFE
-            - First generation active kernel nuller
-            - Vega as target star and a hypothetical 2 mas, 1e-6 contrast companion
-        """
-
-        # LIFE range: 4 to 18 μm
-        λ = 1.55 * u.um # Central wavelength
-
-        ctx = Context(
-            h = 0 * u.hourangle, # Central hour angle
-            Δh = 24 * u.hourangle, # Hour angle range
-            Γ = 1 * u.nm, # Input cophasing error (RMS)
-            name="Default Context", # Context name
-            monochromatic=True,
-            interferometer = Interferometer(
-                l = -90 * u.deg, # Latitude
-                λ = λ, # Central wavelength
-                Δλ = 0.1 * u.um, # Bandwidth
-                fov = 10 * u.mas, # Field of view
-                η = 0.02, # Optical efficiency
-                telescopes = telescope.get_LIFE_telescopes(),
-                name = "LIFE", # Interferometer name
-                chip = SuperKN(
-                    φ = np.zeros(14) * u.nm, # Injected phase shifts
-                    σ = np.abs(np.random.normal(0, 10, 14)) * u.nm, # Manufacturing OPD errors
-                    λ0 = λ,
-                    name = "First Generation Kernel-Nuller", # Kernel nuller name
-                ),
-                camera = Camera(
-                    e = 5 * u.min, # Exposure time
-                    name = "Default Camera", # Camera name
-                ),
-            ),
-            target=Target(
-                f = (1050 * u.Jy * 2 * np.pi * const.c / λ**2).to(u.W / u.m**2 / u.nm), # Target flux
-                δ = -90 * u.deg, # Target declination
-                name = "Vega", # Target name
-                companions = [
-                    Companion(
-                        c = 1e-6, # Companion contrast
-                        ρ = 4 * u.mas, # Companion angular separation
-                        θ = 0 * u.deg, # Companion position angle
-                        name = "Hypothetical Companion", # Companion name
-                    ),
-                ],
-            ),
-        )
-
-        return ctx
             
 #==============================================================================
 # Number functions
@@ -959,8 +844,8 @@ def get_transmission_map_jit(
     Parameters
     ----------
     - N: Resolution of the map
-    - φ: Array of 14 injected OPD (in meter)
-    - σ: Array of 14 intrasic OPD (in meter)
+    - φ: Array of injected OPD (in meter)
+    - σ: Array of intrasic OPD (in meter)
     - p: Projected telescope positions (in meter)
     - λ: Wavelength (in meter)
     - λ0: Reference wavelength (in meter)

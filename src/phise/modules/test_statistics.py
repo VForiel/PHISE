@@ -18,7 +18,7 @@ def get_vectors(ctx=None, nmc: int = 1000, size: int = 1000, progress_callback=N
     """Generate two sets of statistic vectors under H0 and H1.
 
     This simulates observations with and without companion(s) to build
-    statistic arrays of shape ``(3, nmc, size)`` under H0 (no companion)
+    statistic arrays of shape ``(nb_processed_outputs, nmc, size)`` under H0 (no companion)
     and H1 (with companions), then concatenates each set along the first
     axis.
 
@@ -38,24 +38,24 @@ def get_vectors(ctx=None, nmc: int = 1000, size: int = 1000, progress_callback=N
         progress_callback (callable, optional): function accepting a float (0-1)
             representing the progress.
         flatten (bool, optional): If True, concatenates independent kernel outputs.
-            If False, returns shapes (3, nmc, size). Defaults to True.
+            If False, returns shapes (nb_processed_outputs, nmc, size). Defaults to True.
         randomize_position (bool, optional): If True, randomizes companion position (uniform in FOV) for each sample.
             If False, uses the fixed position defined in `ctx`. Defaults to False.
 
     Returns:
         Tuple ``(T0, T1)`` where:
-        - T0: Concatenated vectors under H0, shape ``(3 * nmc * size,)`` if flatten=True.
-        - T1: Concatenated vectors under H1, shape ``(3 * nmc * size,)`` if flatten=True.
+        - T0: Concatenated vectors under H0, shape ``(nb_processed_outputs * nmc * size,)`` if flatten=True.
+        - T1: Concatenated vectors under H1, shape ``(nb_processed_outputs * nmc * size,)`` if flatten=True.
 
     Raises:
         ValueError: If ``ctx`` contains no companions.
     """
     if ctx is None:
         # import local pour éviter un import circulaire lors du chargement
-        from phise.classes.context import Context
+        from phise.examples.VLTI_context import get_VLTI
 
-        ctx = Context.get_VLTI()
-        ctx.interferometer.chip.σ = np.zeros(14) * u.m
+        ctx = get_VLTI()
+        ctx.interferometer.chip.σ = np.zeros_like(ctx.interferometer.chip.σ.value) * u.m
 
     if ctx.target.companions == []:
         raise ValueError(
@@ -66,8 +66,9 @@ def get_vectors(ctx=None, nmc: int = 1000, size: int = 1000, progress_callback=N
     ctx_h0 = copy(ctx)
     ctx_h0.target.companions = []
 
-    T0 = np.zeros((3, nmc, size))
-    T1 = np.zeros((3, nmc, size))
+    nb_proc = ctx.interferometer.chip.nb_processed_outputs
+    T0 = np.zeros((nb_proc, nmc, size))
+    T1 = np.zeros((nb_proc, nmc, size))
 
     fov = ctx.interferometer.fov.to(u.mas).value
 

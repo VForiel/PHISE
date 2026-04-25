@@ -7,7 +7,7 @@ from .telescope import Telescope
 from . import chip
 from .chip import Chip
 from . import archs
-from .archs import SuperKN
+from .archs import *
 from . import interferometer
 from .interferometer import Interferometer
 from . import context

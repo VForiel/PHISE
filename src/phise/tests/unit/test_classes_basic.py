@@ -28,11 +28,11 @@ def test_companion_valid_and_invalid():
         Companion(c=-0.1, ρ=5 * u.mas, θ=0.2 * u.rad)
 
 
-def test_camera_properties_and_acquire():
-    """Test Camera property setters and acquire behavior.
+def test_camera_properties_and_get_flux():
+    """Test Camera property setters and get_flux behavior.
 
     Ensures exposure time and ideal flag behave as expected, that
-    invalid assignments raise TypeError, and that acquire returns the
+    invalid assignments raise TypeError, and that get_flux returns the
     historical 1-pixel result when the detector resolution stays at 1.
     """
     cam = Camera(e=2 * u.s, ideal=True, name='C1', resolution=1)
@@ -60,7 +60,7 @@ def test_camera_properties_and_acquire():
     # ideal acquisition deterministic
     np.random.seed(0)
     ψ = np.array([1.0 + 0j, 1.0 + 0j])
-    det = cam.acquire(ψ)
+    det = cam.get_flux(ψ)
     assert isinstance(det, int)
     assert det == 4
 
@@ -86,7 +86,7 @@ def test_camera_spatial_mode_clips_without_uhdr():
         uhdr=False,
     )
     psi = np.array([1200.0 + 0j])
-    detected = cam.acquire(psi)
+    detected = cam.get_flux(psi)
     expected_flux = float(np.sum(np.abs(psi) ** 2) * cam.e.to_value(u.s) * cam.qe)
 
     assert isinstance(detected, int)
@@ -114,7 +114,7 @@ def test_camera_uhdr_recovers_saturated_flux():
         uhdr=True,
     )
     psi = np.array([1200.0 + 0j])
-    detected = cam.acquire(psi)
+    detected = cam.get_flux(psi)
     expected_flux = float(np.sum(np.abs(psi) ** 2) * cam.e.to_value(u.s) * cam.qe)
 
     assert isinstance(detected, int)
