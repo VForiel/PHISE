@@ -57,17 +57,40 @@ def get_output_fields_jit(
         [-0.028412984445477973+0.019923133158339813j, 0.03070602561442529+-0.012119194765006948j, 1.0579343864170707+-0.011527258095511929j, 0.039989544678528464+0.007601157088749202j],
         [0.018285951246696873+-0.019141658304574972j, -0.009439220467160905+-0.012771119165619722j, 0.03584699301231649+-0.016710419975799848j, 1.0238623657867116+-0.024683838470046862j]], dtype=np.complex128)
 
-    M = np.array([[0.5+0j, 0.5+0j, 0.5+0j, 0.5+0j],
-        [0.5+0j, 0+-0.5j, 0+0.5j, -0.5+0j],
-        [0.5+0j, 0+0.5j, 0+-0.5j, -0.5+0j],
-        [0.5+0j, -0.5+0j, -0.5+0j, 0.5+0j]], dtype=np.complex128)
-
-    P = np.array([
+    P1 = np.array([
         [np.exp(1j * (φ[0] + σ[0]) / λ0 * 2 * np.pi), 0, 0, 0],
         [0, np.exp(1j * (φ[1] + σ[1]) / λ0 * 2 * np.pi), 0, 0],
         [0, 0, np.exp(1j * (φ[2] + σ[2]) / λ0 * 2 * np.pi), 0],
         [0, 0, 0, np.exp(1j * (φ[3] + σ[3]) / λ0 * 2 * np.pi)]
     ], dtype=np.complex128)
+
+    N1 = 1/np.sqrt(2) * np.array([
+        [1, 1, 0, 0],
+        [1, -1, 0, 0],
+        [0, 0, 1, 1],
+        [0, 0, 1, -1]
+     ], dtype=np.complex128)
+
+    P2 = np.array([
+        [np.exp(1j * (φ[4] + σ[4]) / λ0 * 2 * np.pi), 0, 0, 0],
+        [0, np.exp(1j * (φ[5] + σ[5]) / λ0 * 2 * np.pi), 0, 0],
+        [0, 0, np.exp(1j * (φ[6] + σ[6]) / λ0 * 2 * np.pi), 0],
+        [0, 0, 0, np.exp(1j * (φ[7] + σ[7]) / λ0 * 2 * np.pi)]
+    ], dtype=np.complex128)
+
+    R = np.array([
+        [1, 0, 0, 0],
+        [0, 0, 1, 0],
+        [0, 1, 0, 0],
+        [0, 0, 0, 1]
+     ], dtype=np.complex128)
+
+    N2 = 1/np.sqrt(2) * np.array([
+        [1, 1, 0, 0],
+        [1, -1, 0, 0],
+        [0, 0, 1, 1],
+        [0, 0, 1, -1]
+     ], dtype=np.complex128)
 
     Cout = np.array([[0.9730778790933375+-0.056722375163116436j, -0.028797392063705185+-0.01948778967495159j, -0.002666088781798851+-0.003540266278734302j, -0.024288111942176616+-0.005162868250002706j],
         [-0.021892304669666688+0.021443098378544353j, 0.9767787260134642+-0.01383016643950051j, 0.015854522865303682+0.007823830803290452j, 0.0013032043159456922+-0.03342304110006464j],
@@ -78,7 +101,7 @@ def get_output_fields_jit(
     # Cin = np.eye(4, dtype=np.complex128)
     # Cout = np.eye(4, dtype=np.complex128)
 
-    return Cout @ M @ P @ Cin @ ψ
+    return Cout @ N2 @ R @ P2 @ N1 @ P1 @ Cin @ ψ
     
 @nb.njit()
 def process_outputs_jit(out: np.ndarray[complex]) -> np.ndarray[float]:
@@ -87,19 +110,18 @@ def process_outputs_jit(out: np.ndarray[complex]) -> np.ndarray[float]:
     Args:
         darks (np.ndarray[complex]): Array of raw outputs (complex fields).
     """
-    k = out[2] - out[3]
-    return np.array([k], dtype=np.float64)
+    return np.array([], dtype=np.float64)
 
 #==============================================================================
 # N4x4_T8 class
 #==============================================================================
 
-class N4x4_T8(Chip):
+class N4x4_D8(Chip):
     """Kernel nuller representation for 4 telescopes.
 
     Args:
-        φ (u.Quantity): (4,) array of applied OPDs (length units).
-        σ (u.Quantity): (4,) array of intrinsic OPD errors.
+        φ (u.Quantity): (8,) array of applied OPDs (length units).
+        σ (u.Quantity): (8,) array of intrinsic OPD errors.
         λ0 (u.Quantity): Reference wavelength at which matrices are defined.
         output_order (np.ndarray[int] | None): Output ordering (6 elements)
             defining output pairs.
@@ -122,11 +144,11 @@ class N4x4_T8(Chip):
         ):
 
         self._raw_output_labels = ['Bright', 'Null', 'Dark 1', 'Dark 2']
-        self._processed_output_labels = ['Kernel 1']
+        self._processed_output_labels = []
 
         self.nb_inputs = 4
         self.nb_raw_outputs = 4
-        self.nb_processed_outputs = 1
+        self.nb_processed_outputs = 0
 
         self._parent_interferometer = None
         self.φ = φ
@@ -150,7 +172,7 @@ class N4x4_T8(Chip):
         """Applied OPD/phase per nuller element.
 
         Returns:
-            u.Quantity: Shape (4,) in length units (e.g., meters).
+            u.Quantity: Shape (8,) in length units (e.g., meters).
         """
         return self._φ
 
@@ -159,7 +181,7 @@ class N4x4_T8(Chip):
         """Set applied OPDs.
 
         Args:
-            φ (u.Quantity): Shape (4,) in a length unit.
+            φ (u.Quantity): Shape (8,) in a length unit.
 
         Raises:
             ValueError: If not a Quantity, not in length units, wrong shape,
@@ -171,8 +193,8 @@ class N4x4_T8(Chip):
             φ.to(u.m)
         except u.UnitConversionError:
             raise ValueError('φ must be in a distance unit')
-        if φ.shape != (4,):
-            raise ValueError('φ must have a shape of (4,)')
+        if φ.shape != (8,):
+            raise ValueError('φ must have a shape of (8,)')
         if np.any(φ < 0):
             raise ValueError('φ must be positive')
         self._φ = φ
@@ -184,7 +206,7 @@ class N4x4_T8(Chip):
         """Intrinsic OPD errors of the nuller.
 
         Returns:
-            u.Quantity: Shape (4,) in same unit as ``φ``.
+            u.Quantity: Shape (8,) in same unit as ``φ``.
         """
         return self._σ
 
@@ -193,7 +215,7 @@ class N4x4_T8(Chip):
         """Set intrinsic OPD errors.
 
         Args:
-            σ (u.Quantity): Shape (4,) in a length unit.
+            σ (u.Quantity): Shape (8,) in a length unit.
 
         Raises:
             ValueError: If not a Quantity, not in length units, or wrong shape.
@@ -204,8 +226,8 @@ class N4x4_T8(Chip):
             σ.to(u.m)
         except u.UnitConversionError:
             raise ValueError('σ must be in a distance unit')
-        if σ.shape != (4,):
-            raise ValueError('σ must have a shape of (4,)')
+        if σ.shape != (8,):
+            raise ValueError('σ must have a shape of (8,)')
         self._σ = σ
 
     # Design wavelength -------------------------------------------------------
@@ -483,102 +505,14 @@ class N4x4_T8(Chip):
             np.ndarray[float]: Processed kernel outputs (shape (4,)).
         """
         return process_outputs_jit(out)
-    
-    # Plotting ----------------------------------------------------------------
-
-    def plot_output_phase(self, λ: u.Quantity, ψ: Optional[np.ndarray]=None, plot: bool = True, n_cols: Optional[int] = None, ref_input1: bool = True) -> Optional[Any]:
-        """Plot output phases and amplitudes of the nuller.
-
-        Computes output responses for each isolated input and plots the phase
-        and amplitude of null, dark, and bright outputs on polar diagrams.
-
-        Args:
-            λ (u.Quantity): Wavelength for the simulation.
-            ψ (Optional[np.ndarray]): Input complex amplitudes (default [0.5,...]).
-            plot (bool): If ``True``, display the figure; if ``False``, return the image bytes.
-            n_cols (Optional[int]): Number of columns for the plot grid. If None, all plots are on a single row.
-            ref_input1 (bool): If ``True``, use Input 1 (Bright output) as global phase reference (set to 0°).
-        """
-        if ψ is None:
-            ψ = np.array([0.5 + 0j, 0.5 + 0j, 0.5 + 0j, 0.5 + 0j])
-        ψ1 = np.array([ψ[0], 0, 0, 0])
-        ψ2 = np.array([0, ψ[1], 0, 0])
-        ψ3 = np.array([0, 0, ψ[2], 0])
-        ψ4 = np.array([0, 0, 0, ψ[3]])
-
-        out1 = self.get_output_fields(ψ1, λ)
-        out2 = self.get_output_fields(ψ2, λ)
-        out3 = self.get_output_fields(ψ3, λ)
-        out4 = self.get_output_fields(ψ4, λ)
-
-        # Global Phase Reference: Input 1 (Bright)
-        if ref_input1 and len(out1) > 0:
-             ref_phase = np.angle(out1[0])
-             phasor = np.exp(-1j * ref_phase)
-             out1 = out1 * phasor
-             out2 = out2 * phasor
-             out3 = out3 * phasor
-             out4 = out4 * phasor
-        
-        n_out = len(out1)
-        outs = np.array([out1, out2, out3, out4])
-
-        # Grid layout configuration
-        if n_cols is None:
-            n_cols = n_out
-        
-        n_rows = int(np.ceil(n_out / n_cols))
-        
-        _, axs = plt.subplots(n_rows, n_cols, figsize=(4*n_cols, 4*n_rows), subplot_kw={'projection': 'polar'})
-        
-        # Flatten for easy iteration
-        if n_out == 1:
-            axs = [axs]
-        else:
-            axs = np.atleast_1d(axs).flatten()
-
-        m = np.max(np.abs(outs))
-
-        for i in range(len(axs)):
-            ax = axs[i]
-            if i < n_out:
-                colors = ['gold', 'forestgreen', 'red', 'blue'] # Adjusted for visibility
-                for j, out in enumerate(outs):
-                    val = out[i]
-                    # Vector arrow
-                    ax.annotate(
-                        "",
-                        xy=(np.angle(val), np.abs(val)),
-                        xytext=(0, 0),
-                        textcoords='data',
-                        arrowprops=dict(arrowstyle="->", color=colors[j], lw=2.0, alpha=0.8)
-                    )
-                    # Marker (tip) - mainly for legend
-                    ax.scatter(np.angle(val), np.abs(val), color=colors[j], label=f'Input {j + 1}', s=20, alpha=1.0)
-                
-                ax.set_title(f'{self._raw_output_labels[i]} output')
-                ax.set_ylim(0, m * 1.1)
-            else:
-                ax.axis('off')
-        
-        # Legend positioning depends on layout
-        if n_rows > 1:
-            axs[0].legend(loc='upper right', bbox_to_anchor=(1.3, 1.1), fontsize='small')
-        else:
-            axs[0].legend(loc='upper right', bbox_to_anchor=(1.1, 1.1), fontsize='small')
-            
-        if not plot:
-            plot = BytesIO()
-            plt.savefig(plot, format='png')
-            plt.close()
-            return plot.getvalue()
-        plt.show()
 
     # Null calibration --------------------------------------------------------
 
-    def calibrate(self, method='Hooke&Jeeves', verbose:bool=False, plot=False, input_fields:np.ndarray=None, hooke_jeeves_metric=None, β:float=0.5):
-        if method.lower() == 'hooke&jeeves':
+    def calibrate(self, method='Hooke&Jeeves', verbose:bool=False, plot=False, input_fields:np.ndarray=None, hooke_jeeves_metric=None, β:float=0.5, n=100):
+        if method == 'Hooke&Jeeves':
             return self._calibrate_hooke_jeeves(verbose=verbose, plot=plot, input_fields=input_fields, metric=hooke_jeeves_metric, β=β)
+        if method == "obstruction":
+            return self._calibration_obstruction(verbose=verbose, n=n, plot=plot, input_fields=input_fields)
         else:
             raise ValueError(f'Unknown calibration method: {method}. Supported methods: Hooke&Jeeves')
 
@@ -621,7 +555,7 @@ class N4x4_T8(Chip):
         depths_history = []
         shifters_history = []
 
-        ctx.interferometer.chip.φ = np.zeros(4) * ctx.interferometer.λ
+        ctx.interferometer.chip.φ = np.zeros(8) * ctx.interferometer.λ
 
         Δφ = ctx.interferometer.λ / 4
         while Δφ > ε:
@@ -629,7 +563,7 @@ class N4x4_T8(Chip):
             if verbose:
                 print(f"--- New iteration --- Δφ={Δφ:.2e}")
 
-            for i in range(4):
+            for i in range(8):
                 log = ""
 
                 # Getting observation with different phase shifts
@@ -708,3 +642,170 @@ class N4x4_T8(Chip):
             "shifters": np.array(shifters_history),
             "figure": fig
         }
+    
+    def _calibration_obstruction(self, n=100, verbose:bool=False, plot=False, input_fields:np.ndarray=None, figsize= (10, 5), save_as=None):
+        """Optimize calibration via least squares sampling.
+
+        Uses least-squares fitting to find optimal phase shifter values that maximize
+        bright output and minimize kernel null depth in a SuperKN kernel nuller.
+        This approach accounts for obstructions and non-ideal beam combiner behavior.
+
+        The optimization:
+        1. Bright maximization: Adjusts shifters 2, 4, 7 to maximize bright output
+        2. Dark maximization: Adjusts shifter 8 to balance dark outputs
+        3. Kernel minimization: Adjusts shifters 11, 13, 14 to minimize kernel null depth
+        4. Global optimization: For non-monochromatic light, refines paired shifters
+
+        Args:
+            ctx: Context object with interferometer, target, and observation settings
+            n (int): Number of sampling points for least squares fitting.
+                    Higher values provide better fits but take longer.
+            plot (bool): If ``True``, plot the optimization process for each shifter.
+            figsize (tuple): Figure size for plots, default (10, 5).
+            save_as (str): Path to save the plot if plot is True.
+
+        Returns:
+            None: Modifies ctx.interferometer.chip.φ in-place
+        """
+        import scipy
+
+        chip = self
+        ctx = self.parent_interferometer.parent_ctx
+
+        input_attenuation_backup = chip.input_attenuation.copy()
+        λ = ctx.interferometer.λ
+        e = ctx.interferometer.camera.e
+        total_photons = np.sum(ctx.pf.to(1 / e.unit).value) * e.value
+
+        if plot:
+            _, axs = plt.subplots(2, 3, figsize=figsize, constrained_layout=True)
+            for ax in axs.flatten():
+                ax.set_xlabel("Phase shift")
+                ax.set_ylabel("Throughput")
+
+        def maximize_bright(p, plt_coords=None):
+
+            x = np.linspace(0, λ.value, n)
+            y = np.empty(n)
+
+            if isinstance(p, list):
+                Δp = (chip.φ[p[1] - 1] - chip.φ[p[0] - 1]) % λ
+
+            for i in range(n):
+
+                if isinstance(p, list):
+                    chip.φ[p[0] - 1] = x[i] * λ.unit
+                    chip.φ[p[1] - 1] = (chip.φ[p[0] - 1] + Δp) % λ
+                else:
+                    chip.φ[p - 1] = x[i] * λ.unit
+
+                outs = ctx.observe()
+                y[i] = outs[0] / total_photons
+
+            def sin(x, x0):
+                return (
+                    (np.sin((x - x0) / λ.value * 2 * np.pi) + 1) / 2 * (np.max(y) - np.min(y))
+                    + np.min(y)
+                )
+
+            # Fit sin using scipy.optimize.minimize
+            popt = scipy.optimize.minimize(
+                lambda x0: np.sum((y - sin(x, x0)) ** 2), x0=[0], method="Nelder-Mead"
+            ).x
+
+            if isinstance(p, list):
+                chip.φ[p[0] - 1] = (
+                    np.mod(popt[0] + λ.value / 4, λ.value) * λ.unit
+                ).to(chip.φ.unit)
+                chip.φ[p[1] - 1] = (chip.φ[p[0] - 1] + Δp) % λ
+            else:
+                chip.φ[p - 1] = (
+                    np.mod(popt[0] + λ.value / 4, λ.value) * λ.unit
+                ).to(chip.φ.unit)
+
+            if plot:
+                axs[plt_coords].set_title(rf"$|B(\phi{p})|$")
+                axs[plt_coords].scatter(x, y, label="Data", color="tab:blue")
+                axs[plt_coords].plot(x, sin(x, *popt), label="Fit", color="tab:orange")
+                axs[plt_coords].axvline(
+                    x=np.mod(popt[0] + λ.value / 4, λ.value),
+                    color="k",
+                    linestyle="--",
+                    label="Optimal phase shift",
+                )
+                axs[plt_coords].set_xlabel(f"Phase shift ({λ.unit})")
+                axs[plt_coords].set_ylabel("Bright throughput")
+                axs[plt_coords].legend()
+
+        def maximize_null(p, plt_coords=None):
+
+            # Init data arrays
+            x = np.linspace(0, λ.value, n)
+            y = np.empty(n)
+
+            # Sampling
+            for i in range(n):
+                # Set phase shift
+                chip.φ[p - 1] = x[i] * λ.unit
+                # Get outputs intensities
+                outs = ctx.observe()
+                # Compute |Di|² + |Dj|²
+                y[i] = outs[2] / total_photons
+
+            # Model
+            def sin(x, x0):
+                return (
+                    (np.sin((x - x0) / λ.value * 2 * np.pi) + 1) / 2 * (np.max(y) - np.min(y))
+                    + np.min(y)
+                )
+
+            # Fit sin using scipy.optimize.minimize
+            popt = scipy.optimize.minimize(
+                lambda x0: np.sum((y - sin(x, x0)) ** 2), x0=[0], method="Nelder-Mead"
+            ).x
+
+            # Update phase shift
+            chip.φ[p - 1] = (np.mod(popt[0] + λ.value / 4, λ.value) * λ.unit).to(
+                chip.φ.unit
+            )
+
+            # Plotting
+            if plot:
+                axs[plt_coords].set_title(rf"$|I3 (\phi{p})| + |I3 (\phi{p})|$")
+                axs[plt_coords].scatter(x, y, label="Data", color="tab:blue")
+                axs[plt_coords].plot(x, sin(x, *popt), label="Fit", color="tab:orange")
+                axs[plt_coords].axvline(
+                    x=np.mod(popt[0] + λ.value / 4, λ.value),
+                    color="k",
+                    linestyle="--",
+                    label="Optimal phase shift",
+                )
+                axs[plt_coords].set_xlabel(f"Phase shift ({λ.unit})")
+                axs[plt_coords].set_ylabel(f"Null throughput")
+                axs[plt_coords].legend()
+
+        # Bright maximization
+        ctx.interferometer.chip.input_attenuation = [1, 1, 0, 0]
+        maximize_bright(2, plt_coords=(0, 0))
+
+        ctx.interferometer.chip.input_attenuation = [0, 0, 1, 1]
+        maximize_bright(4, plt_coords=(0, 1))
+
+        ctx.interferometer.chip.input_attenuation = [1, 0, 1, 0]
+        maximize_bright(7, plt_coords=(0, 2))
+
+        # Darks maximization
+        ctx.interferometer.chip.input_attenuation = [1, 0, 0, -1]
+        maximize_null(8, plt_coords=(1, 0))
+
+        chip.φ = bound(chip.φ, λ)
+        chip.input_attenuation = input_attenuation_backup
+
+        if plot:
+            axs[1, 1].axis("off")
+            axs[1, 2].axis("off")
+
+            if save_as:
+                from ..utils import save_plot
+                save_plot(save_as, "obstruction_calibration.png")
+            plt.show()

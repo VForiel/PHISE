@@ -47,7 +47,7 @@ class SuperKN(Chip):
         self._raw_output_labels = ['Bright', 'Dark 1', 'Dark 2', 'Dark 3', 'Dark 4', 'Dark 5', 'Dark 6']
         self._processed_output_labels = ['Kernel 1', 'Kernel 2', 'Kernel 3']
 
-        self.nb_intputs = 4
+        self.nb_inputs = 4
         self.nb_raw_outputs = 7
         self.nb_processed_outputs = 3
 
@@ -59,7 +59,6 @@ class SuperKN(Chip):
         self.input_attenuation = input_attenuation if input_attenuation is not None else np.array([1.0, 1.0, 1.0, 1.0])
         self.input_opd = input_opd if input_opd is not None else np.zeros(4) * u.m
         self.name = name
-
 
         super().__init__()
 

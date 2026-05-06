@@ -128,6 +128,26 @@ class Context:
         if self._initialized:
             self._update_p()
 
+    # Chip shortcut -----------------------------------------------------------
+
+    @property
+    def chip(self):
+        return self.interferometer.chip
+
+    @chip.setter
+    def chip(self, chip):
+        self.interferometer.chip = chip
+
+    # Camera shortcut ---------------------------------------------------------
+
+    @property
+    def camera(self):
+        return self.interferometer.camera
+
+    @camera.setter
+    def camera(self, camera):
+        self.interferometer.camera = camera
+
     # h property --------------------------------------------------------------
 
     @property

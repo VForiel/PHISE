@@ -23,8 +23,8 @@ def get() -> 'Context':
     ctx = phise.Context(
         h = 0 * u.hourangle, # Central hour angle
         Δh = 24 * u.hourangle, # Hour angle range
-        Γ = 1 * u.nm, # Input cophasing error (RMS)
-        name="Default Context", # Context name
+        Γ = 0 * u.nm, # Input cophasing error (RMS)
+        name="Photonics Bench Context", # Context name
         monochromatic=True,
         interferometer = phise.Interferometer(
             l = -90 * u.deg, # Latitude
@@ -43,7 +43,7 @@ def get() -> 'Context':
             name = "PHOB", # Interferometer name
             chip = phise.N4x4_T8(
                 φ = np.zeros(4) * λ, # Injected phase shifts
-                σ = np.abs(np.random.normal(0, 1, 4)) * λ, # Manufacturing OPD errors
+                σ = np.random.rand(4) * λ, # Manufacturing OPD errors
                 λ0 = λ,
                 name = "N4x4-T8", # Kernel nuller name
             ),
@@ -56,11 +56,11 @@ def get() -> 'Context':
                 dc = 755_000, # Dark current (in e-/px/s)
                 fwc = 1_400_000, # Full well capacity
                 max_adu = 16383, # Maximum ADU
-                name = "Default Camera", # Camera name
+                name = "Cred3", # Camera name
             ),
         ),
         target=phise.Target(
-            f = 1e-06 * u.W / u.m**2 / u.nm, # Laser flux (roughly estimated)
+            f = 1e-05 * u.W / u.m**2 / u.nm, # Laser flux (roughly estimated)
             δ = -90 * u.deg, # Target declination
             name = "Tunable Laser", # Target name
             companions = [],
