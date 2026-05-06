@@ -1,5 +1,6 @@
 from .classes import *
 from .modules import *
+from . import examples
 
 import os
 

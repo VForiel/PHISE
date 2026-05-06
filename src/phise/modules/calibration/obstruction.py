@@ -45,6 +45,10 @@ def calibrate_obs(
     """
 
     chip = ctx.interferometer.chip
+    
+    if chip.__class__.__name__ != "SuperKN":
+        raise NotImplementedError("Obstruction calibration is specifically implemented for the SuperKN architecture and its precise optical layout.")
+
     input_attenuation_backup = chip.input_attenuation.copy()
     λ = ctx.interferometer.λ
     e = ctx.interferometer.camera.e

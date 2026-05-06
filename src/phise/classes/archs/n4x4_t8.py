@@ -13,16 +13,93 @@ from ...modules import mmi
 from ...modules import phase
 
 from ..chip import Chip
+from ...modules.phase import shift, bound
 
 class PhaseList(np.ndarray):
     ...
 
-class SuperKN(Chip):
+#==============================================================================
+# Numba-accelerated functions
+#==============================================================================
+
+@nb.njit()
+def get_output_fields_jit(
+        ψ: np.ndarray[complex],
+        φ: np.ndarray[float],
+        σ: np.ndarray[float],
+        λ: float,
+        λ0: float,
+        output_order: np.ndarray[int]
+    ) -> tuple[np.ndarray[float], np.ndarray[float], np.ndarray[float], float]:
+    """Simulate a 4-telescope Kernel Nuller propagation (numeric approach).
+
+    Note: Does not account for input attenuation and OPD.
+
+    Args:
+        ψ (np.ndarray[complex]): Array of 4 input complex amplitudes.
+        φ (np.ndarray[float]): Array of 14 injected OPDs (wavelength units).
+        σ (np.ndarray[float]): Array of 14 intrinsic OPD errors (wavelength units).
+        λ (float): Wavelength of the light.
+        λ0 (float): Reference wavelength (wavelength units).
+        output_order (np.ndarray[int]): Order of the outputs.
+
+    Returns:
+        tuple: (nulls, darks, bright)
+            - nulls: Array of 3 null outputs (complex fields)
+            - darks: Array of 6 dark outputs (complex fields)
+            - bright: Bright output (complex field)
+    """
+    # λ_ratio = λ0 / λ
+    
+    # Obtained experimentally
+    Cin = np.array([[0.993235600471687+0.009237092175691658j, -0.021264580807434843+0.03769657190120298j, -0.0051583647234613155+-0.0042329905582810185j, 0.017463492523078383+-0.004980876913586356j],
+        [-0.0346680758683959+-0.018530357766726683j, 0.9889093932007929+-0.061123465436237485j, 0.026738344890038627+-0.0014393856537241413j, 0.004404623948204579+0.019764651573309613j],
+        [-0.028412984445477973+0.019923133158339813j, 0.03070602561442529+-0.012119194765006948j, 1.0579343864170707+-0.011527258095511929j, 0.039989544678528464+0.007601157088749202j],
+        [0.018285951246696873+-0.019141658304574972j, -0.009439220467160905+-0.012771119165619722j, 0.03584699301231649+-0.016710419975799848j, 1.0238623657867116+-0.024683838470046862j]], dtype=np.complex128)
+
+    M = np.array([[0.5+0j, 0.5+0j, 0.5+0j, 0.5+0j],
+        [0.5+0j, 0+-0.5j, 0+0.5j, -0.5+0j],
+        [0.5+0j, 0+0.5j, 0+-0.5j, -0.5+0j],
+        [0.5+0j, -0.5+0j, -0.5+0j, 0.5+0j]], dtype=np.complex128)
+
+    P = np.array([
+        [np.exp(1j * (φ[0] + σ[0]) / λ0 * 2 * np.pi), 0, 0, 0],
+        [0, np.exp(1j * (φ[1] + σ[1]) / λ0 * 2 * np.pi), 0, 0],
+        [0, 0, np.exp(1j * (φ[2] + σ[2]) / λ0 * 2 * np.pi), 0],
+        [0, 0, 0, np.exp(1j * (φ[3] + σ[3]) / λ0 * 2 * np.pi)]
+    ], dtype=np.complex128)
+
+    Cout = np.array([[0.9730778790933375+-0.056722375163116436j, -0.028797392063705185+-0.01948778967495159j, -0.002666088781798851+-0.003540266278734302j, -0.024288111942176616+-0.005162868250002706j],
+        [-0.021892304669666688+0.021443098378544353j, 0.9767787260134642+-0.01383016643950051j, 0.015854522865303682+0.007823830803290452j, 0.0013032043159456922+-0.03342304110006464j],
+        [0.0014192768381037528+-0.013512061286457603j, 0.01313567563123009+-0.0202219623179085j, 0.9582292019742786+-0.03906121603845227j, 0.0228181198166124+-0.0424606000937866j],
+        [-0.03282391798177125+0.004483601864926152j, -0.009184126593575653+-0.015909090105478144j, 0.02563732784075978+0.009597828972331662j, 0.9967355720799685+-0.041485655747843714j]], dtype=np.complex128)
+
+    # Override with ideal matrices for testing
+    # Cin = np.eye(4, dtype=np.complex128)
+    # Cout = np.eye(4, dtype=np.complex128)
+
+    return Cout @ M @ P @ Cin @ ψ
+    
+@nb.njit()
+def process_outputs_jit(out: np.ndarray[complex]) -> np.ndarray[float]:
+    """Compute kernel outputs from outputs intensities.
+
+    Args:
+        darks (np.ndarray[complex]): Array of raw outputs (complex fields).
+    """
+    k = out[2] - out[3]
+    return np.array([k], dtype=np.float64)
+
+#==============================================================================
+# N4x4_T8 class
+#==============================================================================
+
+class N4x4_T8(Chip):
     """Kernel nuller representation for 4 telescopes.
 
     Args:
-        φ (u.Quantity): (14,) array of applied OPDs (length units).
-        σ (u.Quantity): (14,) array of intrinsic OPD errors.
+        φ (u.Quantity): (4,) array of applied OPDs (length units).
+        σ (u.Quantity): (4,) array of intrinsic OPD errors.
         λ0 (u.Quantity): Reference wavelength at which matrices are defined.
         output_order (np.ndarray[int] | None): Output ordering (6 elements)
             defining output pairs.
@@ -44,18 +121,18 @@ class SuperKN(Chip):
             name:str='Unnamed Kernel-Nuller'
         ):
 
-        self._raw_output_labels = ['Bright', 'Dark 1', 'Dark 2', 'Dark 3', 'Dark 4', 'Dark 5', 'Dark 6']
-        self._processed_output_labels = ['Kernel 1', 'Kernel 2', 'Kernel 3']
+        self._raw_output_labels = ['Bright', 'Null', 'Dark 1', 'Dark 2']
+        self._processed_output_labels = ['Kernel 1']
 
         self.nb_inputs = 4
-        self.nb_raw_outputs = 7
-        self.nb_processed_outputs = 3
+        self.nb_raw_outputs = 4
+        self.nb_processed_outputs = 1
 
         self._parent_interferometer = None
         self.φ = φ
         self.σ = σ
         self.λ0 = λ0
-        self.output_order = output_order if output_order is not None else np.array([0, 1, 2, 3, 4, 5, 6])
+        self.output_order = output_order if output_order is not None else np.array([0, 1, 2, 3])
         self.input_attenuation = input_attenuation if input_attenuation is not None else np.array([1.0, 1.0, 1.0, 1.0])
         self.input_opd = input_opd if input_opd is not None else np.zeros(4) * u.m
         self.name = name
@@ -73,7 +150,7 @@ class SuperKN(Chip):
         """Applied OPD/phase per nuller element.
 
         Returns:
-            u.Quantity: Shape (14,) in length units (e.g., meters).
+            u.Quantity: Shape (4,) in length units (e.g., meters).
         """
         return self._φ
 
@@ -82,7 +159,7 @@ class SuperKN(Chip):
         """Set applied OPDs.
 
         Args:
-            φ (u.Quantity): Shape (14,) in a length unit.
+            φ (u.Quantity): Shape (4,) in a length unit.
 
         Raises:
             ValueError: If not a Quantity, not in length units, wrong shape,
@@ -94,8 +171,8 @@ class SuperKN(Chip):
             φ.to(u.m)
         except u.UnitConversionError:
             raise ValueError('φ must be in a distance unit')
-        if φ.shape != (14,):
-            raise ValueError('φ must have a shape of (14,)')
+        if φ.shape != (4,):
+            raise ValueError('φ must have a shape of (4,)')
         if np.any(φ < 0):
             raise ValueError('φ must be positive')
         self._φ = φ
@@ -107,7 +184,7 @@ class SuperKN(Chip):
         """Intrinsic OPD errors of the nuller.
 
         Returns:
-            u.Quantity: Shape (14,) in same unit as ``φ``.
+            u.Quantity: Shape (4,) in same unit as ``φ``.
         """
         return self._σ
 
@@ -116,7 +193,7 @@ class SuperKN(Chip):
         """Set intrinsic OPD errors.
 
         Args:
-            σ (u.Quantity): Shape (14,) in a length unit.
+            σ (u.Quantity): Shape (4,) in a length unit.
 
         Raises:
             ValueError: If not a Quantity, not in length units, or wrong shape.
@@ -127,8 +204,8 @@ class SuperKN(Chip):
             σ.to(u.m)
         except u.UnitConversionError:
             raise ValueError('σ must be in a distance unit')
-        if σ.shape != (14,):
-            raise ValueError('σ must have a shape of (14,)')
+        if σ.shape != (4,):
+            raise ValueError('σ must have a shape of (4,)')
         self._σ = σ
 
     # Design wavelength -------------------------------------------------------
@@ -168,7 +245,7 @@ class SuperKN(Chip):
         """Output order of the nuller.
 
         Returns:
-            np.ndarray[int]: Length-6 array describing the output order and
+            np.ndarray[int]: Length-4 array describing the output order and
                 pair structure.
         """
         return self._output_order
@@ -178,12 +255,12 @@ class SuperKN(Chip):
         """Set output order.
 
         Args:
-            output_order (np.ndarray[int]): Permutation of [0..5] with valid
+            output_order (np.ndarray[int]): Permutation of [0..3] with valid
                 pair structure.
 
         Raises:
             ValueError: If not an integer array, wrong shape, not a permutation
-                of 0..5, or invalid pair configuration.
+                of 0..3, or invalid pair configuration.
         """
         try:
             output_order = np.array(output_order, dtype=int)
@@ -194,9 +271,12 @@ class SuperKN(Chip):
         if not np.all(np.sort(output_order) == np.arange(self.nb_raw_outputs)):
             raise ValueError(f'output_order must contain all the integers from 0 to {self.nb_raw_outputs - 1}, not {output_order}')
         
-        # Specitifc criteria for valid output pairs
-        if output_order[1] - output_order[2] not in [-1, 1] or output_order[3] - output_order[4] not in [-1, 1] or output_order[5] - output_order[6] not in [-1, 1]:
-            raise ValueError(f'output_order contain an invalid configuration of output pairs. Found {output_order}')
+        # Specific criteria for valid output pairs
+        if  not ((output_order == np.array([0, 1, 2, 3], dtype=int)).all()
+              or (output_order == np.array([1, 2, 3, 0], dtype=int)).all()
+              or (output_order == np.array([2, 3, 0, 1], dtype=int)).all()
+              or (output_order == np.array([3, 0, 1, 2], dtype=int)).all()):
+            raise ValueError(f'output_order must be a valid permutation (a cyclic permutation of [0, 1, 2, 3]), not {output_order}')
         
         self._output_order = output_order
 
@@ -212,39 +292,9 @@ class SuperKN(Chip):
         Returns:
             None: Updates ``self.output_order`` in place.
         """
-        ψ = np.zeros(4, dtype=complex)
-        ψ[0] = ψ[3] = (1 + 0j) * np.sqrt(1 / 2)
-        d = self.get_output_fields(ψ=ψ, λ=λ)[1:]
-        k1 = np.argsort((d * np.conj(d)).real)[:2]
-        ψ = np.zeros(4, dtype=complex)
-        ψ[0] = ψ[2] = (1 + 0j) * np.sqrt(1 / 2)
-        d = self.get_output_fields(ψ=ψ, λ=λ)[1:]
-        k2 = np.argsort((d * np.conj(d)).real)[:2]
-        ψ = np.zeros(4, dtype=complex)
-        ψ[0] = ψ[1] = (1 + 0j) * np.sqrt(1 / 2)
-        d = self.get_output_fields(ψ=ψ, λ=λ)[1:]
-        k3 = np.argsort((d * np.conj(d)).real)[:2]
-        ψ = np.zeros(4, dtype=complex)
-        ψ[0] = ψ[1] = (1 + 0j) * np.sqrt(1 / 2)
-        ψ[1] *= np.exp(-1j * np.pi / 2)
-        d = self.get_output_fields(ψ=ψ, λ=λ)[1:]
-        dk1 = d[k1]
-        diff = np.abs(dk1[0] - dk1[1])
-        if diff < 0:
-            k1 = np.flip(k1)
-        dk2 = d[k2]
-        diff = np.abs(dk2[0] - dk2[1])
-        if diff < 0:
-            k2 = np.flip(k2)
-        ψ = np.zeros(4, dtype=complex)
-        ψ[0] = ψ[1] = (1 + 0j) * np.sqrt(1 / 2)
-        ψ[2] *= np.exp(-1j * np.pi / 2)
-        d = self.get_output_fields(ψ=ψ, λ=λ)[1:]
-        dk3 = d[k3]
-        diff = np.abs(dk3[0] - dk3[1])
-        if diff < 0:
-            k3 = np.flip(k3)
-        self.output_order = np.concatenate([[0], k1+1, k2+1, k3+1])
+        # Warning not implemented
+        print("Warning: rebind_outputs is not implemented")
+        pass
 
     # Input properties --------------------------------------------------------
 
@@ -359,17 +409,19 @@ class SuperKN(Chip):
             ValueError: Always raised; property is read-only.
         """
         raise ValueError('parent_interferometer is read-only')
-    
+
+    # Shifters role -----------------------------------------------------------
+
     @property
     def bright_shifters_indices(self) -> list[int]:
         """Indices of shifters primarily controlling bright outputs."""
-        return [0, 1, 2, 3, 4, 6]
+        return [0, 1, 2, 3]
 
     @property
     def kernel_shifters_indices(self) -> list[int]:
         """Indices of shifters primarily controlling kernel null depths."""
-        return [5, 7, 8, 9, 10, 11, 12, 13]
-
+        return []
+    
     #==========================================================================
     # Methods
     #==========================================================================
@@ -387,7 +439,7 @@ class SuperKN(Chip):
 
         Returns:
             Tuple[np.ndarray, np.ndarray, np.ndarray, float]: Output complex
-            fields (shape (7,)).
+            fields (shape (4,)).
         """
         if φ is None:
             φ_val = self.φ.to(λ.unit).value
@@ -400,11 +452,12 @@ class SuperKN(Chip):
             σ_val = σ.to(λ.unit).value
 
         λ0 = self.λ0.to(λ.unit).value
-        ψ = ψ.copy() # Safe copy
+        ψ = ψ.copy()
         ψ *= self.input_attenuation
-         
+        
         ψ *= np.exp(-1j * 2 * np.pi * self.input_opd.to(λ.unit).value / λ.value)
-        return get_output_fields_jit(ψ=ψ, φ=φ_val, σ=σ_val, λ=λ.value, λ0=λ0, output_order=self.output_order)
+
+        return get_output_fields_jit(ψ=ψ.astype(np.complex128), φ=φ_val, σ=σ_val, λ=λ.value, λ0=λ0, output_order=self.output_order)
     
     def expected_outputs(self, ψ: np.ndarray[complex]) -> tuple[float, np.ndarray[float], np.ndarray[float]]:
         """
@@ -466,8 +519,6 @@ class SuperKN(Chip):
              out2 = out2 * phasor
              out3 = out3 * phasor
              out4 = out4 * phasor
-
-
         
         n_out = len(out1)
         outs = np.array([out1, out2, out3, out4])
@@ -523,154 +574,137 @@ class SuperKN(Chip):
             return plot.getvalue()
         plt.show()
 
+    # Null calibration --------------------------------------------------------
 
-#==============================================================================
-# Numba-accelerated functions
-#==============================================================================
+    def calibrate(self, method='Hooke&Jeeves', verbose:bool=False, plot=False, input_fields:np.ndarray=None, hooke_jeeves_metric=None, β:float=0.5):
+        if method.lower() == 'hooke&jeeves':
+            return self._calibrate_hooke_jeeves(verbose=verbose, plot=plot, input_fields=input_fields, metric=hooke_jeeves_metric, β=β)
+        else:
+            raise ValueError(f'Unknown calibration method: {method}. Supported methods: Hooke&Jeeves')
 
-@nb.njit()
-def get_output_fields_jit(
-        ψ: np.ndarray[complex],
-        φ: np.ndarray[float],
-        σ: np.ndarray[float],
-        λ: float,
-        λ0: float,
-        output_order: np.ndarray[int]
-    ) -> tuple[np.ndarray[float], np.ndarray[float], np.ndarray[float], float]:
-    """Simulate a 4-telescope Kernel Nuller propagation (numeric approach).
+    def _calibrate_hooke_jeeves(
+        self,
+        β = 0.5,
+        ε:u.Quantity = None,
+        verbose: bool = False,
+        plot: bool = False,
+        input_fields: np.ndarray = None,
+        metric = None,
+    ) -> dict:
+        """
+        Optimize phase shifter offsets using the analytical model to maximize nulling performance.
+        Mimics null_calibration_gen but uses predict_output and scipy.optimize.
+        Default metric: Null-Depth = sum(null outputs)
+        Outputs are assumed to be: 0=Bright, 1,2,3=Nulls (Standard Arch6)
+        """
 
-    Note: Does not account for input attenuation and OPD.
+        ctx = self.parent_interferometer.parent_ctx
 
-    Args:
-        ψ (np.ndarray[complex]): Array of 4 input complex amplitudes.
-        φ (np.ndarray[float]): Array of 14 injected OPDs (wavelength units).
-        σ (np.ndarray[float]): Array of 14 intrinsic OPD errors (wavelength units).
-        λ (float): Wavelength of the light.
-        λ0 (float): Reference wavelength (wavelength units).
-        output_order (np.ndarray[int]): Order of the outputs.
+        # Handle defaults
+        if metric is None:
+            def metric(outs):
+                outs[outs <= 1] = 1  # Avoid log(0) issues
+                return np.sum(outs[1:4])
 
-    Returns:
-        tuple: (nulls, darks, bright)
-            - nulls: Array of 3 null outputs (complex fields)
-            - darks: Array of 6 dark outputs (complex fields)
-            - bright: Bright output (complex field)
-    """
-    λ_ratio = λ0 / λ
-    
-    # 2x2 Nuller
-    N = 1 / np.sqrt(2) * np.array([
-        [1,  1],
-        [1, -1]
-    ],dtype=np.complex128)
+        if input_fields is None:
+            input_fields = np.ones(4, dtype=complex)
 
-    # Adjust for wavelength
-    Na = np.abs(N)
-    Nφ = np.angle(N)
-    N = Na * np.exp(1j * Nφ * λ_ratio)
-
-    # 2x2 Cross-Recombiner
-    θ: float = np.pi / 2
-    R = 1 / np.sqrt(2) * np.array([
-        [np.exp(1j * θ / 2), np.exp(-1j * θ / 2)],
-        [np.exp(-1j * θ / 2), np.exp(1j * θ / 2)]
-    ],dtype=np.complex128)
-
-    # Adjust for wavelength
-    Ra = np.abs(R)
-    Rφ = np.angle(R)
-    R = Ra * np.exp(1j * Rφ * λ_ratio)
-
-    # Add first layer of perturbations & shifts
-    Φ = φ + σ # merge perturbations and shifts
-    ψ0 = phase.shift_jit(ψ, Φ[:4], λ)
-
-    # First layer of nullers
-    ψtmp1 = N @ ψ0[:2]
-    ψtmp2 = N @ ψ0[2:]
-    ψ1 = np.array([ψtmp1[0], ψtmp1[1], ψtmp2[0], ψtmp2[1]], dtype=np.complex128)
-
-    # Second layer of perturbations & shifts
-    ψ1 = phase.shift_jit(ψ1, φ[4:8], λ)
-
-    # Second layer of nullers
-    ψtmp1 = N @ np.array([ψ1[0], ψ1[2]])
-    ψtmp2 = N @ np.array([ψ1[1], ψ1[3]])
-    ψ2 = np.array([ψtmp1[0], ψtmp1[1], ψtmp2[0], ψtmp2[1]], dtype=np.complex128)
-
-    # Splitters and final bright output
-    ψb = ψ2[0]
-    ψ3 = ψ2[1:].repeat(2) / np.sqrt(2) 
-
-    # Final perturbations & shifts
-    ψ3 = phase.shift_jit(ψ3, φ[8:], λ)
-
-    # Final recombination
-    ψtmp1 = R @ np.array([ψ3[0], ψ3[2]])
-    ψtmp2 = R @ np.array([ψ3[1], ψ3[4]])
-    ψtmp3 = R @ np.array([ψ3[3], ψ3[5]])
-
-    ψout = np.array([ψb, ψtmp1[0], ψtmp1[1], ψtmp2[0], ψtmp2[1], ψtmp3[0], ψtmp3[1]], dtype=np.complex128)
-    return ψout[output_order]
-
-@nb.njit()
-def process_outputs_jit(out: np.ndarray[complex]) -> np.ndarray[float]:
-    """Compute kernel outputs from dark outputs intensities.
-
-    Args:
-        darks (np.ndarray[complex]): Array of 6 dark outputs (complex fields).
-    """
-    k1 = out[1] - out[2]
-    k2 = out[3] - out[4]
-    k3 = out[5] - out[6]
-    return np.array([k1, k2, k3], dtype=np.float64)
-
-@nb.njit()
-def expected_outputs_jit(ψ: np.ndarray[complex]) -> tuple[float, np.ndarray[float], np.ndarray[float]]:
-    """
-    Compute expected outputs from input fields using analytical model (JIT compiled).
-    
-    Args:
-        ψ (np.ndarray[complex]): Input complex fields for the 4 channels.
+        if ε is None:
+            ε = 1e-6 * ctx.interferometer.λ.unit  
         
-    Returns:
-        tuple: (bright, darks, kernels)
-    """
-    # Bright output (constructive interference)
-    # Factor 1/2 for amplitude (1/4 for intensity) relative to input sum
-    S_b = 0.5 * (ψ[0] + ψ[1] + ψ[2] + ψ[3])
-    bright = np.abs(S_b)**2
-    
-    # Dark outputs
-    # Factor 1/4 for amplitude (1/16 for intensity)
-    
-    # Kernel 1
-    # S1s: 0, pi/2, 3pi/2, pi
-    S1_1 = 0.25 * (ψ[0] + 1j*ψ[1] - 1j*ψ[2] - ψ[3])
-    # S2s: 0, 3pi/2, pi/2, pi
-    S1_2 = 0.25 * (ψ[0] - 1j*ψ[1] + 1j*ψ[2] - ψ[3])
-    
-    # Kernel 2
-    # S1s: 0, pi/2, pi, 3pi/2
-    S2_1 = 0.25 * (ψ[0] + 1j*ψ[1] - ψ[2] - 1j*ψ[3])
-    # S2s: 0, 3pi/2, pi, pi/2
-    S2_2 = 0.25 * (ψ[0] - 1j*ψ[1] - ψ[2] + 1j*ψ[3])
-    
-    # Kernel 3
-    # S1s: 0, pi, pi/2, 3pi/2
-    S3_1 = 0.25 * (ψ[0] - ψ[1] + 1j*ψ[2] - 1j*ψ[3])
-    # S2s: 0, pi, 3pi/2, pi/2
-    S3_2 = 0.25 * (ψ[0] - ψ[1] - 1j*ψ[2] + 1j*ψ[3])
-    
-    darks = np.array([
-        np.abs(S1_1)**2, np.abs(S1_2)**2,
-        np.abs(S2_1)**2, np.abs(S2_2)**2,
-        np.abs(S3_1)**2, np.abs(S3_2)**2
-    ]) * 2.0
-    
-    kernels = np.array([
-        darks[0] - darks[1],
-        darks[2] - darks[3],
-        darks[4] - darks[5]
-    ])
-    
-    return bright, darks, kernels
+
+        # Reduce observation window to one camera acquisition (static assumption)
+        ctx.Δh = ctx.interferometer.camera.e.to(u.hour).value * u.hourangle
+
+        # History of the optimization
+        metric_history = []
+        depths_history = []
+        shifters_history = []
+
+        ctx.interferometer.chip.φ = np.zeros(4) * ctx.interferometer.λ
+
+        Δφ = ctx.interferometer.λ / 4
+        while Δφ > ε:
+
+            if verbose:
+                print(f"--- New iteration --- Δφ={Δφ:.2e}")
+
+            for i in range(4):
+                log = ""
+
+                # Getting observation with different phase shifts
+                ctx.interferometer.chip.φ[i] += Δφ
+                ctx.interferometer.chip.φ = ctx.interferometer.chip.φ % ctx.interferometer.λ
+                outs_pos = ctx.observe()
+
+                ctx.interferometer.chip.φ[i] -= 2 * Δφ
+                ctx.interferometer.chip.φ = ctx.interferometer.chip.φ % ctx.interferometer.λ
+                outs_neg = ctx.observe()
+
+                ctx.interferometer.chip.φ[i] += Δφ
+                ctx.interferometer.chip.φ = ctx.interferometer.chip.φ % ctx.interferometer.λ
+                outs_old = ctx.observe()
+
+                m_pos = metric(outs_pos)
+                m_neg = metric(outs_neg)
+                m_old = metric(outs_old)
+
+                # Save the history
+                metric_history.append(m_old)
+                depths_history.append(np.abs(outs_old[1:]) / outs_old[0])
+                shifters_history.append(np.copy(ctx.interferometer.chip.φ.value / ctx.interferometer.λ.value * 2 * np.pi))
+
+                # Minimize the metric
+                log += f"Shift {i} Metric: {m_neg:.2e} | {m_old:.2e} | {m_pos:.2e} -> "
+
+                if m_pos < m_old and m_pos < m_neg:
+                    log += " + "
+                    ctx.interferometer.chip.φ[i] += Δφ
+                elif m_neg < m_old and m_neg < m_pos:
+                    log += " - "
+                    ctx.interferometer.chip.φ[i] -= Δφ
+                else:
+                    log += " = "
+
+                if verbose:
+                    print(log)
+
+            Δφ *= β
+
+        metric_history = np.array(metric_history)
+        depths_history = np.array(depths_history)
+        shifters_history = np.array(shifters_history)
+
+        fig = None
+        if plot:
+
+            fig, axs = plt.subplots(3, 1, constrained_layout=True)#, figsize=(8, 12))
+
+            axs[0].plot(metric_history)
+            axs[0].set_xlabel("Iterations")
+            axs[0].set_ylabel("Metric")
+            axs[0].set_yscale("log")
+            axs[0].set_title("Performance of the Kernel-Nuller")
+
+            for i in range(depths_history.shape[1]):
+                axs[1].plot(depths_history[:, i], label=f"N{i+1}")
+            axs[1].plot(np.mean(depths_history, axis=1), label="Mean", color='black', linestyle='--')
+            axs[1].set_xlabel("Iterations")
+            axs[1].set_ylabel("Null depth")
+            axs[1].set_yscale("log")
+            axs[1].set_title("Convergence of the Null depth")
+            axs[1].legend(loc='upper right')
+
+            for i in range(shifters_history.shape[1]):
+                axs[2].plot(shifters_history[:, i], label=f"Shifter {i+1}")
+            axs[2].set_xlabel("Iterations")
+            axs[2].set_ylabel("Phase shift")
+            axs[2].set_yscale("linear")
+            axs[2].set_title("Convergence of the phase shifters")
+
+        return {
+            "metric": np.array(metric_history),
+            "depths": np.array(depths_history),
+            "shifters": np.array(shifters_history),
+            "figure": fig
+        }
