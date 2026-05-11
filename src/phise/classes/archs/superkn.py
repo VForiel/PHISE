@@ -587,7 +587,11 @@ def get_output_fields_jit(
     # First layer of nullers
     ψtmp1 = N @ ψ0[:2]
     ψtmp2 = N @ ψ0[2:]
-    ψ1 = np.array([ψtmp1[0], ψtmp1[1], ψtmp2[0], ψtmp2[1]], dtype=np.complex128)
+    ψ1 = np.empty(4, dtype=np.complex128)
+    ψ1[0] = ψtmp1[0]
+    ψ1[1] = ψtmp1[1]
+    ψ1[2] = ψtmp2[0]
+    ψ1[3] = ψtmp2[1]
 
     # Second layer of perturbations & shifts
     ψ1 = phase.shift_jit(ψ1, φ[4:8], λ)
@@ -595,7 +599,11 @@ def get_output_fields_jit(
     # Second layer of nullers
     ψtmp1 = N @ np.array([ψ1[0], ψ1[2]])
     ψtmp2 = N @ np.array([ψ1[1], ψ1[3]])
-    ψ2 = np.array([ψtmp1[0], ψtmp1[1], ψtmp2[0], ψtmp2[1]], dtype=np.complex128)
+    ψ2 = np.empty(4, dtype=np.complex128)
+    ψ2[0] = ψtmp1[0]
+    ψ2[1] = ψtmp1[1]
+    ψ2[2] = ψtmp2[0]
+    ψ2[3] = ψtmp2[1]
 
     # Splitters and final bright output
     ψb = ψ2[0]
@@ -609,7 +617,14 @@ def get_output_fields_jit(
     ψtmp2 = R @ np.array([ψ3[1], ψ3[4]])
     ψtmp3 = R @ np.array([ψ3[3], ψ3[5]])
 
-    ψout = np.array([ψb, ψtmp1[0], ψtmp1[1], ψtmp2[0], ψtmp2[1], ψtmp3[0], ψtmp3[1]], dtype=np.complex128)
+    ψout = np.empty(7, dtype=np.complex128)
+    ψout[0] = ψb
+    ψout[1] = ψtmp1[0]
+    ψout[2] = ψtmp1[1]
+    ψout[3] = ψtmp2[0]
+    ψout[4] = ψtmp2[1]
+    ψout[5] = ψtmp3[0]
+    ψout[6] = ψtmp3[1]
     return ψout[output_order]
 
 @nb.njit()
