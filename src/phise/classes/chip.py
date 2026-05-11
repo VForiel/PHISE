@@ -10,7 +10,38 @@ class Chip:
         ...
 
     def get_output_fields(self, ψ: np.ndarray[complex], λ: u.Quantity, φ: Optional[u.Quantity]=None, σ: Optional[u.Quantity]=None) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
+        """Propagate input fields through the kernel nuller.
+
+        Signature: (ψ, λ, φ=None, σ=None) -> (raw output fields, processed output fields, output field gradients, null depth).
+        Must be overridden in each subclass.
+        """
         raise NotImplementedError # implemented in subclasses
+
+    @property
+    def get_output_fields_jit(self):
+        """Return the chip-specific @njit function for computing output fields.
+
+        Signature: (ψ, φ, σ, λ, λ0, output_order) -> raw output fields array.
+        Must be overridden in each subclass.
+        """
+        raise NotImplementedError  # implemented in subclasses
+    
+    def process_outputs(self, raw_outs: np.ndarray) -> np.ndarray:
+        """Process raw output fields to compute processed outputs.
+
+        Signature: (raw_outs) -> processed outputs array.
+        Must be overridden in each subclass.
+        """
+        raise NotImplementedError  # implemented in subclasses
+
+    @property
+    def process_outputs_jit(self):
+        """Return the chip-specific @njit function for computing processed outputs.
+
+        Signature: (raw_outs) -> processed outputs array.
+        Must be overridden in each subclass.
+        """
+        raise NotImplementedError  # implemented in subclasses
 
     def laugiergram(self, show=False):
         import matplotlib.pyplot as plt

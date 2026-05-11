@@ -450,6 +450,16 @@ class N4x4_D8(Chip):
 
     # Wave propagation --------------------------------------------------------
 
+    @property
+    def get_output_fields_jit(self):
+        """Return the @njit function for computing N4x4_D8 output fields."""
+        return get_output_fields_jit
+
+    @property
+    def process_outputs_jit(self):
+        """Return the @njit function for processing N4x4_D8 outputs."""
+        return process_outputs_jit
+
     def get_output_fields(self, ψ: np.ndarray[complex], λ: u.Quantity, φ: Optional[u.Quantity]=None, σ: Optional[u.Quantity]=None) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
         """
         Propagate input fields through the kernel nuller.

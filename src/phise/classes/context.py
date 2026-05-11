@@ -356,19 +356,24 @@ class Context:
         """
 
         N=N
-        φ=self.interferometer.chip.φ.to(u.m).value
-        σ=self.interferometer.chip.σ.to(u.m).value
+        φ=self.chip.φ.to(u.m).value
+        σ=self.chip.σ.to(u.m).value
         p=self.p.value
         λ=self.interferometer.λ.to(u.m).value
-        λ0=self.interferometer.chip.λ0.to(u.m).value
-        fov=self.interferometer.fov
-        output_order=self.interferometer.chip.output_order
-        nb_raw_outputs = self.interferometer.chip.nb_raw_outputs
-        nb_processed_outputs = self.interferometer.chip.nb_processed_outputs
+        λ0=self.chip.λ0.to(u.m).value
+        fov=self.interferometer.fov.to(u.mas).value
+        output_order=self.chip.output_order
+        nb_raw_outputs = self.chip.nb_raw_outputs
+        nb_processed_outputs = self.chip.nb_processed_outputs
 
-        return get_transmission_map_jit(N=N, φ=φ, σ=σ, p=p, λ=λ, λ0=λ0, fov=fov, output_order=output_order, nb_raw_outputs=nb_raw_outputs, nb_processed_outputs=nb_processed_outputs)
-
-
+        return get_transmission_map_jit(
+            N=N, φ=φ, σ=σ, p=p, λ=λ, λ0=λ0, fov=fov,
+            output_order=output_order,
+            nb_raw_outputs=nb_raw_outputs,
+            nb_processed_outputs=nb_processed_outputs,
+            get_output_fields_fn=self.chip.get_output_fields_jit,
+            process_outputs_fn=self.chip.process_outputs_jit,
+        )
 
     # Get transmission map gradiant norm --------------------------------------
 
@@ -402,7 +407,7 @@ class Context:
 
     # Plot transmission maps --------------------------------------------------
 
-    def plot_transmission_maps(self, N:int, return_plot:bool = False, grad=False, save_as=None) -> None:
+    def plot_transmission_maps(self, N:int=100, return_plot:bool = False, grad=False, save_as=None) -> None:
         
         # Get transmission maps
         if grad:
@@ -857,21 +862,28 @@ def get_transmission_map_jit(
         output_order: np.ndarray[int],
         nb_raw_outputs: int,
         nb_processed_outputs: int,
+        get_output_fields_fn,
+        process_outputs_fn,
     ) -> tuple[np.ndarray[float], np.ndarray[float]]:
     """
-    Generate the transmission maps of this context with a given resolution
+    Generate the transmission maps of this context with a given resolution.
 
     Parameters
     ----------
     - N: Resolution of the map
     - φ: Array of injected OPD (in meter)
-    - σ: Array of intrasic OPD (in meter)
+    - σ: Array of intrinsic OPD (in meter)
     - p: Projected telescope positions (in meter)
     - λ: Wavelength (in meter)
     - λ0: Reference wavelength (in meter)
     - fov: Field of view in mas
     - output_order: Order of the outputs
-    - processed_outputs : If ``True``, also return the processed outputs transmission maps.
+    - nb_raw_outputs: Number of raw outputs
+    - nb_processed_outputs: Number of processed outputs
+    - get_output_fields_fn: Chip-specific @njit function with signature
+      (ψ, φ, σ, λ, λ0, output_order) -> raw output fields
+    - process_outputs_fn: Chip-specific @njit function with signature
+      (raw_outs) -> processed outputs
 
     Returns
     -------
@@ -895,13 +907,13 @@ def get_transmission_map_jit(
             ρ = ρ_map[x, y]
 
             ψ = get_unique_source_input_fields_jit(a=np.ones(4)/4, ρ=ρ, θ=θ, λ=λ, p=p)
-            raw_outs = np.abs(superkn.get_output_fields_jit(ψ, φ, σ, λ, λ0, output_order))**2
+            raw_outs = np.abs(get_output_fields_fn(ψ, φ, σ, λ, λ0, output_order))**2
 
             for i in range(nb_raw_outputs):
                 raw_out_maps[i, x, y] = raw_outs[i]
 
             if nb_processed_outputs > 0:
-                processed_outs = superkn.process_outputs_jit(raw_outs)
+                processed_outs = process_outputs_fn(raw_outs)
 
                 for i in range(nb_processed_outputs):
                     processed_out_maps[i, x, y] = processed_outs[i]
