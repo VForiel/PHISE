@@ -247,7 +247,7 @@ class Camera:
         # Check if the camera if not totally saturated by the dark current. Show a warning if the requested exposure time is above the dark saturation time (fwc/dc), which means that the dark current will saturate the camera even in the absence of any light.
         max_e = self.fwc / self.dc
         if e_val > max_e:
-            print(f"⚠️ Warning: The requested exposure time {e:.2g} is above the dark saturation time {max_e:.2g}. The camera will be saturated by the dark current even in the absence of any light.")
+            print(f"⚠️ Warning: The requested exposure time {e_val:.2g} is above the dark saturation time {max_e:.2g}. The camera will be saturated by the dark current even in the absence of any light.")
 
         self._e_unit = e.unit
         self._e = e_val

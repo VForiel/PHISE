@@ -1,4 +1,5 @@
 import numpy as np
+import math
 import astropy.units as u
 import astropy.constants as const
 import numba as nb
@@ -303,27 +304,41 @@ class Context:
         ) -> u.Quantity:
         """Compute a reference exposure time for stellar acquisition.
 
-                This helper estimates an exposure time that places the *brightest
-                detector pixel* at a chosen fraction of full-well capacity.
+        This helper estimates an exposure time that places a detector pixel
+        at a chosen fraction of full-well capacity, assuming **perfect
+        coupling** of all stellar photons into a single output (ideal fiber
+        coupling scenario). This avoids dependence on chip imperfections or
+        interferometer coherence.
 
-                The stellar peak-pixel rate is estimated from a deterministic
-                1-second ideal image (no shot/readout noise), then converted to
-                electrons/second using ``camera.qe``. Optionally, the mean dark-current
-                contribution per pixel is added to the peak-pixel electron budget.
+        The stellar electron rate on the **central pixel** is computed as:
+            electron_rate = (total_photon_flux) × (central_pixel_fraction)
+                            × (quantum_efficiency) [+ dark_current]
+
+        where total_photon_flux = sum(pf) is the combined flux from all telescopes,
+        and central_pixel_fraction is the integral of the 2D Gaussian spot over
+        the central pixel area, with ``sigma = camera.spot_size`` in pixel units.
 
         Args:
             target_adu_fraction (float): Target fraction of pixel full-well
                 capacity, in ``(0, 1]``.
             include_dark_current (bool): If ``True``, include the mean dark
-                current contribution in the ADU budget.
+                current contribution per pixel in the electron budget.
 
         Returns:
             u.Quantity: Reference exposure time in seconds.
 
         Raises:
-            ValueError: If ``target_adu_fraction`` is outside ``(0, 1)`` or
+            ValueError: If ``target_adu_fraction`` is outside ``(0, 1]`` or
                 if the resulting electron rate is not strictly positive.
             TypeError: If ``target_adu_fraction`` is not numeric.
+
+        Notes:
+            This calculation assumes 100% coupling efficiency (all stellar
+            photons reach one output). In practice, chip efficiency and
+            interferometric visibility will be lower.
+
+            If exposure time exceeds dark saturation threshold (≈ fwc/dc),
+            a warning is issued.
         """
 
         if not isinstance(target_adu_fraction, (float, int)):
@@ -332,17 +347,22 @@ class Context:
         target_adu_fraction = float(target_adu_fraction)
         if target_adu_fraction <= 0.0:
             raise ValueError("target_adu_fraction must be >= 0")
+        # Target ADU can be > 1 to allow going above camera saturation
 
-        # Estimate stellar peak-pixel photon rate from a deterministic 1-second
-        # ideal acquisition. This accounts for chip splitting and PSF spreading.
-        ctx_ref = copy(self)
-        ctx_ref.camera.e = 1 * u.s
-        ctx_ref.camera.ideal = True
-        upstream_pistons = np.zeros(len(ctx_ref.interferometer.telescopes)) * u.nm
-        ref_images = ctx_ref.observe(mode="image", upstream_pistons=upstream_pistons)
-        stellar_peak_photon_rate = float(np.max(ref_images))
+        # Total photon flux from all telescopes (ideal coupling: all photons
+        # reach one output).
+        total_photon_flux = float(np.sum(self._pf).to(1/u.s).value)
 
-        electron_rate = stellar_peak_photon_rate * self.camera.qe
+        # Fraction of the Gaussian spot falling into the central pixel.
+        # For a centered isotropic 2D Gaussian with standard deviation sigma,
+        # integrated over [-0.5, 0.5] x [-0.5, 0.5] pixel:
+        # f_c = erf(0.5 / (sqrt(2) * sigma))^2
+        sigma_px = float(self.camera.spot_size)
+        central_pixel_fraction = math.erf(0.5 / (math.sqrt(2.0) * sigma_px)) ** 2
+
+        # Electron rate on central pixel = photons/s in central pixel × QE
+        # [+ dark current].
+        electron_rate = total_photon_flux * central_pixel_fraction * self.camera.qe
 
         if include_dark_current:
             electron_rate += self.camera.dc
@@ -350,8 +370,21 @@ class Context:
         if electron_rate <= 0:
             raise ValueError("Computed electron rate must be strictly positive")
 
+        # Exposure time to reach target fraction of full-well capacity.
         target_electrons = target_adu_fraction * self.camera.fwc
-        exposure_seconds = target_electrons / electron_rate
+        exposure_seconds = float(target_electrons / electron_rate)
+
+        # Warn if exposure approaches dark saturation threshold.
+        dark_sat_threshold = float(self.camera.fwc / self.camera.dc)
+        if exposure_seconds > dark_sat_threshold:
+            import warnings
+            warnings.warn(
+                f"Exposure time {exposure_seconds:.4e}s exceeds dark saturation "
+                f"threshold ({dark_sat_threshold:.4e}s). Image will be dominated by "
+                f"dark current.",
+                UserWarning
+            )
+
         return exposure_seconds * u.s
     
     # Plot projected positions over the time ----------------------------------
