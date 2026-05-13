@@ -47,9 +47,9 @@ def get() -> 'Context':
             ),
         ),
         target = phise.Target(
-            f = (1050 * u.Jy * 2 * np.pi * const.c / λ**2).to(u.W / u.m**2 / u.nm), # Target flux
+            f = 1e-12 * u.W / u.m**2 / u.nm, # Target flux (Sun-like star at 10 pc)
             δ = -64.71 * u.deg, # Target declination
-            name = "Vega", # Target name
+            name = "Sun-like @ 10pc", # Target name
             companions = [
                 phise.Companion(
                     c = 1e-2, # Companion contrast
