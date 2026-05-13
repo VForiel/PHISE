@@ -121,7 +121,7 @@ class N4x4_T8(Chip):
             name:str='Unnamed Kernel-Nuller'
         ):
 
-        self._raw_output_labels = ['Bright', 'Null', 'Dark 1', 'Dark 2']
+        self._raw_output_labels = ['Bright', 'Dark 1', 'Dark 2', 'Null']
         self._processed_output_labels = ['Kernel 1']
 
         self.nb_inputs = 4
