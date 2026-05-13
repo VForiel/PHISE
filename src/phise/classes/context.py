@@ -295,6 +295,59 @@ class Context:
 
         self._pf = p * λ / (h*c) # Photon flux [photons/s] (array of (n_telescopes,))
         self._pf = self._pf.to(1/u.s)
+
+    def get_reference_exposure_time(
+            self,
+            target_adu_fraction: float = 0.5,
+            include_dark_current: bool = True,
+        ) -> u.Quantity:
+        """Compute a reference exposure time for stellar acquisition.
+
+        This helper estimates an exposure time that places the detected signal
+        at a chosen fraction of the camera ADU dynamic range, assuming the
+        full stellar photon flux is focused onto a single detector output.
+
+        The estimate uses a linear detector model:
+
+        - stellar electrons rate: ``sum(self.pf) * camera.qe``
+        - optional dark-current electrons rate:
+          ``camera.dc * camera.resolution**2``
+        - ADU conversion: ``ADU = electrons / camera.gain``
+
+        Args:
+            target_adu_fraction (float): Target position in the ADU range,
+                in ``(0, 1)``. Default is ``0.5`` (mid-dynamic range).
+            include_dark_current (bool): If ``True``, include the mean dark
+                current contribution in the ADU budget.
+
+        Returns:
+            u.Quantity: Reference exposure time in seconds.
+
+        Raises:
+            ValueError: If ``target_adu_fraction`` is outside ``(0, 1)`` or
+                if the resulting electron rate is not strictly positive.
+            TypeError: If ``target_adu_fraction`` is not numeric.
+        """
+
+        if not isinstance(target_adu_fraction, (float, int)):
+            raise TypeError("target_adu_fraction must be a float")
+
+        target_adu_fraction = float(target_adu_fraction)
+        if target_adu_fraction <= 0.0:
+            raise ValueError("target_adu_fraction must be >= 0")
+
+        star_photon_rate = np.sum(self.pf).to(1 / u.s).value
+        electron_rate = star_photon_rate * self.camera.qe
+
+        if include_dark_current:
+            electron_rate += self.camera.dc * (self.camera.resolution ** 2)
+
+        if electron_rate <= 0:
+            raise ValueError("Computed electron rate must be strictly positive")
+
+        target_adu = target_adu_fraction * self.camera.max_adu
+        exposure_seconds = (target_adu * self.camera.gain) / electron_rate
+        return exposure_seconds * u.s
     
     # Plot projected positions over the time ----------------------------------
 
@@ -643,14 +696,20 @@ class Context:
 
     # Observation -------------------------------------------------------------
 
-    def observe_monochromatic(self, upstream_pistons:u.Quantity=None):
+    def observe_monochromatic(self, upstream_pistons:u.Quantity=None, mode:str="flux"):
         """Observe the target with monochromatic approximation.
 
         Args:
             upstream_pistons (Optional[u.Quantity]): If provided, use this static
                 OPD error instead of random atmospheric piston. Shape: (n_telescopes,)
+            mode (str): Output mode. One of:
+                - ``'flux'``: Return total photon counts per output (default).
+                - ``'image'``: Return camera images per output as ndarray of shape
+                  ``(nb_outputs, resolution, resolution)``.
+                - ``'demo'``: Return a matplotlib Figure showing all output images.
         Returns:
-            np.ndarray[float]: Output intensities (photon events).
+            np.ndarray[float] | np.ndarray[int] | matplotlib.figure.Figure:
+                Depends on ``mode``.
         """
 
         nb_outs = self.interferometer.chip.nb_raw_outputs
@@ -676,55 +735,130 @@ class Context:
         for companion, ψc in enumerate(ψi):
             out_fields[companion] = self.interferometer.chip.get_output_fields(ψ=ψc, λ=self.interferometer.λ)
 
-        # Acquire intensity for each output
-        outs = np.empty(nb_outs)
-        for o in range(nb_outs):
-            outs[o] = self.interferometer.camera.get_flux(out_fields[:, o])
+        if mode == "flux":
+            # Acquire total photon counts for each output
+            outs = np.empty(nb_outs)
+            for o in range(nb_outs):
+                outs[o] = self.interferometer.camera.get_flux(out_fields[:, o])
+            return outs
 
-        return outs
+        elif mode in ("image", "demo"):
+            # Acquire a 2D detector image for each output
+            images = np.array([
+                self.interferometer.camera.get_image(out_fields[:, o])
+                for o in range(nb_outs)
+            ])
+
+            if mode == "image":
+                return images
+
+            # mode == "demo": build a figure with one subplot per output
+            labels = self.interferometer.chip._raw_output_labels
+            ncols = min(nb_outs, 5)
+            nrows = (nb_outs + ncols - 1) // ncols
+            fig, axs = plt.subplots(nrows, ncols, figsize=(4 * ncols, 4 * nrows))
+            axs = np.array(axs).reshape(-1)
+            for o in range(nb_outs):
+                im = axs[o].imshow(images[o], origin="lower", cmap="hot")
+                axs[o].set_title(labels[o] if o < len(labels) else f"Output {o}")
+                axs[o].axis("off")
+                fig.colorbar(im, ax=axs[o], fraction=0.046, pad=0.04)
+            for o in range(nb_outs, len(axs)):
+                axs[o].axis("off")
+            fig.tight_layout()
+            return fig
+
+        else:
+            raise ValueError(f"Unknown mode '{mode}'. Expected 'flux', 'image', or 'demo'.")
     
-    def observe(self, spectral_samples=5, upstream_pistons:u.Quantity=None):
+    def observe(self, spectral_samples=5, upstream_pistons:u.Quantity=None, mode:str="flux"):
         """Observe the target in this context.
 
         Args:
             spectral_samples (int): Number of spectral samples to acquire (default: 5).
             upstream_pistons (Optional[u.Quantity]): If provided, use this static
                 OPD error instead of random atmospheric piston. Shape: (n_telescopes,)
+            mode (str): Output mode. One of:
+                - ``'flux'``: Return total photon counts per output (default).
+                - ``'image'``: Return camera images per output, integrated over the
+                  bandwidth, as ndarray of shape ``(nb_outputs, resolution, resolution)``.
+                - ``'demo'``: Return a matplotlib Figure showing all output images.
 
         Returns:
-            np.ndarray[float]: Output intensities (photon events).
+            np.ndarray[float] | np.ndarray[int] | matplotlib.figure.Figure:
+                Depends on ``mode``.
         """
 
         # If this context use monochromatic approximation
         if self.monochromatic:
-            return self.observe_monochromatic(upstream_pistons=upstream_pistons)
+            return self.observe_monochromatic(upstream_pistons=upstream_pistons, mode=mode)
 
         # Sampling bandwidth
         λ_range = np.linspace(self.interferometer.λ - self.interferometer.Δλ/2, self.interferometer.λ + self.interferometer.Δλ/2, spectral_samples)
 
-        # Initialize output array
         nb_outs = self.interferometer.chip.nb_raw_outputs
-        outs = np.empty((spectral_samples, nb_outs))
 
-        # Atmospheric piston for each telescope
+        # Atmospheric piston for each telescope (drawn once, shared across sub-bands)
         if upstream_pistons is None:
             Δφ = np.random.normal(0, self.Γ.value, size=len(self.interferometer.telescopes)) * self.Γ.unit
         else:
             Δφ = upstream_pistons
 
-        # Monochromatic approximation for each sub-band
-        for i, λ in enumerate(λ_range):
-            ctx_mono = copy(self)
-            ctx_mono.interferometer.λ = λ
-            ctx_mono.interferometer.Δλ = 1 * u.nm
-            ctx_mono._update_pf()
+        if mode == "flux":
+            # Initialize output array for flux integration
+            outs = np.empty((spectral_samples, nb_outs))
 
-            outs[i] = ctx_mono.observe_monochromatic(upstream_pistons=Δφ)
+            # Monochromatic approximation for each sub-band
+            for i, λ in enumerate(λ_range):
+                ctx_mono = copy(self)
+                ctx_mono.interferometer.λ = λ
+                ctx_mono.interferometer.Δλ = 1 * u.nm
+                ctx_mono._update_pf()
+                outs[i] = ctx_mono.observe_monochromatic(upstream_pistons=Δφ, mode="flux")
 
-        # Integrate over the bandwidth
-        # outs contains counts for a 1 nm bandwidth (ctx_mono.interferometer.Δλ)
-        # We integrate the spectral density (outs / 1 nm) over the wavelength range (in nm)
-        return np.trapz(outs, λ_range.to(u.nm).value, axis=0) / 1.0
+            # Integrate over the bandwidth
+            # outs contains counts for a 1 nm bandwidth (ctx_mono.interferometer.Δλ)
+            # We integrate the spectral density (outs / 1 nm) over the wavelength range (in nm)
+            return np.trapz(outs, λ_range.to(u.nm).value, axis=0) / 1.0
+
+        elif mode in ("image", "demo"):
+            # Collect per-sub-band images and integrate over bandwidth
+            sample_images = None
+            for i, λ in enumerate(λ_range):
+                ctx_mono = copy(self)
+                ctx_mono.interferometer.λ = λ
+                ctx_mono.interferometer.Δλ = 1 * u.nm
+                ctx_mono._update_pf()
+                imgs = ctx_mono.observe_monochromatic(upstream_pistons=Δφ, mode="image")
+                # imgs shape: (nb_outs, resolution, resolution)
+                if sample_images is None:
+                    sample_images = np.empty((spectral_samples, *imgs.shape))
+                sample_images[i] = imgs
+
+            # Integrate spectral density over wavelength range (axis=0 is spectral axis)
+            integrated = np.trapz(sample_images, λ_range.to(u.nm).value, axis=0) / 1.0
+
+            if mode == "image":
+                return integrated
+
+            # mode == "demo": build a figure with one subplot per output
+            labels = self.interferometer.chip._raw_output_labels
+            ncols = min(nb_outs, 5)
+            nrows = (nb_outs + ncols - 1) // ncols
+            fig, axs = plt.subplots(nrows, ncols, figsize=(4 * ncols, 4 * nrows))
+            axs = np.array(axs).reshape(-1)
+            for o in range(nb_outs):
+                im = axs[o].imshow(integrated[o], origin="lower", cmap="hot")
+                axs[o].set_title(labels[o] if o < len(labels) else f"Output {o}")
+                axs[o].axis("off")
+                fig.colorbar(im, ax=axs[o], fraction=0.046, pad=0.04)
+            for o in range(nb_outs, len(axs)):
+                axs[o].axis("off")
+            fig.tight_layout()
+            return fig
+
+        else:
+            raise ValueError(f"Unknown mode '{mode}'. Expected 'flux', 'image', or 'demo'.")
 
     def observation_serie(
             self,
@@ -808,7 +942,7 @@ class Context:
             None | Context: New context with optimized kernel nuller (if implemented to return).
         """
         return _calibrate_obs(self, n=n, plot=plot, figsize=figsize, save_as=save_as)
-            
+
 #==============================================================================
 # Number functions
 #==============================================================================
