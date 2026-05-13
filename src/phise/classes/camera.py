@@ -24,7 +24,6 @@ def _get_flux_jit(
     dc: float = 100.0,
     ron: float = 10.0,
     fwc: float = math.inf,
-    max_adu: int = 65535,
     gain: float = 1.0,
     resolution: int = 1,
     spot_size: float = 1.0,
@@ -39,7 +38,6 @@ def _get_flux_jit(
         dc=dc,
         ron=ron,
         fwc=fwc,
-        max_adu=max_adu,
         gain=gain,
         resolution=resolution,
         spot_size=spot_size,
@@ -55,7 +53,6 @@ def _get_image_jit(
     dc: float = 100.0,
     ron: float = 10.0,
     fwc: float = math.inf,
-    max_adu:int = 65535,
     gain: float = 1.0,
     resolution: int = 1,
     spot_size: float = 1.0,
@@ -94,9 +91,6 @@ def _get_image_jit(
                     image[i, j] = fwc
 
                 image[i,j] = np.rint(image[i,j] / gain)
-
-                if image[i, j] > max_adu:
-                    image[i, j] = max_adu
 
                 if dark is not None:
                     image[i,j] = image[i,j] - dark[i, j]
@@ -172,7 +166,6 @@ class Camera:
         '_ron',
         '_dc',
         '_fwc',
-        '_max_adu',
         '_qe',
         '_gain',
         '_resolution',
@@ -191,27 +184,27 @@ class Camera:
         ron: float = 10.0,
         dc: float = 100.0,
         fwc: float = math.inf,
-        max_adu: int = 65535,
         qe: float = 1.0,
         gain: float = 1.0,
         resolution: int = 1,
         spot_size: float = 1.0,
         hdr: list[float] = None,
     ):
+        
+        
         self._update_dark_on_change = False
 
         self._parent_interferometer = None
-        self.e = e
         self.ideal = ideal
         self.name = name
         self.ron = ron
         self.dc = dc
         self.fwc = fwc
-        self._max_adu = max_adu
         self.qe = qe
         self.gain = gain
         self.resolution = resolution
         self.spot_size = spot_size
+        self.e = e
         self.hdr = hdr if hdr is not None else []
 
         self._dark = np.zeros((self._resolution, self._resolution))
@@ -250,6 +243,12 @@ class Camera:
             raise ValueError('e must be in a time unit')
         if e_val <= 0:
             raise ValueError('e must be positive')
+
+        # Check if the camera if not totally saturated by the dark current. Show a warning if the requested exposure time is above the dark saturation time (fwc/dc), which means that the dark current will saturate the camera even in the absence of any light.
+        max_e = self.fwc / self.dc
+        if e_val > max_e:
+            print(f"⚠️ Warning: The requested exposure time {e:.2g} is above the dark saturation time {max_e:.2g}. The camera will be saturated by the dark current even in the absence of any light.")
+
         self._e_unit = e.unit
         self._e = e_val
         if self._update_dark_on_change:
@@ -320,22 +319,6 @@ class Camera:
     @fwc.setter
     def fwc(self, val: float):
         self._fwc = float(val)
-        if self._update_dark_on_change:
-            self.update_all_darks()
-
-    @property
-    def max_adu(self) -> int:
-        """Maximum ADU value (saturation level) of the camera."""
-        return self._max_adu
-
-    @max_adu.setter
-    def max_adu(self, val: int):
-        if not isinstance(val, Integral) or isinstance(val, bool):
-            raise TypeError('max_adu must be an integer')
-        val = int(val)
-        if val < 1:
-            raise ValueError('max_adu must be positive')
-        self._max_adu = val
         if self._update_dark_on_change:
             self.update_all_darks()
 
@@ -413,13 +396,34 @@ class Camera:
     # Public methods ----------------------------------------------------------
 
     def take_dark(self, N:int = 1000, e: u.Quantity = None) -> np.ndarray:
+        """Estimate the master dark frame at a given exposure time.
+
+        Dark acquisition must bypass current dark subtraction, otherwise the
+        estimate becomes self-referential (new_dark ~= true_dark - old_dark).
+        """
+
         if e is None:
             e = self.e
-        
+        if not isinstance(e, u.Quantity):
+            raise TypeError('e must be an astropy Quantity')
+
+        e_seconds = e.to(u.s).value
         darks = np.empty((N, self.resolution, self.resolution))
         for i in range(N):
-            darks[i] = self.get_image([0j])
-        
+            darks[i] = _get_image_jit(
+                psi=np.array([0j], dtype=np.complex128),
+                e=e_seconds,
+                ideal=self._ideal,
+                qe=self._qe,
+                dc=self._dc,
+                ron=self._ron,
+                fwc=self._fwc,
+                gain=self._gain,
+                resolution=self._resolution,
+                spot_size=self._spot_size,
+                dark=None,
+            )
+
         return np.mean(darks, axis=0)
 
     def update_all_darks(self):
@@ -444,7 +448,6 @@ class Camera:
             dc=self._dc,
             ron=self._ron,
             fwc=self._fwc,
-            max_adu=self._max_adu,
             gain=self._gain,
             resolution=self._resolution,
             spot_size=self._spot_size,
@@ -469,7 +472,6 @@ class Camera:
             dc=self._dc,
             ron=self._ron,
             fwc=self._fwc,
-            max_adu=self._max_adu,
             gain=self._gain,
             resolution=self._resolution,
             spot_size=self._spot_size,

@@ -94,5 +94,8 @@ def test_reference_exposure_time_rejects_invalid_fraction():
     with pytest.raises(ValueError):
         context.get_reference_exposure_time(target_adu_fraction=1.0)
 
+    with pytest.raises(ValueError):
+        context.get_reference_exposure_time(target_adu_fraction=1000.0)
+
     with pytest.raises(TypeError):
         context.get_reference_exposure_time(target_adu_fraction="0.5")

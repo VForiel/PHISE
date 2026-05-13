@@ -298,7 +298,7 @@ class Context:
 
     def get_reference_exposure_time(
             self,
-            target_adu_fraction: float = 0.5,
+            target_adu_fraction: float = 1,
             include_dark_current: bool = True,
         ) -> u.Quantity:
         """Compute a reference exposure time for stellar acquisition.
@@ -311,7 +311,7 @@ class Context:
 
         - stellar electrons rate: ``sum(self.pf) * camera.qe``
         - optional dark-current electrons rate:
-          ``camera.dc * camera.resolution**2``
+          ``camera.dc``
         - ADU conversion: ``ADU = electrons / camera.gain``
 
         Args:
@@ -340,12 +340,12 @@ class Context:
         electron_rate = star_photon_rate * self.camera.qe
 
         if include_dark_current:
-            electron_rate += self.camera.dc * (self.camera.resolution ** 2)
+            electron_rate += self.camera.dc
 
         if electron_rate <= 0:
             raise ValueError("Computed electron rate must be strictly positive")
 
-        target_adu = target_adu_fraction * self.camera.max_adu
+        target_adu = target_adu_fraction * self.camera.fwc / self.camera.gain
         exposure_seconds = (target_adu * self.camera.gain) / electron_rate
         return exposure_seconds * u.s
     

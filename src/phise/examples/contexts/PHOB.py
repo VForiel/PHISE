@@ -51,11 +51,10 @@ def get() -> 'Context':
                 e = 1/600 * u.s, # Exposure time
                 resolution=11,
                 qe = 0.73, # Quantum efficiency
-                gain = 2.0, # Gain (e-/ADU)
                 ron = 37, # Read-out noise
                 dc = 755_000, # Dark current (in e-/px/s)
-                fwc = 1_400_000, # Full well capacity
-                max_adu = 16383, # Maximum ADU
+                gain = 2, # Gain (e-/ADU)                  | High gain mode on Cred3
+                fwc = 33_000, # Full well capacity         | @600 fps
                 name = "Cred3", # Camera name
             ),
         ),
