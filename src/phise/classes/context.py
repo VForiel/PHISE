@@ -691,6 +691,49 @@ class Context:
         plt.show()
         print(transmissions)
 
+    # Distributions -----------------------------------------------------------
+
+    def plot_distributions(self, samples:int=1000, ctx_h0=None) -> None:
+
+        assert ctx_h0.chip._raw_output_labels == self.chip._raw_output_labels, "ctx_h0 must have the same interferometer chip configuration as this context"
+        assert ctx_h0.chip._processed_output_labels == self.chip._processed_output_labels, "ctx_h0 must have the same interferometer chip configuration as this context"
+
+        # Keeping only the mid observation
+        ctx_h1 = copy(self)
+        ctx_h1.Δh = ctx_h1.camera.e.to(u.hour).value * u.hourangle
+        if ctx_h0 is not None:
+            ctx_h0 = copy(ctx_h0)
+            ctx_h0.Δh = ctx_h0.camera.e.to(u.hour).value * u.hourangle
+
+        nb_raw = self.interferometer.chip.nb_raw_outputs
+        nb_proc = self.interferometer.chip.nb_processed_outputs
+
+        data_h1 = np.empty((samples, nb_raw + nb_proc))
+        if ctx_h0 is not None:
+            data_h0 = np.empty((samples, nb_raw + nb_proc))
+
+        outs = ctx_h1.observation_serie(n=samples)[:,0,:]
+        data_h1[:, :nb_raw] = outs
+        for i in range(samples):
+            data_h1[i, nb_raw:] = ctx_h1.chip.process_outputs(outs[i])
+        if ctx_h0 is not None:
+            outs = ctx_h0.observation_serie(n=samples)[:,0,:]
+            data_h0[:, :nb_raw] = outs
+            for i in range(samples):
+                data_h0[i, nb_raw:] = ctx_h0.chip.process_outputs(outs[i])
+
+        fig, axs = plt.subplots(1, nb_raw+nb_proc, figsize=((nb_raw+nb_proc)*5, 5))
+        for o in range(nb_raw+nb_proc):
+            ax = axs[o]
+            if ctx_h0 is not None:
+                ax.hist(data_h0[:, o], bins=30, alpha=0.5, label=f"{ctx_h0.name} - {ctx_h0.chip._raw_output_labels[o] if o < nb_raw else ctx_h0.chip._processed_output_labels[o-nb_raw]}")
+            ax.hist(data_h1[:, o], bins=30, alpha=0.5, label=f"{ctx_h1.name} - {ctx_h1.chip._raw_output_labels[o] if o < nb_raw else ctx_h1.chip._processed_output_labels[o-nb_raw]}")
+            ax.set_title(f"Distribution of {ctx_h1.chip._raw_output_labels[o] if o < nb_raw else ctx_h1.chip._processed_output_labels[o-nb_raw]}")
+            ax.set_xlabel("Flux")
+            ax.set_ylabel("Count")
+            ax.legend()
+
+
     # Input fields ------------------------------------------------------------
 
     def get_input_fields(self) -> np.ndarray[complex]:

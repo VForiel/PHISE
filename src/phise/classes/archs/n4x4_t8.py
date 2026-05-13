@@ -122,7 +122,7 @@ class N4x4_T8(Chip):
         ):
 
         self._raw_output_labels = ['Bright', 'Dark 1', 'Dark 2', 'Null']
-        self._processed_output_labels = ['Kernel 1']
+        self._processed_output_labels = ['Kernel']
 
         self.nb_inputs = 4
         self.nb_raw_outputs = 4
