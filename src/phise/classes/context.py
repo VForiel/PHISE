@@ -332,8 +332,6 @@ class Context:
         target_adu_fraction = float(target_adu_fraction)
         if target_adu_fraction <= 0.0:
             raise ValueError("target_adu_fraction must be >= 0")
-        if target_adu_fraction > 1.0:
-            raise ValueError("target_adu_fraction must be <= 1")
 
         # Estimate stellar peak-pixel photon rate from a deterministic 1-second
         # ideal acquisition. This accounts for chip splitting and PSF spreading.
