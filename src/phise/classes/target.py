@@ -96,8 +96,8 @@ class Target:
 
     def __str__(self) -> str:
         res = f'Target "{self.name}"\n'
-        res += f'  f: {self.f:.2e}\n'
-        res += f'  δ: {self.δ:.2e}\n'
+        res += f'  f: {self.f:.2g}\n'
+        res += f'  δ: {self.δ:.2g}\n'
         res += f'  Companions:\n'
         lines = []
         for companion in self.companions:

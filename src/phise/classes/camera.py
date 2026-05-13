@@ -223,8 +223,8 @@ class Camera:
 
     def __str__(self) -> str:
         res = f'Camera "{self.name}"\n'
-        res += f'  Exposure time: {self.e:.2f}\n'
-        res += f'  QE: {self.qe * 100:.1f}% | RON: {self.ron} e- | DC: {self.dc} e-/s | Gain: {self.gain} e-/ADU\n'
+        res += f'  Exposure time: {self.e:.2g}\n'
+        res += f'  QE: {(self.qe * 100):.2g}% | RON: {self.ron:.2g} e- | DC: {self.dc:.2g} e-/s | Gain: {self.gain:.2g} e-/ADU\n'
         res += f'  Resolution: {self.resolution} px | Spot size: {self.spot_size} px | HDR: {self.hdr} * exposure time\n'
         return res
 

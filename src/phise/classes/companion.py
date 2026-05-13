@@ -32,9 +32,9 @@ class Companion:
 
     def __str__(self) -> str:
         res = f'Companion "{self.name}"\n'
-        res += f'  Contrast: {self.c:.2f}\n'
-        res += f'  Angular separation: {self.ρ:.2f}\n'
-        res += f'  Parallactic angle: {self.θ:.2f}'
+        res += f'  Contrast: {self.c:.2g}\n'
+        res += f'  Angular separation: {self.ρ:.2g}\n'
+        res += f'  Parallactic angle: {self.θ:.2g}'
         return res
 
     @property

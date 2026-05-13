@@ -403,12 +403,12 @@ class N4x4_D8(Chip):
 
     def __str__(self) -> str:
         res = f'Kernel-Nuller "{self.name}"\n'
-        res += f"  φ: [{', '.join([f'{i:.2e}' for i in self.φ.value])}] {self.φ.unit}\n"
-        res += f"  σ: [{', '.join([f'{i:.2e}' for i in self.σ.value])}] {self.σ.unit}\n"
+        res += f"  φ: [{', '.join([f'{i:.2g}' for i in self.φ.value])}] {self.φ.unit}\n"
+        res += f"  σ: [{', '.join([f'{i:.2g}' for i in self.σ.value])}] {self.σ.unit}\n"
         res += f"  Output order: [{', '.join([f'{i}' for i in self.output_order])}]\n"
-        res += f"  Input attenuation: [{', '.join([f'{i:.2e}' for i in self.input_attenuation])}]\n"
-        res += f"  Input OPD: [{', '.join([f'{i:.2e}' for i in self.input_opd.value])}] {self.input_opd.unit}"
-        return res.replace('e+00', '')
+        res += f"  Input attenuation: [{', '.join([f'{i:.2g}' for i in self.input_attenuation])}]\n"
+        res += f"  Input OPD: [{', '.join([f'{i:.2g}' for i in self.input_opd.value])}] {self.input_opd.unit}"
+        return res
 
     def __repr__(self) -> str:
         return self.__str__()

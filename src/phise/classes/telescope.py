@@ -24,9 +24,9 @@ class Telescope:
 
     def __str__(self) -> str:
         res = f'Telescope "{self.name}"\n'
-        res += f'  Area: {self.a:.2e}\n'
-        res += f"  Relative position: [{', '.join([f'{i:.2e}' for i in self.r.value])}] {self.r.unit}"
-        return res.replace('e+00', '')
+        res += f'  Area: {self.a:.2g}\n'
+        res += f"  Relative position: [{', '.join([f'{i:.2g}' for i in self.r.value])}] {self.r.unit}"
+        return res
 
     def __repr__(self) -> str:
         return self.__str__()

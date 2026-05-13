@@ -84,9 +84,9 @@ class Context:
         res = f'Context "{self.name}"\n'
         res += "  " + "\n  ".join(str(self.interferometer).split("\n")) + "\n"
         res += "  " + "\n  ".join(str(self.target).split("\n")) + "\n"
-        res += f'  h: {self.h:.2f}\n'
-        res += f'  Δh: {self.Δh:.2f}\n'
-        res += f'  Γ: {self.Γ:.2f}'
+        res += f'  h: {self.h:.2g}\n'
+        res += f'  Δh: {self.Δh:.2g}\n'
+        res += f'  Γ: {self.Γ:.2g}'
         return res
     
     def __repr__(self) -> str:

@@ -42,10 +42,10 @@ class Interferometer:
 
     def __str__(self) -> str:
         res = f'Interferometer "{self.name}"\n'
-        res += f'  Latitude: {self.l:.2f}\n'
-        res += f'  Central wavelength: {self.λ:.2f}\n'
-        res += f'  Bandwidth: {self.Δλ:.2f}\n'
-        res += f'  Field of view: {self.fov:.2f}\n'
+        res += f'  Latitude: {self.l:.2g}\n'
+        res += f'  Central wavelength: {self.λ:.2g}\n'
+        res += f'  Bandwidth: {self.Δλ:.2g}\n'
+        res += f'  Field of view: {self.fov:.2g}\n'
         res += f'  Telescopes:\n'
         lines = []
         for telescope in self.telescopes:
