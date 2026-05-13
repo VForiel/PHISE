@@ -303,20 +303,17 @@ class Context:
         ) -> u.Quantity:
         """Compute a reference exposure time for stellar acquisition.
 
-        This helper estimates an exposure time that places the detected signal
-        at a chosen fraction of the camera ADU dynamic range, assuming the
-        full stellar photon flux is focused onto a single detector output.
+                This helper estimates an exposure time that places the *brightest
+                detector pixel* at a chosen fraction of full-well capacity.
 
-        The estimate uses a linear detector model:
-
-        - stellar electrons rate: ``sum(self.pf) * camera.qe``
-        - optional dark-current electrons rate:
-          ``camera.dc``
-        - ADU conversion: ``ADU = electrons / camera.gain``
+                The stellar peak-pixel rate is estimated from a deterministic
+                1-second ideal image (no shot/readout noise), then converted to
+                electrons/second using ``camera.qe``. Optionally, the mean dark-current
+                contribution per pixel is added to the peak-pixel electron budget.
 
         Args:
-            target_adu_fraction (float): Target position in the ADU range,
-                in ``(0, 1)``. Default is ``0.5`` (mid-dynamic range).
+            target_adu_fraction (float): Target fraction of pixel full-well
+                capacity, in ``(0, 1]``.
             include_dark_current (bool): If ``True``, include the mean dark
                 current contribution in the ADU budget.
 
@@ -335,9 +332,19 @@ class Context:
         target_adu_fraction = float(target_adu_fraction)
         if target_adu_fraction <= 0.0:
             raise ValueError("target_adu_fraction must be >= 0")
+        if target_adu_fraction > 1.0:
+            raise ValueError("target_adu_fraction must be <= 1")
 
-        star_photon_rate = np.sum(self.pf).to(1 / u.s).value
-        electron_rate = star_photon_rate * self.camera.qe
+        # Estimate stellar peak-pixel photon rate from a deterministic 1-second
+        # ideal acquisition. This accounts for chip splitting and PSF spreading.
+        ctx_ref = copy(self)
+        ctx_ref.camera.e = 1 * u.s
+        ctx_ref.camera.ideal = True
+        upstream_pistons = np.zeros(len(ctx_ref.interferometer.telescopes)) * u.nm
+        ref_images = ctx_ref.observe(mode="image", upstream_pistons=upstream_pistons)
+        stellar_peak_photon_rate = float(np.max(ref_images))
+
+        electron_rate = stellar_peak_photon_rate * self.camera.qe
 
         if include_dark_current:
             electron_rate += self.camera.dc
@@ -345,8 +352,8 @@ class Context:
         if electron_rate <= 0:
             raise ValueError("Computed electron rate must be strictly positive")
 
-        target_adu = target_adu_fraction * self.camera.fwc / self.camera.gain
-        exposure_seconds = (target_adu * self.camera.gain) / electron_rate
+        target_electrons = target_adu_fraction * self.camera.fwc
+        exposure_seconds = target_electrons / electron_rate
         return exposure_seconds * u.s
     
     # Plot projected positions over the time ----------------------------------
