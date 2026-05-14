@@ -112,7 +112,7 @@ def mean(u, v):
         v: Samples under H0 (unused).
 
     Returns:
-        float: |mean(u)|
+        float: Absolute value of ``mean(u)``.
     """
     return np.abs(np.mean(u))
 
@@ -125,7 +125,7 @@ def median(u, v):
         v: Samples under H0 (unused).
 
     Returns:
-        float: |median(u)|
+        float: Absolute value of ``median(u)``.
     """
     return np.abs(np.median(u))
 
@@ -165,7 +165,7 @@ def kolmogorov_smirnov(u, v):
     """Two-sample Kolmogorov–Smirnov statistic.
 
     Returns:
-        float: |D|, the maximal distance between empirical CDFs.
+        float: Absolute value of ``D``, the maximal distance between empirical CDFs.
     """
     return np.abs(stats.ks_2samp(u, v).statistic)
 
@@ -219,13 +219,13 @@ def wasserstein_distance(u, v):
     """Wasserstein distance (earth mover's distance, order 1).
 
     Returns:
-        float: Distance |W_1(u, v)|.
+        float: Absolute value of the Wasserstein distance ``W1(u, v)``.
     """
     return np.abs(stats.wasserstein_distance(u, v))
 
 
 def flattening(u, v):
-    """Sum of deviations from the median: Σ |u - median(u)|.
+    """Sum of absolute deviations from the median.
 
     Returns:
         float: Measure of "flattening" around the median.
@@ -237,8 +237,8 @@ def flattening(u, v):
 def shift_and_flattening(u, v):
     """Area under the curve of sorted distances to the median (AUC).
 
-    Definition: if d_i = |u_i - median(u)| sorted, returns the area
-    ∫ (d(x) + |median|) dx, x ∈ [0, 1].
+    Definition: if ``d_i = abs(u_i - median(u))`` sorted, returns the area
+    of ``d(x) + abs(median)`` over ``x in [0, 1]``.
 
     Returns:
         float: Area under the curve approximated via numerical integration.
@@ -251,12 +251,12 @@ def shift_and_flattening(u, v):
 
 
 def median_of_abs(u, v):
-    """Median of absolute values: median(|u|)."""
+    """Median of absolute values: ``median(abs(u))``."""
     return np.median(np.abs(u))
 
 
 def full_sum(u, v):
-    """Sum of absolute values: Σ |u|."""
+    """Sum of absolute values: ``sum(abs(u))``."""
     return np.sum(np.abs(u))
 
 

@@ -8,7 +8,7 @@ def as_str(signals: np.ndarray) -> str:
     """Return a compact text representation of a signal vector.
 
     Each complex entry is displayed as amplitude · exp(i·phase) and its
-    intensity |s|².
+    intensity ``abs(s)**2``.
 
     Args:
         signals: Complex amplitudes array, shape (N,) or (N, M).

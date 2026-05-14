@@ -475,10 +475,10 @@ class Context:
             N (int): Map resolution.
 
         Returns:
-            - np.ndarray[float]: Raw outputs transmission map gradient norms
-                (nb_raw_outputs x N x N)
-            - Optional[np.ndarray[float]]: Processed outputs transmission map
-                gradient norms (nb_processed_outputs x N x N)
+            tuple[np.ndarray[float], np.ndarray[float]]:
+                Raw output gradient norms with shape
+                ``(nb_raw_outputs, N, N)`` and processed output gradient
+                norms with shape ``(nb_processed_outputs, N, N)``.
         """
 
         raw_out_maps, processed_out_maps = self.get_transmission_maps(N=N)
@@ -783,11 +783,11 @@ class Context:
         Args:
             upstream_pistons (Optional[u.Quantity]): If provided, use this static
                 OPD error instead of random atmospheric piston. Shape: (n_telescopes,)
-            mode (str): Output mode. One of:
-                - ``'flux'``: Return total photon counts per output (default).
-                - ``'image'``: Return camera images per output as ndarray of shape
-                  ``(nb_outputs, resolution, resolution)``.
-                - ``'demo'``: Return a matplotlib Figure showing all output images.
+            mode (str): Output mode. Supported values are ``'flux'`` (total
+                photon counts per output), ``'image'`` (camera images per
+                output with shape ``(nb_outputs, resolution, resolution)``),
+                and ``'demo'`` (matplotlib Figure showing output images).
+
         Returns:
             np.ndarray[float] | np.ndarray[int] | matplotlib.figure.Figure:
                 Depends on ``mode``.
@@ -859,11 +859,11 @@ class Context:
             spectral_samples (int): Number of spectral samples to acquire (default: 5).
             upstream_pistons (Optional[u.Quantity]): If provided, use this static
                 OPD error instead of random atmospheric piston. Shape: (n_telescopes,)
-            mode (str): Output mode. One of:
-                - ``'flux'``: Return total photon counts per output (default).
-                - ``'image'``: Return camera images per output, integrated over the
-                  bandwidth, as ndarray of shape ``(nb_outputs, resolution, resolution)``.
-                - ``'demo'``: Return a matplotlib Figure showing all output images.
+            mode (str): Output mode. Supported values are ``'flux'`` (total
+                photon counts per output), ``'image'`` (camera images per
+                output integrated over bandwidth, shape
+                ``(nb_outputs, resolution, resolution)``), and ``'demo'``
+                (matplotlib Figure showing output images).
 
         Returns:
             np.ndarray[float] | np.ndarray[int] | matplotlib.figure.Figure:

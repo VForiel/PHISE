@@ -18,7 +18,6 @@ def test_take_dark_bypasses_previous_dark_subtraction():
         dc=1000.0,
         gain=1.0,
         resolution=1,
-        max_adu=1_000_000_000,
     )
 
     camera._dark = np.array([[500_000.0]])
