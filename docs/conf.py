@@ -3,7 +3,7 @@ import sys
 from datetime import datetime
 
 # Add project src/ to sys.path so autodoc can import project packages
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'src')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
 
 project = 'PHISE'
 author = 'Vincent Foriel'
