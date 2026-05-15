@@ -900,7 +900,7 @@ class Context:
             # Integrate over the bandwidth
             # outs contains counts for a 1 nm bandwidth (ctx_mono.interferometer.Δλ)
             # We integrate the spectral density (outs / 1 nm) over the wavelength range (in nm)
-            return np.trapz(outs, λ_range.to(u.nm).value, axis=0) / 1.0
+            return np.trapezoid(outs, λ_range.to(u.nm).value, axis=0) / 1.0
 
         elif mode in ("image", "demo"):
             # Collect per-sub-band images and integrate over bandwidth
@@ -917,7 +917,7 @@ class Context:
                 sample_images[i] = imgs
 
             # Integrate spectral density over wavelength range (axis=0 is spectral axis)
-            integrated = np.trapz(sample_images, λ_range.to(u.nm).value, axis=0) / 1.0
+            integrated = np.trapezoid(sample_images, λ_range.to(u.nm).value, axis=0) / 1.0
 
             if mode == "image":
                 return integrated

@@ -246,7 +246,7 @@ def shift_and_flattening(u, v):
     med = np.median(u)
     distances = np.sort(np.abs(u - med))
     x = np.linspace(0, 1, len(u))
-    auc = np.trapz(distances + np.abs(med), x)
+    auc = np.trapezoid(distances + np.abs(med), x)
     return auc
 
 
