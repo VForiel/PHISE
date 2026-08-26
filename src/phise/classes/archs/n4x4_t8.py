@@ -29,7 +29,9 @@ def get_output_fields_jit(
         σ: np.ndarray[float],
         λ: float,
         λ0: float,
-        output_order: np.ndarray[int]
+    output_order: np.ndarray[int],
+    Cin: np.ndarray[complex] = None,
+    Cout: np.ndarray[complex] = None,
     ) -> tuple[np.ndarray[float], np.ndarray[float], np.ndarray[float], float]:
     """Simulate a 4-telescope Kernel Nuller propagation (numeric approach).
 
@@ -52,7 +54,7 @@ def get_output_fields_jit(
     # λ_ratio = λ0 / λ
     
     # Obtained experimentally
-    Cin = np.array([[0.993235600471687+0.009237092175691658j, -0.021264580807434843+0.03769657190120298j, -0.0051583647234613155+-0.0042329905582810185j, 0.017463492523078383+-0.004980876913586356j],
+    Cin_default = np.array([[0.993235600471687+0.009237092175691658j, -0.021264580807434843+0.03769657190120298j, -0.0051583647234613155+-0.0042329905582810185j, 0.017463492523078383+-0.004980876913586356j],
         [-0.0346680758683959+-0.018530357766726683j, 0.9889093932007929+-0.061123465436237485j, 0.026738344890038627+-0.0014393856537241413j, 0.004404623948204579+0.019764651573309613j],
         [-0.028412984445477973+0.019923133158339813j, 0.03070602561442529+-0.012119194765006948j, 1.0579343864170707+-0.011527258095511929j, 0.039989544678528464+0.007601157088749202j],
         [0.018285951246696873+-0.019141658304574972j, -0.009439220467160905+-0.012771119165619722j, 0.03584699301231649+-0.016710419975799848j, 1.0238623657867116+-0.024683838470046862j]], dtype=np.complex128)
@@ -69,7 +71,7 @@ def get_output_fields_jit(
         [0, 0, 0, np.exp(1j * (φ[3] + σ[3]) / λ0 * 2 * np.pi)]
     ], dtype=np.complex128)
 
-    Cout = np.array([[0.9730778790933375+-0.056722375163116436j, -0.028797392063705185+-0.01948778967495159j, -0.002666088781798851+-0.003540266278734302j, -0.024288111942176616+-0.005162868250002706j],
+    Cout_default = np.array([[0.9730778790933375+-0.056722375163116436j, -0.028797392063705185+-0.01948778967495159j, -0.002666088781798851+-0.003540266278734302j, -0.024288111942176616+-0.005162868250002706j],
         [-0.021892304669666688+0.021443098378544353j, 0.9767787260134642+-0.01383016643950051j, 0.015854522865303682+0.007823830803290452j, 0.0013032043159456922+-0.03342304110006464j],
         [0.0014192768381037528+-0.013512061286457603j, 0.01313567563123009+-0.0202219623179085j, 0.9582292019742786+-0.03906121603845227j, 0.0228181198166124+-0.0424606000937866j],
         [-0.03282391798177125+0.004483601864926152j, -0.009184126593575653+-0.015909090105478144j, 0.02563732784075978+0.009597828972331662j, 0.9967355720799685+-0.041485655747843714j]], dtype=np.complex128)
@@ -77,6 +79,11 @@ def get_output_fields_jit(
     # Override with ideal matrices for testing
     # Cin = np.eye(4, dtype=np.complex128)
     # Cout = np.eye(4, dtype=np.complex128)
+
+    if Cin is None:
+        Cin = Cin_default
+    if Cout is None:
+        Cout = Cout_default
 
     return Cout @ M @ P @ Cin @ ψ
     
@@ -108,7 +115,7 @@ class N4x4_T8(Chip):
         input_opd (u.Quantity | None): Relative OPDs applied to the 4 inputs.
         name (str): Descriptive name.
     """
-    __slots__ = ('_parent_interferometer', '_φ', '_σ', '_λ0', '_output_order', '_input_attenuation', '_input_opd', '_name', '_raw_output_labels', '_processed_output_labels', 'nb_raw_outputs', 'nb_processed_outputs')
+    __slots__ = ('_parent_interferometer', '_φ', '_σ', '_λ0', '_output_order', '_input_attenuation', '_input_opd', '_name', '_Cin', '_Cout', '_raw_output_labels', '_processed_output_labels', 'nb_raw_outputs', 'nb_processed_outputs')
 
     def __init__(
             self,
@@ -118,7 +125,9 @@ class N4x4_T8(Chip):
             output_order:np.ndarray[int]=None,
             input_attenuation:np.ndarray[float]=None,
             input_opd:np.ndarray[u.Quantity]=None,
-            name:str='Unnamed Kernel-Nuller'
+            name:str='Unnamed Kernel-Nuller',
+            Cin: np.ndarray[complex]=None,
+            Cout: np.ndarray[complex]=None,
         ):
 
         self._raw_output_labels = ['Bright', 'Dark 1', 'Dark 2', 'Null']
@@ -135,6 +144,8 @@ class N4x4_T8(Chip):
         self.output_order = output_order if output_order is not None else np.array([0, 1, 2, 3])
         self.input_attenuation = input_attenuation if input_attenuation is not None else np.array([1.0, 1.0, 1.0, 1.0])
         self.input_opd = input_opd if input_opd is not None else np.zeros(4) * u.m
+        self.Cin = Cin
+        self.Cout = Cout
         self.name = name
 
         super().__init__()
@@ -326,6 +337,32 @@ class N4x4_T8(Chip):
         self._input_attenuation = input_attenuation
 
     @property
+    def Cin(self):
+        """Input crosstalk matrix, or ``None`` for the measured default."""
+        return self._Cin
+
+    @Cin.setter
+    def Cin(self, matrix):
+        if matrix is not None:
+            matrix = np.asarray(matrix, dtype=np.complex128)
+            if matrix.shape != (4, 4):
+                raise ValueError("Cin must have shape (4, 4)")
+        self._Cin = matrix
+
+    @property
+    def Cout(self):
+        """Output crosstalk matrix, or ``None`` for the measured default."""
+        return self._Cout
+
+    @Cout.setter
+    def Cout(self, matrix):
+        if matrix is not None:
+            matrix = np.asarray(matrix, dtype=np.complex128)
+            if matrix.shape != (4, 4):
+                raise ValueError("Cout must have shape (4, 4)")
+        self._Cout = matrix
+
+    @property
     def input_opd(self):
         """Relative OPD applied on each input.
 
@@ -467,7 +504,16 @@ class N4x4_T8(Chip):
         
         ψ *= np.exp(-1j * 2 * np.pi * self.input_opd.to(λ.unit).value / λ.value)
 
-        return get_output_fields_jit(ψ=ψ.astype(np.complex128), φ=φ_val, σ=σ_val, λ=λ.value, λ0=λ0, output_order=self.output_order)
+        return get_output_fields_jit(
+            ψ=ψ.astype(np.complex128),
+            φ=φ_val,
+            σ=σ_val,
+            λ=λ.value,
+            λ0=λ0,
+            output_order=self.output_order,
+            Cin=self.Cin,
+            Cout=self.Cout,
+        )
     
     def expected_outputs(self, ψ: np.ndarray[complex]) -> tuple[float, np.ndarray[float], np.ndarray[float]]:
         """
