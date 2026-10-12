@@ -130,7 +130,7 @@ def median(u, v):
     return np.abs(np.median(u))
 
 
-def argmax(u, v, bins: int = 100):
+def argmax(u, v=None, bins: int = 100):
     """Approximate mode of ``u`` using a histogram (most frequent bin).
 
     Args:
@@ -146,17 +146,17 @@ def argmax(u, v, bins: int = 100):
     return np.abs(bin_edges[np.argmax(hist)])
 
 
-def argmax50(u, v):
+def argmax50(u, v=None):
     """Shortcut for ``argmax(u, v, bins=50)``."""
     return argmax(u, v, 50)
 
 
-def argmax100(u, v):
+def argmax100(u, v=None):
     """Shortcut for ``argmax(u, v, bins=100)``."""
     return argmax(u, v, 100)
 
 
-def argmax500(u, v):
+def argmax500(u, v=None):
     """Shortcut for ``argmax(u, v, bins=500)``."""
     return argmax(u, v, 500)
 
